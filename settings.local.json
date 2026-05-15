@@ -15,7 +15,8 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Skill(update-config)",
-      "Bash(bash -c 'git status --porcelain | grep -q . && git add -A && git commit -m \"auto-sync: $\\(date +%Y-%m-%dT%H:%M:%S\\)\" && git push origin main || true')"
+      "Bash(bash -c 'git status --porcelain | grep -q . && git add -A && git commit -m \"auto-sync: $\\(date +%Y-%m-%dT%H:%M:%S\\)\" && git push origin main || true')",
+      "Bash(python3 *)"
     ]
   }
 }
