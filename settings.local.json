@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Volumes/WenshuSpace/**)",
+      "Bash(unzip -l \"/Volumes/WenshuSpace/wbr-category-strategy-v3.zip\")",
+      "Bash(mkdir -p /tmp/wbr-review)",
+      "Read(//tmp/**)",
+      "Bash(unzip -q -o \"/Volumes/WenshuSpace/wbr-category-strategy-v3.zip\")",
+      "Bash(rm -rf __MACOSX)",
+      "Read(//private/tmp/wbr-review/wbr-category-strategy-v3/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(bash tests/run_all.sh)",
+      "Bash(git remote *)",
+      "Bash(git add *)"
+    ]
+  }
+}
