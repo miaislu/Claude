@@ -8,7 +8,48 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **关键定位**:**只做分析 + 写作**,不做取数。Excel 数据和 Action 文档由用户/上游流水线准备好后传入。
 
-**版本**:v3.0.0(从 v2.0.0 的 single-pass transformer 重构为 **iterative critic-driven**)。Phase A + B 已完成;C/D 在 `README.md` 列为后续工作。
+**版本**:v3.0.0(从 v2.0.0 的 single-pass transformer 重构为 **iterative critic-driven**)。Phase A + B 已完成（81 个 unit + e2e 测试，全 pass）；C/D 见本文末尾。
+
+## v3 vs v2 主要变化
+
+| 变化点 | v2 | v3 | 阶段 |
+|--------|----|----|------|
+| 上周报告 | 不在输入(Step 0 提"上周遗留"但流程跑不通) | **强制输入**,产出 lineage.json | A |
+| 写作流程 | drafter 一遍完成,self-checklist 自评 | **drafter → critic → revisor**,critic 独立角色 | A |
+| 数据→文字 | 直接一跳(易编数字) | 中间强制产出**证据表**(每 Q 至少 1 条矛盾/中立证据) | A |
+| 信息密度门禁 | 12 词黑名单(易绕过) | **正向句式 linter** + critic 引用 | A |
+| 预测追踪 | 📌 下周追踪 作为文字 | 抽成结构化 `lineage_W{n}.json`,**下周自动评判** | A |
+| Skip Mode | 文字描述,LLM 自判 | 脚本化判断(`skip_check.py`),退出码驱动分支 | B |
+| 问题质量门禁 | LLM 心法 | 脚本化检查(`question_gate.py`),`--strict` 模式可拦下不合格 | B |
+| 工程基础 | 无 git / 无 tests | git + 81 个 unit + e2e tests | A+B |
+
+## 目录结构
+
+```
+wbr-category-strategy-v3/
+├── SKILL.md                          # 主流程(10 phases + Skip Mode 分支)
+├── CLAUDE.md                         # 本文件：开发者指南
+├── _meta.json                        # 版本元信息
+├── references/
+│   ├── indicator-framework.md        # 闪购 IO 指标体系
+│   ├── action-filter-rules.md        # 举措筛选规则
+│   ├── strategy-title-mapping.md     # 策略标题映射
+│   ├── output-format.md              # 章节骨架 + 数值格式 + 写作规则
+│   ├── lineage-format.md             # lineage.json schema + 解析规则
+│   ├── critic-prompt.md              # critic 角色完整提示词
+│   └── evidence-table.md             # 证据表格式 + 反例强制规则
+├── scripts/                          # CLI shim（实现在 wbr_engine/）
+├── wbr_engine/                       # Phase C 重构后的包结构
+│   ├── data/loader.py
+│   ├── analysis/{anomaly,trend,attribution}.py
+│   ├── lineage/{parse,grade}.py
+│   ├── writer/lint.py
+│   └── gate/{question,skip}.py
+└── tests/
+    ├── run_all.sh                    # 一键全跑
+    ├── fixtures/                     # 7 个固定 fixture 文件
+    └── test_*.py                     # 81 个 unit + e2e tests
+```
 
 ## High-level architecture
 
@@ -102,6 +143,35 @@ python3 scripts/skip_check.py \
 
 依赖:`pandas`、`openpyxl`、`numpy`(测试 e2e 需要 openpyxl 写 .xlsx)。
 
+```bash
+# 准备依赖(只需一次)
+pip3 install pandas openpyxl numpy
+```
+
+快速验证各脚本（预期结果见注释）:
+
+```bash
+cd ~/Claude/projects/wbr-category-strategy-v3
+
+# lineage 抽取 → 预期 3 predictions / 2 errors / 1 anomaly / 2 questions
+PYTHONPATH=. python3 scripts/lineage_parse.py \
+  --input tests/fixtures/sample_W14_report.md \
+  --week W14 --category 啤酒 --output /tmp/lineage_W14.json
+
+# 正向句式检查 → 预期 fixture 全通过
+PYTHONPATH=. python3 scripts/positive_lint.py tests/fixtures/sample_W14_report.md
+
+# 问题门禁 → good 应 3/3 通过，bad 应 3/3 失败
+PYTHONPATH=. python3 scripts/question_gate.py tests/fixtures/sample_questions_good.md
+PYTHONPATH=. python3 scripts/question_gate.py tests/fixtures/sample_questions_bad.md
+
+# Skip Mode → 平稳周 exit 0，异动周 exit 1
+PYTHONPATH=. python3 scripts/skip_check.py \
+  --grading-json tests/fixtures/sample_grading_all_achieved.json \
+  --anomaly-txt  tests/fixtures/sample_anomaly_quiet.txt \
+  --user-questions-count 0
+```
+
 ## Editing conventions
 
 - **Python 3.9 兼容**:不能用 `list[int]` / `X | None` 这类 PEP 585/604 内置参数化。新写代码加 `from __future__ import annotations` 顶部。或者 `from typing import Optional, List, Tuple` 显式导入。
@@ -114,8 +184,8 @@ python3 scripts/skip_check.py \
 
 ## 关于 git
 
-- 这个仓库是 git init 过的,但 v3 第一次 commit 还没做(用户 review 后决定)。
-- **不要自动 commit**(全局 CLAUDE.md 规则)。完成一组改动后,停在脏树状态,等用户说"备份"/"提交"/"commit"再做。
+- 项目托管在 `~/Claude/projects/wbr-category-strategy-v3/`，通过 `~/Claude` 统一 git 管理，远程 `git@github.com:miaislu/Claude.git`。
+- **不要自动 commit**。完成一组改动后停在脏树状态，等用户说"备份"/"提交"/"commit"再做。
 
 ## Relationship to v2 and upstream skills
 
@@ -125,10 +195,7 @@ python3 scripts/skip_check.py \
 
 ## 还未做的事(给改动的人参考)
 
-- **Phase C**(工程加固,~1 周工作量):
-  - `scripts/` 重构为 `wbr_engine/` 包(`data/`、`analysis/`、`lineage/`、`evidence/`、`writer/`)
-  - 加 pydantic 类型 schema
-  - `run_state.json` 跨阶段持久化(可恢复 + 可审计)
-- **Phase D**(长期):跨品类协同输入、月度/季度汇总、人工修订回流学习
+- **Phase C（部分完成）**：`scripts/` → `wbr_engine/` 包结构已完成；pydantic 类型 schema 和 `run_state.json` 跨阶段持久化尚未做。
+- **Phase D**（长期）：跨品类协同输入、月度/季度汇总、人工修订回流学习。
 
-Phase A+B 已经让产出质量发生台阶式跃升。C 是工程加固,D 是天花板抬升。**优先级:跑通真实业务数据 → 收集真实修订率 → 再决定动 C/D**。
+优先级：跑通真实业务数据 → 收集真实修订率 → 再决定动 C/D。

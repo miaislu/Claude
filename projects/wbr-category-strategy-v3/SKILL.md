@@ -6,7 +6,10 @@ description: >
   drafter→critic→revisor 迭代环、证据表强制中间产物。
   适用任意品类(酒水/手机/小家电/生鲜等),用户请求时指定品类即可。
   触发词:品类WBR、WBR策略解读、生成WBR、跑通WBR、WBR分析、品类策略解读。
-upgraded_from: wbr-category-strategy v2.0.0
+metadata:
+  version: 3.0.0
+  upgraded_from: wbr-category-strategy v2.0.0
+  author: miaislu
 ---
 
 # WBR 通用品类策略解读 Skill (v3)
