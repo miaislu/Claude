@@ -1,0 +1,23 @@
+# Deny everything by default
+*
+
+# Re-include the .gitignore itself
+!.gitignore
+
+# Re-include global config we want to sync
+!settings.json
+!settings.local.json
+!CLAUDE.md
+!agents/
+!commands/
+
+# Re-include only the memory subdir under projects/-Users-miazhang/
+!projects/
+projects/*
+!projects/-Users-miazhang/
+projects/-Users-miazhang/*
+!projects/-Users-miazhang/memory/
+
+# Always ignore inside otherwise-included dirs:
+**/*.log
+**/.DS_Store

@@ -1,0 +1,8 @@
+{
+  "prev_week": "W14",
+  "results": [
+    {"id": "pred_W14_001", "status": "✅ achieved", "actual": 2.13, "detail": "实际 2.13 vs ≥ 2.0"},
+    {"id": "pred_W14_002", "status": "✅ achieved", "actual": 2.8, "detail": "实际 2.8 vs < 3.0"},
+    {"id": "pred_W14_003", "status": "✅ achieved", "actual": 47.0, "detail": "实际 47 vs <= 50"}
+  ]
+}

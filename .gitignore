@@ -1,23 +1,21 @@
-# Deny everything by default
-*
+# Claude Code 临时文件（不入仓）
+.claude/backups/
+.claude/cache/
+.claude/file-history/
+.claude/history.jsonl
+.claude/sessions/
+.claude/session-env/
+.claude/shell-snapshots/
+.claude/telemetry/
+.claude/plugins/
+.claude/.last-cleanup
 
-# Re-include the .gitignore itself
-!.gitignore
-
-# Re-include global config we want to sync
-!settings.json
-!settings.local.json
-!CLAUDE.md
-!agents/
-!commands/
-
-# Re-include only the memory subdir under projects/-Users-miazhang/
-!projects/
-projects/*
-!projects/-Users-miazhang/
-projects/-Users-miazhang/*
-!projects/-Users-miazhang/memory/
-
-# Always ignore inside otherwise-included dirs:
-**/*.log
+# macOS
 **/.DS_Store
+
+# Python
+**/__pycache__/
+**/*.pyc
+
+# 项目内部 git 历史（子项目有自己的 .git）
+projects/*/.git/
