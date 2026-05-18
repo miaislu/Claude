@@ -16,7 +16,10 @@
       "Bash(git push *)",
       "Skill(update-config)",
       "Bash(bash -c 'git status --porcelain | grep -q . && git add -A && git commit -m \"auto-sync: $\\(date +%Y-%m-%dT%H:%M:%S\\)\" && git push origin main || true')",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(unzip *)",
+      "Read(//private/tmp/**)",
+      "Bash(unzip -q /Volumes/WenshuSpace/wbr-category-strategy-v3.zip -d wbr-category-strategy-v3-extracted)"
     ]
   }
 }
