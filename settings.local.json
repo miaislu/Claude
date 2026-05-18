@@ -19,7 +19,23 @@
       "Bash(python3 *)",
       "Bash(unzip *)",
       "Read(//private/tmp/**)",
-      "Bash(unzip -q /Volumes/WenshuSpace/wbr-category-strategy-v3.zip -d wbr-category-strategy-v3-extracted)"
+      "Bash(unzip -q /Volumes/WenshuSpace/wbr-category-strategy-v3.zip -d wbr-category-strategy-v3-extracted)",
+      "Bash(mkdir -p /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/wbr_engine/data)",
+      "Bash(mkdir -p /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/wbr_engine/analysis)",
+      "Bash(mkdir -p /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/wbr_engine/lineage)",
+      "Bash(mkdir -p /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/wbr_engine/writer)",
+      "Bash(mkdir -p /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/wbr_engine/gate)",
+      "Bash(sed -n '15,20p' /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/tests/test_lineage_grade.py)",
+      "Bash(sed -n '6,20p' /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/tests/test_positive_lint.py)",
+      "Bash(sed -n '10,20p' /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/tests/test_skip_check.py)",
+      "Bash(sed -n '10,20p' /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/tests/test_question_gate.py)",
+      "Bash(sed -n '100,130p' /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/tests/test_lineage_parse.py)",
+      "Bash(sed -n '80,100p' /tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3/tests/test_skip_check.py)",
+      "Bash(PYTHONPATH=/tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3 python3 scripts/lineage_parse.py --input tests/fixtures/sample_W14_report.md --week W14 --category 啤酒 --output /tmp/lineage_W14.json)",
+      "Bash(PYTHONPATH=/tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3 python3 scripts/positive_lint.py tests/fixtures/sample_W14_report.md)",
+      "Bash(PYTHONPATH=/tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3 python3 scripts/question_gate.py tests/fixtures/sample_questions_good.md)",
+      "Bash(PYTHONPATH=/tmp/wbr-category-strategy-v3-extracted/wbr-category-strategy-v3 python3 scripts/skip_check.py --grading-json tests/fixtures/sample_grading_all_achieved.json --anomaly-txt tests/fixtures/sample_anomaly_quiet.txt --user-questions-count 0)",
+      "Bash(zip -r /Volumes/WenshuSpace/wbr-category-strategy-v3-phase-c.zip wbr-category-strategy-v3/ --exclude '*/\\\\.git/*' --exclude */__pycache__/* --exclude */.DS_Store --exclude '*/\\\\.gitignore')"
     ]
   }
 }
