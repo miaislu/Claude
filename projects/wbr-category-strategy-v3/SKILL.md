@@ -11,23 +11,7 @@ upgraded_from: wbr-category-strategy v2.0.0
 
 # WBR 通用品类策略解读 Skill (v3)
 
-## 一、v3 vs v2 核心变化
-
-v2 已经在"问题驱动 / 行动导向 / 异动三分法"上做对了哲学,但仍是 **single-pass transformer**(输入→输出一次完成)。v3 把它改造成**迭代环**:
-
-| 变化点 | v2 | v3 |
-|--------|----|----|
-| 上周报告 | 不在输入里(Step 0 提到"上周遗留"但流程跑不通) | **强制输入** `previous_wbr_doc`,产出 lineage.json |
-| 写作流程 | drafter 一遍完成,self-checklist 自评 | **drafter → critic → revisor** 三段,critic 独立角色 |
-| 数据 → 文字 | 直接一跳 | 中间强制产出**证据表**(每 Q 至少 1 条矛盾/中立证据) |
-| 信息密度门禁 | 12 词黑名单(易绕过) | **正向句式 linter**(无数字+无动作+无方向 → 标红) |
-| 预测追踪 | 📌 下周追踪 作为文字 | 抽成 `lineage_W{n}.json`,**下周自动评判** |
-
-v2 的哲学(问题驱动 / 双向归因 / 行动导向 / 跨模块关联)在 v3 完整保留。**v3 只改"如何执行",不改"为什么做"。**
-
----
-
-## 二、Skill 定位与核心理念
+## 一、Skill 定位与核心理念
 
 **职责**:从「问题假设视角」自动生成品类 WBR 策略解读。
 
@@ -49,7 +33,7 @@ v2 的哲学(问题驱动 / 双向归因 / 行动导向 / 跨模块关联)在 v3
 
 ---
 
-## 三、品类参数化
+## 二、品类参数化
 
 | 参数 | 说明 | 是否必须 | 默认值 |
 |------|------|---------|--------|
@@ -60,25 +44,25 @@ v2 的哲学(问题驱动 / 双向归因 / 行动导向 / 跨模块关联)在 v3
 
 ---
 
-## 四、Input 规范
+## 三、Input 规范
 
-| 输入项 | 来源 | v2 | v3 |
-|--------|------|----|----|
-| `action_doc` | KM 链接(Action 文档) | 必须 | 必须 |
-| `current_week` | `WXX` 格式 | 必须 | 必须 |
-| `indicator_data` | Excel | 必须 | 必须 |
-| `target_doc` | OP/TeamGoal | 可选 | 可选 |
-| `output_doc` | KM 链接(WBR 汇总文档) | 可选 | 可选 |
-| `mapping_doc` | 组织映射 | 可选 | 可选 |
-| **`previous_wbr_doc`** | KM 链接或本地 `.md` 路径 | — | **必须(非第一周)** |
-| **`user_core_questions`** | 1-3 条用户自定义核心问题 | — | 强烈鼓励 |
-| **`cross_category_context`** | 其他品类的指标快照(可选) | — | 可选 |
+| 输入项 | 来源 | 是否必须 |
+|--------|------|---------|
+| `action_doc` | KM 链接(Action 文档) | 必须 |
+| `current_week` | `WXX` 格式 | 必须 |
+| `indicator_data` | Excel | 必须 |
+| **`previous_wbr_doc`** | KM 链接或本地 `.md` 路径 | **必须(非第一周)** |
+| `target_doc` | OP/TeamGoal | 可选 |
+| `output_doc` | KM 链接(WBR 汇总文档) | 可选 |
+| `mapping_doc` | 组织映射 | 可选 |
+| **`user_core_questions`** | 1-3 条用户自定义核心问题 | 强烈鼓励 |
+| **`cross_category_context`** | 其他品类的指标快照 | 可选 |
 
-> ⛔ 若 `previous_wbr_doc` 缺失且非第一周(用户没声明"这是首次跑"),**停止并询问**。这是 v3 与 v2 最大的硬约束差别。
+> ⛔ 若 `previous_wbr_doc` 缺失且非第一周(用户没声明"这是首次跑"),**停止并询问**。
 
 ---
 
-## 五、执行流程 (10 Phases)
+## 四、执行流程 (10 Phases)
 
 ### Phase 0:执行前检查 + 上周预测复盘
 
@@ -454,7 +438,7 @@ python3 "${SKILL_DIR}/scripts/lineage_parse.py" \
 
 ---
 
-## 六、Skip Mode(自动化判断 + 极简输出)
+## 五、Skip Mode(自动化判断 + 极简输出)
 
 Phase 1 末尾 `skip_check.py` 退出码 0 时触发。判定条件(由脚本严格执行):
 
@@ -491,7 +475,7 @@ Phase 1 末尾 `skip_check.py` 退出码 0 时触发。判定条件(由脚本严
 
 ---
 
-## 七、约束与限制
+## 六、约束与限制
 
 继承 v2 全部约束(GTV 口径、跨部门内容归并、延续举措标注等),新增:
 
@@ -504,36 +488,9 @@ Phase 1 末尾 `skip_check.py` 退出码 0 时触发。判定条件(由脚本严
 
 ---
 
-## 八、依赖
+## 七、依赖
 
 - **citadel** skill(读取 KM 文档)
 - **Python 3 + pandas + numpy**
-- **scripts/**(本 skill 自带,见第九章)
+- **scripts/** + **wbr_engine/**(本 skill 自带)
 - **references/**(本 skill 自带)
-
-## 九、scripts/ 清单
-
-| 脚本 | v2 | v3 |
-|------|----|----|
-| `common.py` | ✓ | 继承 |
-| `anomaly_detection.py` | ✓ | 继承 |
-| `trend_analysis.py` | ✓ | 继承 |
-| `drilldown_attribution.py` | ✓ | 继承 |
-| `lineage_parse.py` | — | **新增**(解析报告 .md → lineage.json) |
-| `lineage_grade.py` | — | **新增**(用本周数据评判上周预测) |
-| `positive_lint.py` | — | **新增**(正向句式检查,替代禁止词黑名单) |
-| `question_gate.py` | — | **新增**(Phase 1 三维度门禁) |
-| `skip_check.py` | — | **新增**(Phase 1 末尾决定 Skip/Full Mode) |
-
-## 十、references/ 清单
-
-| 文件 | v2 | v3 |
-|------|----|----|
-| `indicator-framework.md` | ✓ | 继承 |
-| `action-filter-rules.md` | ✓ | 继承 |
-| `strategy-title-mapping.md` | ✓ | 继承 |
-| `output-format.md` | ✓ | 更新(加上周复盘段、正向 linter 段) |
-| `quality-checklist.md` | ✓ | **废弃** — critic-prompt.md 完全覆盖,且更严格 |
-| `lineage-format.md` | — | **新增**(预测账本 schema + 解析规则) |
-| `critic-prompt.md` | — | **新增**(critic 角色完整提示词) |
-| `evidence-table.md` | — | **新增**(证据表格式 + 反例强制规则) |
