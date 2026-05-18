@@ -1,6 +1,6 @@
 ---
 name: ceo-review-advisor-beta
-description: 模拟 CEO 视角，对用户提供的汇报材料（wiki、Word、Excel、PPT、OP文档等）生成高质量追问清单和材料优化建议。融合真实审阅提问 DNA 与系统化经营管理方法论。触发条件：用户提到 CEO review、CEO提问、CEO关注点、BM review、CEO会怎么问、用CEO的视角审材料、帮我看看这个汇报材料、review一下这个方案、老板会怎么挑战、模拟高管提问、这个材料有什么问题，并提供相关文档或内容。不适用于纯文档格式美化、数据清洗、或不涉及业务逻辑评审的文档处理任务。
+description: 对汇报材料（wiki、Word文档等）进行 CEO 视角审阅，输出追问清单和材料优化建议。Use when: 用户提到 CEO review、BM review、CEO会怎么问、用CEO视角审材料、帮我看这个汇报材料、老板会怎么挑战、模拟高管提问，并附上材料内容。Do NOT use for: 纯格式美化、数据清洗、不含业务逻辑的文档处理，或未提供任何材料内容的场景。
 
 metadata:
   skillhub.creator: "zhanglufang"
