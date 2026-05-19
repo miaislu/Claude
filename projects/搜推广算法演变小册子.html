@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>搜推广算法演变小册子</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+  :root {
+    --ink: #1a1a1a;
+    --ink-light: #555;
+    --ink-faint: #999;
+    --accent: #c0392b;
+    --accent-light: #f9ecea;
+    --bg: #faf9f7;
+    --bg-card: #ffffff;
+    --border: #e8e4df;
+    --code-bg: #f4f1ed;
+    --sidebar-w: 220px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Serif SC', 'Songti SC', 'STSong', serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.9;
+    font-size: 16px;
+  }
+
+  /* ── 顶部进度条 ── */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: var(--accent);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.1s;
+  }
+
+  /* ── 侧边导航 ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    padding: 48px 0 24px;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    background: var(--bg-card);
+    z-index: 100;
+  }
+
+  nav .logo {
+    padding: 0 24px 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  nav .logo-title {
+    font-size: 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    line-height: 1.5;
+  }
+  nav .logo-sub {
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-top: 4px;
+    font-family: 'Noto Sans SC', sans-serif;
+  }
+
+  nav a {
+    display: block;
+    padding: 7px 24px;
+    font-size: 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--ink-light);
+    text-decoration: none;
+    line-height: 1.5;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    margin-left: -1px;
+  }
+  nav a:hover { color: var(--ink); background: var(--accent-light); }
+  nav a.active { color: var(--accent); border-left-color: var(--accent); font-weight: 500; }
+  nav .nav-section { padding: 18px 24px 6px; font-size: 10px; color: var(--ink-faint); letter-spacing: 0.1em; font-family: 'Noto Sans SC', sans-serif; }
+
+  /* ── 正文区 ── */
+  main {
+    margin-left: var(--sidebar-w);
+    max-width: 780px;
+    padding: 72px 64px 120px;
+  }
+
+  /* ── 封面 ── */
+  .cover {
+    padding: 60px 0 80px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 80px;
+  }
+  .cover-label {
+    font-size: 11px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 20px;
+  }
+  .cover h1 {
+    font-size: 36px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--ink);
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+  .cover-sub {
+    font-size: 14px;
+    color: var(--ink-light);
+    font-family: 'Noto Sans SC', sans-serif;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+  .cover-intro {
+    font-size: 17px;
+    color: var(--ink-light);
+    line-height: 2;
+    max-width: 560px;
+    border-left: 3px solid var(--accent);
+    padding-left: 20px;
+  }
+
+  /* ── 章节 ── */
+  .chapter {
+    margin-bottom: 96px;
+    scroll-margin-top: 32px;
+  }
+
+  .chapter-header {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .chapter-num {
+    font-size: 11px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+  }
+  .chapter h2 {
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+  .chapter-time {
+    margin-top: 8px;
+    font-size: 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--ink-faint);
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 48px 0 16px;
+    letter-spacing: 0.02em;
+  }
+
+  p {
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: #2a2a2a;
+  }
+
+  /* ── 代码块（用于图示） ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.75;
+    overflow-x: auto;
+    margin: 24px 0;
+    color: #3a3a3a;
+  }
+
+  /* ── 引用/洞察块 ── */
+  blockquote {
+    margin: 32px 0;
+    padding: 20px 24px;
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.85;
+  }
+  blockquote strong { color: var(--accent); }
+
+  /* ── 信息卡片 ── */
+  .callout {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 22px 26px;
+    margin: 28px 0;
+    font-size: 15px;
+    line-height: 1.85;
+  }
+  .callout-title {
+    font-size: 11px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+
+  /* ── 时间轴 ── */
+  .timeline {
+    margin: 40px 0;
+    position: relative;
+    padding-left: 28px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 8px; bottom: 8px;
+    width: 1px;
+    background: var(--border);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-family: 'Noto Sans SC', sans-serif;
+    line-height: 1.6;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -32px; top: 7px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    border: 1px solid var(--ink-faint);
+  }
+  .timeline-item.highlight::before { background: var(--accent); border-color: var(--accent); }
+  .timeline-year {
+    font-weight: 500;
+    color: var(--accent);
+    margin-right: 10px;
+    font-size: 13px;
+  }
+  .timeline-text { color: var(--ink-light); }
+
+  /* ── 对比表格 ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 28px 0;
+    font-size: 14px;
+    font-family: 'Noto Sans SC', sans-serif;
+  }
+  th {
+    background: var(--code-bg);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+    color: var(--ink);
+    border-bottom: 2px solid var(--border);
+    font-size: 13px;
+  }
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-light);
+    line-height: 1.6;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: var(--ink); font-weight: 500; }
+  .good { color: #27ae60; }
+  .bad { color: var(--accent); }
+
+  /* ── 论文卡片 ── */
+  .paper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 30px 32px;
+    margin: 40px 0;
+  }
+  .paper-header { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .paper-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+  }
+  .paper h3 {
+    font-size: 17px;
+    margin: 0 0 6px;
+    line-height: 1.45;
+  }
+  .paper-meta {
+    font-size: 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--ink-faint);
+  }
+  .paper-section { margin-bottom: 18px; }
+  .paper-section-title {
+    font-size: 11px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 500;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .paper-section p { font-size: 15px; margin-bottom: 0; color: var(--ink-light); }
+
+  /* ── 特别提示 ── */
+  .insight {
+    border: 1px dashed var(--accent);
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin: 28px 0;
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--ink);
+  }
+  .insight-label {
+    font-size: 11px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── 后记 ── */
+  .epilogue {
+    margin-top: 100px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    font-size: 15px;
+    color: var(--ink-light);
+    line-height: 2;
+  }
+  .epilogue-date {
+    margin-top: 24px;
+    font-size: 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--ink-faint);
+  }
+
+  /* ── 响应式 ── */
+  @media (max-width: 900px) {
+    nav { display: none; }
+    main { margin-left: 0; padding: 40px 24px 80px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- 侧边导航 -->
+<nav>
+  <div class="logo">
+    <div class="logo-title">搜推广算法<br>演变小册子</div>
+    <div class="logo-sub">写给不懂算法的人</div>
+  </div>
+
+  <div class="nav-section">基础概念</div>
+  <a href="#ch0" data-target="ch0">Embedding 与 Attention</a>
+
+  <div class="nav-section">历史演变</div>
+  <a href="#ch1" data-target="ch1">第一代：深度学习奠基</a>
+  <a href="#ch2" data-target="ch2">第二代：兴趣建模</a>
+  <a href="#ch3" data-target="ch3">第三代：Transformer</a>
+  <a href="#ch4" data-target="ch4">第四代：更长的记忆</a>
+  <a href="#ch5" data-target="ch5">第五代：LLM 融合</a>
+
+  <div class="nav-section">展望</div>
+  <a href="#ch6" data-target="ch6">往后会去哪里</a>
+
+  <div class="nav-section">论文导读</div>
+  <a href="#papers" data-target="papers">七篇关键论文</a>
+</nav>
+
+<!-- 正文 -->
+<main>
+
+  <!-- 封面 -->
+  <div class="cover">
+    <div class="cover-label">LEARNING BOOKLET · 2026</div>
+    <h1>搜推广算法演变<br>小册子</h1>
+    <div class="cover-sub">写给不懂算法的人 / 从深度学习到 Transformer</div>
+    <p class="cover-intro">为什么抖音、淘宝、Google 越来越"懂你"？<br>背后的算法经历了怎样的变迁？这本小册子试图给出一个清晰的答案。</p>
+  </div>
+
+  <!-- Chapter 0：基础概念 -->
+  <section class="chapter" id="ch0">
+    <div class="chapter-header">
+      <div class="chapter-num">CHAPTER 00</div>
+      <h2>先说两个最重要的概念</h2>
+      <div class="chapter-time">Embedding 与 Attention</div>
+    </div>
+
+    <p>在进入历史之前，有两个概念必须先理解清楚。几乎整个推荐算法的演变史，都建立在这两个东西上。</p>
+
+    <h3>Embedding：把世界压进一张地图</h3>
+
+    <p>想象你去图书馆，馆员要给所有书分类排架。最直觉的办法是按主题分区：科幻放一块，历史放一块，烹饪放一块。</p>
+    <p>但图书馆员发现，一些书很难归类——《人类简史》到底算历史还是科普？于是他们想了个更聪明的办法：<strong>用坐标来表示每本书的位置</strong>。</p>
+
+    <pre>         严肃性
+         ↑
+         |   《人类简史》
+         |       ×
+         |
+    -----+----------→ 实用性
+         |
+         |           《米其林指南》
+         |                  ×</pre>
+
+    <p>这样，每本书都有一个 (x, y) 坐标，<strong>位置相近的书，内容就相近</strong>。《人类简史》和《枪炮、病菌与钢铁》坐标很近，《米其林指南》和《深夜食堂》坐标很近。</p>
+
+    <p><strong>Embedding 做的就是这件事</strong>，只不过：坐标不是 2 维，而是几百甚至几千维；被放进这张"地图"的不是书，而是电影、商品、用户、词语……坐标不是人工标注的，而是让机器从海量数据里自己学出来的。</p>
+
+    <blockquote>
+      坐标距离近 = 相似。这就是全部的直觉。<br><br>
+      <strong>一个好玩的例子</strong>：Word2Vec（2013 年，Google）用这个方法处理词语，发现了一件惊人的事：<br>
+      国王的坐标 − 男人的坐标 + 女人的坐标 ≈ 女王的坐标<br>
+      机器自己学会了"性别关系"，没有人告诉它这件事。
+    </blockquote>
+
+    <h3>Attention：读文章时你的眼睛其实在选择</h3>
+
+    <p>来做个小测试。读下面这句话：</p>
+
+    <blockquote>"服务员端来了一碗热汤，<strong>它</strong>冒着白烟。"</blockquote>
+
+    <p>"它"指什么？你一眼就知道是"热汤"，不是"服务员"，不是"白烟"。你的大脑在理解"它"的时候，自动<strong>把注意力集中到了"热汤"上</strong>。</p>
+
+    <p>再换一句：</p>
+
+    <blockquote>"服务员端来了一碗热汤，<strong>她</strong>微笑着离开了。"</blockquote>
+
+    <p>"她"指谁？现在你的注意力自然转向了"服务员"。这就是 Attention 的核心直觉：<strong>根据当前的问题，给不同的信息分配不同的权重</strong>。</p>
+
+    <p>放到推荐系统里：</p>
+
+    <div class="callout">
+      <div class="callout-title">EXAMPLE</div>
+      系统要判断你会不会买一双<strong>跑步鞋</strong>，翻你的历史记录，你买过口红、瑜伽垫、蛋白粉、连衣裙……什么应该被重点关注？当然是瑜伽垫和蛋白粉，因为这两个和运动相关。口红和连衣裙，这次可以先放一边。
+    </div>
+
+    <p>这种"根据要预测的目标，动态决定关注哪些历史行为"，就是 Attention。</p>
+    <p>它听起来很朴素，但在 2017 年之前，推荐系统做的是——<strong>把所有历史行为加起来平均</strong>，当成用户兴趣。好比读文章时对每个字的关注度都一样，显然不对。</p>
+  </section>
+
+  <!-- Chapter 1 -->
+  <section class="chapter" id="ch1">
+    <div class="chapter-header">
+      <div class="chapter-num">CHAPTER 01</div>
+      <h2>第一代：让机器学会"猜"</h2>
+      <div class="chapter-time">2013 — 2016 · 深度学习奠基期</div>
+    </div>
+
+    <p>在深度学习介入之前，推荐系统的主要逻辑是<strong>协同过滤</strong>——"和你行为相似的人喜欢什么，你可能也喜欢。"这个逻辑不蠢，但有两个大问题：新用户没有历史行为（冷启动），长尾商品数据稀少（无法判断好坏）。</p>
+
+    <h3>YouTube DNN（2016）：定义行业标准作业流程</h3>
+
+    <p>Google 在 2016 年发表了一篇论文，描述给 YouTube 做推荐的系统。这篇论文的影响力远超学术界，几乎定义了此后十年工业推荐系统的基本骨架。</p>
+
+    <p>它把推荐问题拆成两步走：</p>
+
+    <pre>第一步（候选召回）
+  从几百万个视频里，快速挑出几百个"可能感兴趣"的候选
+  ↓
+第二步（精排）
+  对这几百个候选，认真打分，从高到低排列</pre>
+
+    <p>这个两阶段框架之所以沿用至今，原因很工程：如果对所有视频都认真打分，太慢；如果只用简单方法筛选，效果又不够好。所以分两步——<strong>先快后精</strong>。</p>
+
+    <div class="insight">
+      <div class="insight-label">隐患</div>
+      召回时，把用户所有历史视频的 embedding 求平均，当成"用户兴趣总概括"。这意味着你昨天刷了 10 条搞笑视频、1 条财经视频，系统对两类兴趣的计算是 10:1 权重——但你今天打开 app 其实更想看财经。系统感知不到这种变化。
+    </div>
+
+    <h3>Wide &amp; Deep（2016）：记住规律，也能举一反三</h3>
+
+    <p>Google 同年针对 Google Play 应用商店推荐，发现推荐系统需要做两件矛盾的事：</p>
+
+    <table>
+      <tr><th>能力</th><th>说明</th><th>例子</th></tr>
+      <tr><td>记忆</td><td>记住高频、明确的规律</td><td>"下载了 Netflix 的用户，经常也下载 HBO Max"</td></tr>
+      <tr><td>泛化</td><td>从行为里理解兴趣，推广到没见过的情况</td><td>"喜欢悬疑电影的用户，可能也喜欢悬疑小说"</td></tr>
+    </table>
+
+    <p>他们的解法：把两个模型并排放，各自做擅长的事，最后把结果加在一起。Wide 负责记住高频规律；Deep 负责学习隐藏的兴趣关联。这个框架今天仍然是很多公司精排模型的基础结构。</p>
+  </section>
+
+  <!-- Chapter 2 -->
+  <section class="chapter" id="ch2">
+    <div class="chapter-header">
+      <div class="chapter-num">CHAPTER 02</div>
+      <h2>第二代：开始关注"你最近在想什么"</h2>
+      <div class="chapter-time">2017 — 2018 · 兴趣建模</div>
+    </div>
+
+    <h3>DIN（2018，阿里巴巴）：终于开始"看场合"</h3>
+
+    <p>DIN（Deep Interest Network）解决的问题，一句话：<strong>推荐不该对所有历史行为一视同仁</strong>。</p>
+
+    <pre>用户历史：口红、瑜伽垫、蛋白粉、连衣裙、耳机
+当前候选：跑步鞋
+
+DIN 之前：五件东西各占 20%，加权求和 → 用户画像
+DIN 之后：先算每件和跑步鞋的相关性
+  跑步鞋 vs 口红     → 0.05
+  跑步鞋 vs 瑜伽垫   → 0.60  ← 重点关注
+  跑步鞋 vs 蛋白粉   → 0.55  ← 重点关注
+  跑步鞋 vs 连衣裙   → 0.03
+  跑步鞋 vs 耳机     → 0.12
+
+  再按相关性加权求和 → 专门为"跑步鞋"定制的用户表征</pre>
+
+    <p><strong>每次推荐，用户表征都是动态生成的</strong>，不是一个固定的"标签"。如果换成要判断用户会不会买口红，那么口红的历史就会被重点关注。这就是 DIN 最重要的贡献。</p>
+
+    <h3>DIEN（2019，阿里巴巴）：行为是有剧情的</h3>
+
+    <p>DIN 虽然知道"关注哪些历史行为"，但它把历史行为当成了一个<strong>无序的集合</strong>，忽略了时间顺序。</p>
+
+    <p>DIEN（Deep Interest Evolution Network）想说的是：<strong>用户的兴趣是有演化轨迹的，前后行为之间有逻辑关系</strong>。</p>
+
+    <pre>3月：搜索"跑步入门"
+4月：购买跑步鞋
+4月：购买运动袜
+5月：购买心率手表
+5月：关注马拉松训练计划
+              ↓
+  这是一个正在成为跑步爱好者的人的成长轨迹</pre>
+
+    <p>理解了这条线，系统就能预测下一步——防晒臂套？能量胶？参赛报名？</p>
+
+    <div class="insight">
+      <div class="insight-label">技术隐患</div>
+      DIEN 用 GRU 按时间顺序读取用户行为，相当于<strong>串行阅读</strong>——必须读完第一条才能读第二条。数据量大、序列长的时候，训练非常慢。这个问题要等 Transformer 出现才被根本解决。
+    </div>
+  </section>
+
+  <!-- Chapter 3 -->
+  <section class="chapter" id="ch3">
+    <div class="chapter-header">
+      <div class="chapter-num">CHAPTER 03</div>
+      <h2>第三代：Transformer 革命</h2>
+      <div class="chapter-time">2018 至今 · 仍是主流</div>
+    </div>
+
+    <h3>Transformer 到底解决了什么</h3>
+
+    <p>2017 年，Google 发了一篇名字很狂的论文：<em>Attention Is All You Need</em>。意思是：以前大家在搞各种复杂结构，其实你只需要 Attention 就够了。它的影响力不亚于当年 iPhone 的发布。</p>
+
+    <p>核心创新：<strong>让序列里的每个元素，同时关注所有其他元素</strong>。</p>
+
+    <pre>传统 RNN 处理"我昨天去图书馆借了一本书"：
+  先读"我" → 再读"昨天" → 再读"去" → …… → 读到"书"
+  越早出现的词，影响力越容易消散
+
+Transformer 处理同一句话：
+  "书"同时看向"我""昨天""去""图书馆""借""了""一本"
+  自己决定：理解"书"最重要的是"图书馆"和"借"
+  每个词都能直接和任何其他词"对话"</pre>
+
+    <table>
+      <tr><th>维度</th><th>RNN / LSTM</th><th>Transformer</th></tr>
+      <tr><td>长程依赖</td><td class="bad">梯度消失，效果差</td><td class="good">O(1) 直接关注，效果好</td></tr>
+      <tr><td>训练并行性</td><td class="bad">顺序依赖，慢</td><td class="good">完全并行，快</td></tr>
+      <tr><td>可解释性</td><td class="bad">黑盒</td><td class="good">Attention 权重可视化</td></tr>
+      <tr><td>可扩展性</td><td class="bad">参数规模受限</td><td class="good">可扩展至数十亿参数</td></tr>
+    </table>
+
+    <h3>BERT4Rec vs SASRec：两种截然不同的思路</h3>
+
+    <p>把 Transformer 用到推荐序列上，很快出现了两个代表性工作，它们的分歧和 NLP 里 BERT vs GPT 的分歧如出一辙。</p>
+
+    <div class="callout">
+      <div class="callout-title">BERT 的思路（双向）</div>
+      给你一个序列：买了A，买了B，【遮住】，买了D，买了E<br>
+      让模型猜：遮住的地方是什么？<br>
+      好处是模型能同时看"前文"和"后文"，上下文信息更丰富。
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">GPT 的思路（单向）</div>
+      给你一个序列：买了A，买了B，买了C，买了D，……<br>
+      让模型预测：下一个会买什么？<br>
+      更符合推荐的实际场景——我们要预测的确实是"未来"，不是"填空"。
+    </div>
+
+    <p>BERT4Rec 把 BERT 的方式搬进推荐，表现很好；SASRec 用单向方式，更贴近真实预测逻辑，在很多基准上超过了 BERT4Rec。两者争论持续至今，不同场景各有胜负。</p>
+
+    <h3>BST（2019，阿里巴巴）：把 Transformer 塞进排序模型</h3>
+
+    <p>BST（Behavior Sequence Transformer）把用户的历史行为序列和<strong>当前候选商品</strong>一起喂给 Transformer，让它同时理解"用户历史"和"当前候选"的关系。</p>
+
+    <pre>输入 Transformer：
+  [历史商品1, 历史商品2, 历史商品3, ..., 候选商品]
+                      ↓
+  候选商品在关注历史里哪些商品？（target-aware attention）
+                      ↓
+  和其他特征拼在一起 → DNN → CTR 预测</pre>
+
+    <div class="callout">
+      <div class="callout-title">工程小细节</div>
+      BST 没有用原始 Transformer 的绝对位置编码，而是用了基于"距离当前时间多久"的相对位置编码。因为在推荐里，"这件事发生在三天前"比"这件事发生在序列的第5位"更有意义。
+    </div>
+  </section>
+
+  <!-- Chapter 4 -->
+  <section class="chapter" id="ch4">
+    <div class="chapter-header">
+      <div class="chapter-num">CHAPTER 04</div>
+      <h2>第四代：更长的记忆，更大的模型</h2>
+      <div class="chapter-time">2021 — 2023</div>
+    </div>
+
+    <p>Transformer 确实很强，但有个众所周知的问题：Self-Attention 的计算量随序列长度的<strong>平方增长</strong>。</p>
+
+    <pre>序列长  100  → 计算量       10,000
+序列长 1,000  → 计算量    1,000,000
+序列长 10,000 → 计算量  100,000,000</pre>
+
+    <p>用户在大平台的行为序列，轻松过千条，某些活跃用户几万条都有。直接上 Transformer，在线推断的延迟会把服务拖垮。这个阶段的核心命题：<strong>如何在不丢失信息的前提下，处理更长的行为序列？</strong></p>
+
+    <h3>三种解题思路</h3>
+
+    <p><strong>思路一：分级建模</strong>（代表：阿里 MIMN）</p>
+
+    <pre>最近7天：Transformer 精细建模（序列短，计算可控）
+历史长期：Memory Network 压缩存储（只记关键偏好）
+              ↓
+         两部分加权融合</pre>
+
+    <p>类似人的记忆——短期记忆细节丰富，长期记忆只留印象。</p>
+
+    <p><strong>思路二：先筛再算</strong>（代表：阿里 ETA）</p>
+
+    <pre>对目标商品，先用 Hash 方法从全部历史里找出最相关的 Top-K 条
+（比如从 5000 条里筛出 200 条）
+              ↓
+再对这 200 条做精细的 Attention 计算
+              ↓
+大部分不相关的历史行为，直接跳过不计算</pre>
+
+    <p><strong>思路三：直接做大，但做对架构</strong>（代表：Meta HSTU，2024）</p>
+
+    <p>Meta 没有退而求其次，而是重新设计了一套适合推荐场景的 Transformer 变体，然后<strong>把模型做到了数百亿参数</strong>。最有意思的视角是：把推荐问题重新定义为"序列转换问题"，用户所有行为——刷了什么视频、评论了什么、分享了什么——被统一成一个异构的"行为流"，让模型预测下一步。这和 NLP 里"预测下一个词"的思路是同构的。</p>
+
+    <blockquote>Meta 在这个方向上验证了：推荐系统也有 Scaling Law（越大越强的规律）。</blockquote>
+  </section>
+
+  <!-- Chapter 5 -->
+  <section class="chapter" id="ch5">
+    <div class="chapter-header">
+      <div class="chapter-num">CHAPTER 05</div>
+      <h2>第五代：LLM 来了，推荐系统要变天？</h2>
+      <div class="chapter-time">2023 至今</div>
+    </div>
+
+    <h3>先泼一盆冷水</h3>
+
+    <p>每当 LLM 出现在新领域，总有人喊"要颠覆了"。在推荐系统这里，情况更复杂。LLM 的几个硬伤，恰好是推荐系统最在乎的：</p>
+
+    <table>
+      <tr><th>问题</th><th>说明</th></tr>
+      <tr><td>推理延迟</td><td>LLM 生成一个答案需要几秒；推荐系统要求几十毫秒内返回结果</td></tr>
+      <tr><td>规模</td><td>电商 item 池动辄几千万，让 LLM 直接"从里面选"，幻觉问题严重</td></tr>
+      <tr><td>实时信号</td><td>你今天点了某个商品，推荐要立刻感知；LLM 模型权重是固定的</td></tr>
+    </table>
+
+    <p>"LLM 直接取代推荐模型"这条路，目前工业界没人在认真走。<strong>真正在发生的，是更务实的融合</strong>。</p>
+
+    <h3>务实融合的三种姿势</h3>
+
+    <div class="callout">
+      <div class="callout-title">姿势一：LLM 做理解，传统模型做推荐</div>
+      用户输入"我想找一个适合送给刚入职女孩的礼物，预算200以内"<br>
+      → LLM 理解意图（年龄段、场景、价位、情感属性）<br>
+      → 转化成结构化特征<br>
+      → 传统推荐模型检索、排序<br>
+      <br>
+      搜索场景落地最快，LLM 让"用自然语言描述需求"真正可用。
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">姿势二：LLM 做"内容理解"，补充特征</div>
+      用 LLM 读懂商品标题、描述，提取风格、材质、适合场景……<br>
+      → 丰富的语义特征喂给推荐模型<br>
+      <br>
+      对冷启动特别有用：新商品没有行为数据，LLM 能从描述理解它"是什么"。
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">姿势三：LLM 做对话界面，改变交互模式</div>
+      传统推荐：系统单方面猜你喜欢什么，推给你<br>
+      对话式推荐：你说"我想看点轻松的""不是这种风格""最近在学做饭"<br>
+      → 系统通过多轮对话，快速收敛到你的真实需求<br>
+      <br>
+      改变的不是推荐的"算法"，而是推荐的"交互范式"。
+    </div>
+  </section>
+
+  <!-- Chapter 6 -->
+  <section class="chapter" id="ch6">
+    <div class="chapter-header">
+      <div class="chapter-num">CHAPTER 06</div>
+      <h2>往后会去哪里</h2>
+    </div>
+
+    <h3>生成式推荐：从"选"到"造"</h3>
+    <p>目前所有推荐系统做的事本质是从现有候选集里选。但如果让模型直接<strong>生成</strong>推荐结果呢？</p>
+    <pre>不是"在1000万个商品里找最匹配的"
+而是"根据用户需求，生成一个理想商品的描述，再去匹配"
+
+更激进的版本：你想看的文章，可能不需要已经存在，AI 直接写一篇</pre>
+
+    <h3>因果推荐：从"相关"到"因果"</h3>
+    <p>今天所有推荐系统学到的，本质是<strong>相关性</strong>——"买了 A 的人也买了 B"。但这不代表 A 导致了 B。可能只是因为春节前大家都在买这两样东西；可能某个 KOL 同时推荐了这两件，制造了虚假关联。</p>
+
+    <blockquote>
+      真正好的推荐，应该回答的是：<strong>"如果我推荐了 X，会不会真的让这个用户满意？"</strong><br>
+      而不是"和这个用户相似的人喜欢 X 吗？"
+    </blockquote>
+
+    <h3>长期价值 vs 短期点击</h3>
+    <p>这是一个价值观问题，但正在逐渐被算法化。短期点击容易优化：标题党、猎奇内容总是能吸引点击。但点击之后用户失望了，下次不来了。越来越多的平台开始关注<strong>更长周期的用户满意度</strong>，比如"这个用户一个月后还在用我们的产品吗？"——这是对的方向。</p>
+
+    <h3>Agent 化推荐</h3>
+    <pre>当前：被动推荐（用户来了才推）
+未来：主动 Agent
+  → 主动探索用户需求
+  → 多轮对话澄清意图
+  → 规划推荐策略
+  → 调用外部知识库</pre>
+  </section>
+
+  <!-- Chapter 7: 论文导读 -->
+  <section class="chapter" id="papers">
+    <div class="chapter-header">
+      <div class="chapter-num">CHAPTER 07</div>
+      <h2>论文导读</h2>
+      <div class="chapter-time">七篇改变行业的论文</div>
+    </div>
+
+    <p>不要求你读原文（原文非常 technical）。这里告诉你每篇论文在解决什么问题、核心洞察是什么、为什么重要。</p>
+
+    <!-- Paper 1 -->
+    <div class="paper">
+      <div class="paper-header">
+        <div class="paper-tag">GOOGLE · 2016</div>
+        <h3>Deep Neural Networks for YouTube Recommendations</h3>
+        <div class="paper-meta">两阶段推荐的奠基之作</div>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">背景</div>
+        <p>YouTube 在 2016 年面临的规模：8 亿用户，每分钟上传 400 小时的视频。怎么在 100 毫秒内找到每个用户最想看的内容？</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">核心贡献</div>
+        <p>确立了"召回 → 精排"的两阶段框架，这个框架今天仍然是行业标准。同时展示了如何把用户观看历史、搜索历史、人口属性等特征融合进深度神经网络。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">有意思的细节</div>
+        <p>他们故意在特征工程上做了"年龄"的处理——训练时告诉模型"这个视频发布了多久"，这样模型就会倾向于推荐最新的视频，而不是总推经典老视频。这是一个非常工程化、接地气的技巧。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">为什么重要</div>
+        <p>这是"如何在超大规模下做工业推荐"的第一份公开路线图。之后几乎所有大厂的推荐系统，都或多或少参考了这个框架。</p>
+      </div>
+    </div>
+
+    <!-- Paper 2 -->
+    <div class="paper">
+      <div class="paper-header">
+        <div class="paper-tag">GOOGLE · 2016</div>
+        <h3>Wide &amp; Deep Learning for Recommender Systems</h3>
+        <div class="paper-meta">记忆与泛化的经典解法</div>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">背景</div>
+        <p>Google Play 应用商店的推荐问题：有些规律是直接的，有些规律需要推断。一个模型很难同时处理这两种规律。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">核心贡献</div>
+        <p>把两个结构不同的模型并联起来，各司其职。Wide 部分记忆明确规律；Deep 部分学习泛化规律。工程上非常实用，改造成本低，效果提升明显。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">为什么重要</div>
+        <p>今天大量推荐系统的骨架，仍然是某种形式的 Wide & Deep。</p>
+      </div>
+    </div>
+
+    <!-- Paper 3 -->
+    <div class="paper">
+      <div class="paper-header">
+        <div class="paper-tag">GOOGLE · 2017</div>
+        <h3>Attention Is All You Need</h3>
+        <div class="paper-meta">整个领域的分水岭</div>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">背景</div>
+        <p>这篇论文本来是为了解决机器翻译问题，但它对整个 AI 领域的影响，远远超出了机器翻译。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">核心贡献</div>
+        <p>提出了 Transformer 架构，彻底抛弃了 RNN/LSTM，用纯粹的 Attention 机制处理序列问题。训练速度、效果、可扩展性全面超越之前的方法。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">值得记住的数字</div>
+        <p>论文发表时，作者之一 Noam Shazeer 说这个结构"简单得令人难以置信"。到 2024 年，建立在这篇论文上的应用，市值已经超过万亿美元。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">为什么重要</div>
+        <p>BERT、GPT、以及所有大语言模型，都建立在这篇论文的基础上。这可能是 2010 年代 AI 领域影响力最大的单篇论文。</p>
+      </div>
+    </div>
+
+    <!-- Paper 4 -->
+    <div class="paper">
+      <div class="paper-header">
+        <div class="paper-tag">阿里巴巴 · 2018</div>
+        <h3>Deep Interest Network for Click-Through Rate Prediction</h3>
+        <div class="paper-meta">推荐系统 Attention 的里程碑</div>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">背景</div>
+        <p>淘宝有几亿用户，每个用户有几百甚至几千条历史行为。如何从这些行为里，提取出"与当前候选商品相关"的兴趣？</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">核心贡献</div>
+        <p>引入 Target-Aware Attention：用户表征不是固定的，而是根据当前候选商品动态计算。这一点听起来显而易见，但在此之前，工业界普遍做的是固定的用户 embedding。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">工程细节</div>
+        <p>论文提出了一个新激活函数 Dice，以及一个叫 GAUC 的评估指标。这两个工程细节甚至比模型结构本身更被广泛引用——反映了工业推荐论文的特点：<strong>评估和基建有时候比模型更重要</strong>。</p>
+      </div>
+    </div>
+
+    <!-- Paper 5 -->
+    <div class="paper">
+      <div class="paper-header">
+        <div class="paper-tag">中科大 & 阿里 · 2019</div>
+        <h3>BERT4Rec: Sequential Recommendation with Bidirectional Encoder Representations from Transformer</h3>
+        <div class="paper-meta">把 BERT 搬进推荐</div>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">核心贡献</div>
+        <p>把 BERT 的 Masked Language Model 训练方式迁移到推荐序列：随机遮住用户历史行为里的某些 item，让模型去预测。在多个公开数据集上取得了当时的最好结果。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">有争议的地方</div>
+        <p>推荐场景是预测"未来"的行为，但 BERT 是双向建模（同时看前后文）。这在训练时有帮助，但推断时存在"泄露未来信息"的风险。这个争议催生了 SASRec（单向 Transformer）成为更实用的工业选择。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">为什么重要</div>
+        <p>证明了 Transformer 在推荐序列建模上的潜力，开启了推荐系统"预训练 + 微调"的研究方向。</p>
+      </div>
+    </div>
+
+    <!-- Paper 6 -->
+    <div class="paper">
+      <div class="paper-header">
+        <div class="paper-tag">阿里巴巴 · 2019</div>
+        <h3>Behavior Sequence Transformer for E-commerce Recommendation in Alibaba</h3>
+        <div class="paper-meta">Transformer 进入精排</div>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">核心贡献</div>
+        <p>把用户历史行为序列和候选商品一起输入 Transformer，让模型在内部自动学习"历史行为和候选商品的关联"。同时引入了更适合推荐场景的相对时间位置编码。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">工程亮点</div>
+        <p>电商场景 item 序列长度一般是 50-200 条，这个长度对 Transformer 是可控的，因此能直接在线上部署。工业上的可行性，是这篇论文被广泛复现的原因。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">为什么重要</div>
+        <p>第一篇系统性验证 Transformer 在电商精排场景可行性的论文。</p>
+      </div>
+    </div>
+
+    <!-- Paper 7 -->
+    <div class="paper">
+      <div class="paper-header">
+        <div class="paper-tag">META · 2024</div>
+        <h3>Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations</h3>
+        <div class="paper-meta">工业 Transformer 的最新里程碑</div>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">背景</div>
+        <p>Meta 的 Reels（短视频推荐）是当今最大规模的推荐系统之一。这篇论文公开了他们下一代推荐架构的核心思路。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">核心贡献</div>
+        <p>把推荐统一为"序列转换"问题（和 NLP 的"预测下一个词"同构）。引入 HSTU（一种为推荐场景专门设计的 Transformer 变体），模型规模达到数千亿参数，验证了推荐系统也存在 Scaling Law。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">标题的含义</div>
+        <p>用户的行为（点了什么、看了多久、分享了什么），比用户说的话（填写的兴趣标签）更能反映真实偏好。同时暗示：不需要 LLM 的文字理解，行为本身就是足够好的"语言"。</p>
+      </div>
+      <div class="paper-section">
+        <div class="paper-section-title">为什么重要</div>
+        <p>目前工业界最大规模、最公开的 Transformer 推荐系统实践。如果"推荐系统越大越好"被广泛验证，未来的推荐系统军备竞赛会从算法创新转向算力投入。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 后记 -->
+  <div class="epilogue" id="epilogue">
+    <p>回看这十年的演变，有一条线索一直在延伸：</p>
+    <p><strong>我们对"用户"的建模，越来越动态，越来越有上下文意识。</strong></p>
+    <p>最初，"用户"是一个固定的向量，你昨天是什么人，今天就是什么人。后来开始有了时序感，知道你最近在关注什么。再后来变得完全动态，要推什么，就先理解你对那个东西的兴趣。现在，"用户"可能开始有了对话能力，可以直接告诉系统"我想要什么"。</p>
+    <p>这不只是技术的进步，也反映了一个越来越清晰的认知：人的兴趣不是标签，不是画像，不是向量——它是一个随情境、随时间不断流动的东西。算法越来越强，某种程度上是在努力追赶这个流动。</p>
+    <div class="epilogue-date">写于 2026 年 5 月 · 如果你在未来读到它，有些内容可能已经过时——那很好，说明这个领域还在向前走。</div>
+  </div>
+
+</main>
+
+<script>
+  // 进度条
+  window.addEventListener('scroll', () => {
+    const scrollTop = document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const progress = (scrollTop / scrollHeight) * 100;
+    document.getElementById('progress-bar').style.width = progress + '%';
+  });
+
+  // 导航高亮
+  const sections = document.querySelectorAll('section.chapter, .cover');
+  const navLinks = document.querySelectorAll('nav a[data-target]');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.dataset.target === id);
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  sections.forEach(section => observer.observe(section));
+
+  // 平滑滚动
+  navLinks.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.getElementById(link.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+
+</body>
+</html>
