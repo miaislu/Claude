@@ -1,7 +1,0 @@
-{
-  "prev_week": "W14",
-  "results": [
-    {"id": "pred_W14_001", "status": "✅ achieved", "actual": 2.13, "detail": "..."},
-    {"id": "pred_W14_004", "status": "❌ missed", "actual": 3.7, "detail": "..."}
-  ]
-}
