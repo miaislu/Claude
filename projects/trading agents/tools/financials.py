@@ -7,11 +7,27 @@ Fundamental / financial data:
 from __future__ import annotations
 
 import os
+import time
 from typing import Optional
 
 import yfinance as yf
 
 from .market_data import _normalize_ticker, _ts_code, _tushare_pro
+
+
+def _ts_call(fn, *args, retries: int = 2, **kwargs):
+    """Call a Tushare API function with retry on rate-limit errors."""
+    for attempt in range(retries + 1):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:
+            msg = str(e)
+            if "频率超限" in msg or "rate" in msg.lower():
+                if attempt < retries:
+                    time.sleep(62)  # wait out the 1-min window
+                    continue
+            raise
+    return None
 
 
 # ── Tushare ── A-share fundamentals ───────────────────────────────────────────
@@ -38,7 +54,7 @@ def _get_valuation_metrics_tushare(ticker: str, date: Optional[str] = None) -> d
             kwargs["start_date"] = "20230101"
             kwargs["end_date"] = _date.today().strftime("%Y%m%d")
 
-        db = pro.daily_basic(**kwargs)
+        db = _ts_call(pro.daily_basic, **kwargs)
         if db is None or db.empty:
             return {"error": f"tushare daily_basic: no data for {ticker}"}
         db = db.sort_values("trade_date", ascending=False)
@@ -61,13 +77,14 @@ def _get_valuation_metrics_tushare(ticker: str, date: Optional[str] = None) -> d
         from datetime import date as _date
         fi_end = trade_date or _date.today().strftime("%Y%m%d")
         fi_start = str(int(fi_end[:4]) - 2) + fi_end[4:]
-        fi = pro.fina_indicator(
+        fi = _ts_call(pro.fina_indicator,
             ts_code=code, start_date=fi_start, end_date=fi_end,
             fields="end_date,roe,roa,grossprofit_margin,netprofit_margin,"
                    "op_income,ebit_margin,debt_to_assets,current_ratio,quick_ratio,"
                    "revenue_yoy,netprofit_yoy,eps,bps,fcff",
         )
         if fi is not None and not fi.empty:
+            fi = fi.drop_duplicates(subset=["end_date"], keep="first")
             fi = fi.sort_values("end_date", ascending=False)
             fr = fi.iloc[0]
             result.update({
@@ -102,7 +119,7 @@ def _get_earnings_history_tushare(ticker: str) -> dict:
         code = _ts_code(ticker)
         end = _date.today().strftime("%Y%m%d")
         start = str(int(end[:4]) - 3) + end[4:]
-        df = pro.income(
+        df = _ts_call(pro.income,
             ts_code=code, start_date=start, end_date=end,
             report_type="1",   # 合并报表
             fields="end_date,report_type,total_revenue,n_income_attr_p,basic_eps",
@@ -110,6 +127,8 @@ def _get_earnings_history_tushare(ticker: str) -> dict:
         if df is None or df.empty:
             return {"ticker": ticker, "quarters": [],
                     "note": "tushare: no income data"}
+        # report_type=1 can still have duplicates per period (e.g. restated filings)
+        df = df.drop_duplicates(subset=["end_date"], keep="first")
         df = df.sort_values("end_date", ascending=False)
         quarters = []
         for _, row in df.head(8).iterrows():
