@@ -9,7 +9,7 @@ from typing import Any
 from harness.agent import run_agent
 from tools.market_data import get_price_history, get_stock_info
 from tools.indicators import get_technical_indicators
-from .schemas import AnalystReport
+from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
 
 _SKILLS_DIR = Path(__file__).parent.parent / "skills"
 
@@ -60,42 +60,7 @@ TOOLS: list[dict[str, Any]] = [
             "required": ["ticker", "date"],
         },
     },
-    {
-        "name": "submit_analysis",
-        "description": (
-            "Submit the final technical analysis report. "
-            "Call this as your last action after reviewing all indicators."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "signal": {
-                    "type": "string",
-                    "enum": ["bullish", "bearish", "neutral"],
-                    "description": "Overall technical signal for the next 1-4 weeks",
-                },
-                "confidence": {
-                    "type": "number",
-                    "description": "Signal confidence 0.0–1.0 (0.7+ = strong, 0.4–0.7 = moderate)",
-                },
-                "key_factors": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "3–5 key technical factors supporting the signal",
-                },
-                "risks": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "Key technical risks or contradicting signals",
-                },
-                "summary": {
-                    "type": "string",
-                    "description": "2–3 sentence technical analysis summary",
-                },
-            },
-            "required": ["signal", "confidence", "key_factors", "risks", "summary"],
-        },
-    },
+    SUBMIT_ANALYSIS_TOOL,
 ]
 
 TOOL_REGISTRY = {

@@ -77,15 +77,18 @@ async def run_agent(
             return f"[stopped: {response.stop_reason}]"
 
         tool_use_blocks = [b for b in response.content if b.type == "tool_use"]
+
+        # Check for structured output tool BEFORE executing any other tools.
+        if output_tool_name:
+            for tool_block in tool_use_blocks:
+                if tool_block.name == output_tool_name:
+                    return dict(tool_block.input)
+
         tool_results = []
 
         for tool_block in tool_use_blocks:
             name = tool_block.name
             inputs = dict(tool_block.input)
-
-            # Structured output: capture tool input and return immediately
-            if output_tool_name and name == output_tool_name:
-                return inputs
 
             if name not in tool_registry:
                 result = json.dumps({"error": f"Unknown tool: {name}"})
