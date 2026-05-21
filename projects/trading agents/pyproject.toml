@@ -1,0 +1,29 @@
+[project]
+name = "trading-agents"
+version = "0.1.0"
+description = "Multi-market trading agent system for assisted decision making"
+requires-python = ">=3.9"
+dependencies = [
+    "anthropic>=0.40.0",
+    "python-dotenv>=1.0.0",
+    "yfinance>=0.2.63",
+    "pandas>=2.2.0",
+    "numpy>=1.26.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+cn = [
+    "akshare>=1.14.0",
+]
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+trading-agents = "main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["harness*", "agents*", "tools*", "risk*", "output*"]

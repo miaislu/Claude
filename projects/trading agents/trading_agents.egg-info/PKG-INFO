@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: trading-agents
+Version: 0.1.0
+Summary: Multi-market trading agent system for assisted decision making
+Requires-Python: >=3.9
+Requires-Dist: anthropic>=0.40.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: yfinance>=0.2.63
+Requires-Dist: pandas>=2.2.0
+Requires-Dist: numpy>=1.26.0
+Requires-Dist: pydantic>=2.0.0
+Provides-Extra: cn
+Requires-Dist: akshare>=1.14.0; extra == "cn"
