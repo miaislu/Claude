@@ -10,6 +10,11 @@
 .claude/plugins/
 .claude/.last-cleanup
 
+# Secrets — never commit
+**/.env
+**/*.pem
+**/*.key
+
 # macOS
 **/.DS_Store
 

@@ -1,14 +1,14 @@
 """
-Market data — AkShare primary for A-share, yfinance for US/HK.
-
-Ticker format:
-- A-share:  6 digits (e.g. 601088) or with .SH/.SZ suffix
-- US stock: letters (e.g. AAPL, NVDA)
-- HK stock: 4-5 digits + .HK (e.g. 0700.HK)
+Market data routing:
+  A-share price  : baostock → Tushare → AkShare
+  A-share info   : Tushare (if token) → AkShare
+  US/HK price    : yfinance → Alpha Vantage (if key)
+  US/HK info     : yfinance
 """
 
 from __future__ import annotations
 
+import os
 import re
 import threading
 import time
@@ -16,67 +16,60 @@ from typing import Optional
 
 import yfinance as yf
 
-# baostock has global connection state — serialize all calls with a lock
+# baostock has global connection state — one call at a time
 _bs_lock = threading.Lock()
 
 
-# ── Ticker normalization ───────────────────────────────────────────────────────
+# ── Ticker normalisation ───────────────────────────────────────────────────────
 
 def _normalize_ticker(ticker: str) -> tuple[str, str]:
-    """Return (yfinance_ticker, market).  market is 'cn', 'us', or 'hk'."""
-    ticker = ticker.strip().upper()
-
-    if re.match(r'^\d{6}$', ticker):
-        suffix = '.SS' if ticker[0] == '6' else '.SZ'
-        return ticker + suffix, 'cn'
-    if re.match(r'^\d{6}\.(SH|SS)$', ticker, re.IGNORECASE):
-        return re.sub(r'\.(SH|SS)$', '.SS', ticker, flags=re.IGNORECASE), 'cn'
-    if re.match(r'^\d{6}\.SZ$', ticker, re.IGNORECASE):
-        return ticker.upper(), 'cn'
-    if re.match(r'^\d{1,5}\.HK$', ticker, re.IGNORECASE):
-        return ticker.split('.')[0].zfill(4) + '.HK', 'hk'
-    if re.match(r'^\d{4,5}$', ticker):
-        return ticker.zfill(4) + '.HK', 'hk'
-    return ticker, 'us'
+    """Return (yfinance_ticker, market).  market ∈ {'cn','us','hk'}."""
+    t = ticker.strip().upper()
+    if re.match(r'^\d{6}$', t):
+        return t + ('.SS' if t[0] == '6' else '.SZ'), 'cn'
+    if re.match(r'^\d{6}\.(SH|SS)$', t, re.IGNORECASE):
+        return re.sub(r'\.(SH|SS)$', '.SS', t, flags=re.IGNORECASE), 'cn'
+    if re.match(r'^\d{6}\.SZ$', t, re.IGNORECASE):
+        return t, 'cn'
+    if re.match(r'^\d{1,5}\.HK$', t, re.IGNORECASE):
+        return t.split('.')[0].zfill(4) + '.HK', 'hk'
+    if re.match(r'^\d{4,5}$', t):
+        return t.zfill(4) + '.HK', 'hk'
+    return t, 'us'
 
 
 def _bare_cn_code(ticker: str) -> str:
-    """Return the 6-digit A-share code without exchange suffix."""
     return ticker.strip().split('.')[0].upper()
 
 
-# ── Baostock — A-share price history (primary) ────────────────────────────────
+def _ts_code(ticker: str) -> str:
+    """6-digit code → Tushare ts_code: 601088 → 601088.SH"""
+    code = _bare_cn_code(ticker)
+    exch = "SH" if (code[0] == '6' or code[:3] == '688') else "SZ"
+    return f"{code}.{exch}"
+
+
+# ── Baostock ── A-share prices (primary) ──────────────────────────────────────
 
 def _bs_code(ticker: str) -> str:
-    """Convert 6-digit A-share code to baostock format: sh.601088 / sz.000001."""
     code = _bare_cn_code(ticker)
-    exchange = "sh" if code[0] == '6' or code.startswith('688') else "sz"
-    return f"{exchange}.{code}"
+    return ("sh." if (code[0] == '6' or code[:3] == '688') else "sz.") + code
 
 
 def _get_price_history_baostock(ticker: str, start_date: str, end_date: str) -> dict:
-    """Fetch A-share OHLCV using baostock (free, no rate limits, stable)."""
     try:
         import baostock as bs
     except ImportError:
-        return {"error": "baostock not installed. Run: pip install baostock"}
-
-    bs_code = _bs_code(ticker)
-    # Serialize all baostock calls — it has global connection state
+        return {"error": "baostock not installed"}
     with _bs_lock:
         try:
-            lg = bs.login()
-            if lg.error_code != '0':
+            if bs.login().error_code != '0':
                 bs.logout()
-                return {"error": f"baostock login failed: {lg.error_msg}"}
-
+                return {"error": "baostock login failed"}
             rs = bs.query_history_k_data_plus(
-                bs_code,
-                "date,open,high,low,close,volume",
-                start_date=start_date,
-                end_date=end_date,
-                frequency="d",
-                adjustflag="2",  # 前复权 — forward-adjusted
+                _bs_code(ticker), "date,open,high,low,close,volume",
+                start_date=start_date, end_date=end_date,
+                frequency="d", adjustflag="2",
             )
             rows = []
             while rs.error_code == '0' and rs.next():
@@ -87,187 +80,257 @@ def _get_price_history_baostock(ticker: str, start_date: str, end_date: str) -> 
                 bs.logout()
             except Exception:
                 pass
-            return {"error": f"baostock error: {e}"}
-
+            return {"error": f"baostock: {e}"}
     if not rows:
-        return {"error": f"No data from baostock for {ticker}"}
-
+        return {"error": f"baostock: no data for {ticker}"}
     records = {}
-    for row in rows:
-        date, open_, high, low, close, volume = row
+    for date, o, h, l, c, v in rows:
         try:
             records[date] = {
-                "Open": round(float(open_), 4),
-                "High": round(float(high), 4),
-                "Low": round(float(low), 4),
-                "Close": round(float(close), 4),
-                "Volume": int(float(volume)),
+                "Open": round(float(o), 4), "High": round(float(h), 4),
+                "Low": round(float(l), 4), "Close": round(float(c), 4),
+                "Volume": int(float(v)),
             }
         except (ValueError, TypeError):
             continue
-
-    return {
-        "ticker": ticker,
-        "market": "cn",
-        "source": "baostock",
-        "start_date": start_date,
-        "end_date": end_date,
-        "records": records,
-        "count": len(records),
-    }
+    return {"ticker": ticker, "market": "cn", "source": "baostock",
+            "start_date": start_date, "end_date": end_date,
+            "records": records, "count": len(records)}
 
 
-# ── AkShare — A-share price history (fallback) ────────────────────────────────
+# ── Tushare ── A-share prices (secondary) + stock info ────────────────────────
+
+def _tushare_pro():
+    """Return Tushare Pro API object, or None if token not configured."""
+    token = os.environ.get("TUSHARE_TOKEN", "")
+    if not token:
+        return None
+    try:
+        import tushare as ts
+        ts.set_token(token)
+        return ts.pro_api()
+    except Exception:
+        return None
+
+
+def _get_price_history_tushare(ticker: str, start_date: str, end_date: str) -> dict:
+    pro = _tushare_pro()
+    if pro is None:
+        return {"error": "TUSHARE_TOKEN not set"}
+    try:
+        code = _ts_code(ticker)
+        start = start_date.replace("-", "")
+        end = end_date.replace("-", "")
+        df = pro.daily(ts_code=code, start_date=start, end_date=end)
+        if df is None or df.empty:
+            return {"error": f"tushare: no data for {ticker}"}
+        # daily() returns unadjusted; apply qfq via adj_factor
+        adj = pro.adj_factor(ts_code=code, start_date=start, end_date=end)
+        if adj is not None and not adj.empty:
+            adj_map = dict(zip(adj["trade_date"], adj["adj_factor"].astype(float)))
+            latest_factor = adj_map.get(sorted(adj_map)[-1], 1.0)
+            df["adj"] = df["trade_date"].map(adj_map).fillna(1.0) / latest_factor
+            for col in ["open", "high", "low", "close"]:
+                df[col] = (df[col] * df["adj"]).round(4)
+        records = {}
+        for _, row in df.sort_values("trade_date").iterrows():
+            d = str(row["trade_date"])
+            d = f"{d[:4]}-{d[4:6]}-{d[6:]}"
+            records[d] = {
+                "Open": round(float(row["open"]), 4),
+                "High": round(float(row["high"]), 4),
+                "Low": round(float(row["low"]), 4),
+                "Close": round(float(row["close"]), 4),
+                "Volume": int(float(row["vol"]) * 100),
+            }
+        return {"ticker": ticker, "market": "cn", "source": "tushare",
+                "start_date": start_date, "end_date": end_date,
+                "records": records, "count": len(records)}
+    except Exception as e:
+        return {"error": f"tushare: {e}"}
+
+
+def _get_stock_info_tushare(ticker: str) -> dict:
+    pro = _tushare_pro()
+    if pro is None:
+        return {"error": "TUSHARE_TOKEN not set"}
+    try:
+        code = _ts_code(ticker)
+        df = pro.stock_basic(ts_code=code,
+                             fields="ts_code,name,area,industry,market,list_date")
+        if df is None or df.empty:
+            return {"error": f"tushare: no info for {ticker}"}
+        row = df.iloc[0]
+        return {
+            "ticker": ticker, "market": "cn", "source": "tushare",
+            "name": str(row.get("name", "")),
+            "sector": str(row.get("industry", "")),
+            "industry": str(row.get("industry", "")),
+            "area": str(row.get("area", "")),
+            "board": str(row.get("market", "")),
+            "list_date": str(row.get("list_date", "")),
+            "currency": "CNY",
+            "exchange": "SSE" if _bare_cn_code(ticker)[0] == '6' else "SZSE",
+        }
+    except Exception as e:
+        return {"error": f"tushare: {e}"}
+
+
+# ── AkShare ── A-share (last resort) ──────────────────────────────────────────
 
 def _get_price_history_akshare(ticker: str, start_date: str, end_date: str) -> dict:
-    """Fallback: AkShare for A-share data when baostock unavailable."""
     try:
         import akshare as ak
     except ImportError:
         return {"error": "akshare not installed"}
-
     code = _bare_cn_code(ticker)
-    start = start_date.replace('-', '')
-    end = end_date.replace('-', '')
     try:
-        df = ak.stock_zh_a_hist(
-            symbol=code, period="daily",
-            start_date=start, end_date=end, adjust="hfq",
-        )
+        df = ak.stock_zh_a_hist(symbol=code, period="daily",
+                                start_date=start_date.replace("-", ""),
+                                end_date=end_date.replace("-", ""),
+                                adjust="hfq")
     except Exception as e:
-        return {"error": f"AkShare error: {e}"}
-
+        return {"error": f"akshare: {e}"}
     if df is None or df.empty:
-        return {"error": f"No data from AkShare for {ticker}"}
-
-    col_map = {
-        '日期': 'date', '开盘': 'Open', '收盘': 'Close',
-        '最高': 'High', '最低': 'Low', '成交量': 'Volume',
-    }
+        return {"error": f"akshare: no data for {ticker}"}
+    col_map = {"日期": "date", "开盘": "Open", "收盘": "Close",
+               "最高": "High", "最低": "Low", "成交量": "Volume"}
     df = df.rename(columns=col_map)
-    df['date'] = df['date'].astype(str)
-    df = df.set_index('date')
-    needed = [c for c in ['Open', 'High', 'Low', 'Close', 'Volume'] if c in df.columns]
-    records = df[needed].round(4).to_dict('index')
-    return {
-        "ticker": ticker, "market": "cn", "source": "akshare",
-        "start_date": start_date, "end_date": end_date,
-        "records": records, "count": len(records),
-    }
+    df["date"] = df["date"].astype(str)
+    df = df.set_index("date")
+    cols = [c for c in ["Open", "High", "Low", "Close", "Volume"] if c in df.columns]
+    return {"ticker": ticker, "market": "cn", "source": "akshare",
+            "start_date": start_date, "end_date": end_date,
+            "records": df[cols].round(4).to_dict("index"), "count": len(df)}
 
 
 def _get_stock_info_akshare(ticker: str) -> dict:
-    """Fetch A-share company info via AkShare (with fallback)."""
-    import akshare as ak
-
     code = _bare_cn_code(ticker)
-    base = {
-        "ticker": ticker,
-        "market": "cn",
-        "source": "akshare",
-        "currency": "CNY",
-        "exchange": "SSE" if code[0] == '6' else "SZSE",
-    }
-
-    # Try individual info endpoint first
+    base = {"ticker": ticker, "market": "cn", "source": "akshare",
+            "currency": "CNY",
+            "exchange": "SSE" if code[0] == '6' else "SZSE",
+            "name": "", "sector": "", "industry": ""}
     try:
-        df = ak.stock_individual_info_em(symbol=code)
-        info = dict(zip(df.iloc[:, 0], df.iloc[:, 1]))
-        base.update({
-            "name": str(info.get("股票简称", "")),
-            "sector": str(info.get("行业", "")),
-            "industry": str(info.get("行业", "")),
-            "market_cap": info.get("总市值"),
-        })
-        return base
-    except Exception:
-        pass
-
-    # Fallback: spot market summary (contains name + code)
-    try:
+        import akshare as ak
         spot = ak.stock_zh_a_spot_em()
         row = spot[spot["代码"] == code]
         if not row.empty:
-            base.update({
-                "name": str(row.iloc[0].get("名称", "")),
-                "sector": "",
-                "industry": "",
-                "market_cap": row.iloc[0].get("总市值"),
-            })
-            return base
+            base["name"] = str(row.iloc[0].get("名称", ""))
+            base["market_cap"] = row.iloc[0].get("总市值")
     except Exception:
         pass
-
-    # Minimal fallback
-    base.update({"name": "", "sector": "", "industry": ""})
     return base
 
 
-# ── yfinance with retry — US/HK ────────────────────────────────────────────────
+# ── yfinance ── US/HK prices (primary) ────────────────────────────────────────
 
-def _yf_download_with_retry(yf_ticker: str, start: str, end: str, retries: int = 3) -> Optional[object]:
-    """yfinance download with simple backoff retry."""
+def _yf_download_with_retry(yf_ticker: str, start: str, end: str,
+                             retries: int = 3) -> Optional[object]:
     for attempt in range(retries):
         try:
-            df = yf.download(
-                yf_ticker, start=start, end=end,
-                auto_adjust=True, progress=False, multi_level_index=False,
-            )
+            df = yf.download(yf_ticker, start=start, end=end,
+                             auto_adjust=True, progress=False,
+                             multi_level_index=False)
             if not df.empty:
                 return df
         except Exception:
             pass
         if attempt < retries - 1:
-            time.sleep(2 ** attempt)  # 1s, 2s
+            time.sleep(2 ** attempt)
     return None
+
+
+# ── Alpha Vantage ── US/HK prices (fallback) ──────────────────────────────────
+
+def _get_price_history_alpha_vantage(ticker: str, start_date: str,
+                                      end_date: str) -> dict:
+    """Alpha Vantage TIME_SERIES_DAILY_ADJUSTED via requests (no extra package)."""
+    key = os.environ.get("ALPHA_VANTAGE_KEY", "")
+    if not key:
+        return {"error": "ALPHA_VANTAGE_KEY not set"}
+    try:
+        import requests
+        url = "https://www.alphavantage.co/query"
+        params = {
+            "function": "TIME_SERIES_DAILY_ADJUSTED",
+            "symbol": ticker,
+            "outputsize": "full",
+            "apikey": key,
+        }
+        r = requests.get(url, params=params, timeout=15)
+        data = r.json()
+        series = data.get("Time Series (Daily)", {})
+        if not series:
+            note = data.get("Note") or data.get("Information") or "no data"
+            return {"error": f"alpha_vantage: {note}"}
+        records = {}
+        for date_str, bar in series.items():
+            if date_str < start_date or date_str > end_date:
+                continue
+            try:
+                records[date_str] = {
+                    "Open":   round(float(bar["1. open"]), 4),
+                    "High":   round(float(bar["2. high"]), 4),
+                    "Low":    round(float(bar["3. low"]), 4),
+                    "Close":  round(float(bar["5. adjusted close"]), 4),
+                    "Volume": int(bar["6. volume"]),
+                }
+            except (KeyError, ValueError):
+                continue
+        if not records:
+            return {"error": f"alpha_vantage: no data in range for {ticker}"}
+        return {"ticker": ticker, "market": "us", "source": "alpha_vantage",
+                "start_date": start_date, "end_date": end_date,
+                "records": dict(sorted(records.items())),
+                "count": len(records)}
+    except Exception as e:
+        return {"error": f"alpha_vantage: {e}"}
 
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
 def get_price_history(ticker: str, start_date: str, end_date: str) -> dict:
-    """Fetch OHLCV data. A-share → baostock (fallback: akshare). US/HK → yfinance."""
+    """
+    A-share  : baostock → Tushare → AkShare
+    US / HK  : yfinance → Alpha Vantage
+    """
     _, market = _normalize_ticker(ticker)
-
-    if market == 'cn':
-        result = _get_price_history_baostock(ticker, start_date, end_date)
-        if "error" in result:
-            # Fallback to akshare
-            result = _get_price_history_akshare(ticker, start_date, end_date)
-        return result
-
-    # US / HK — yfinance with retry
+    if market == "cn":
+        r = _get_price_history_baostock(ticker, start_date, end_date)
+        if "error" in r:
+            r = _get_price_history_tushare(ticker, start_date, end_date)
+        if "error" in r:
+            r = _get_price_history_akshare(ticker, start_date, end_date)
+        return r
+    # US / HK
     yf_ticker, _ = _normalize_ticker(ticker)
     df = _yf_download_with_retry(yf_ticker, start_date, end_date)
-    if df is None:
-        return {"error": f"No data for {ticker} (yfinance rate limited or unavailable)"}
-
-    df.index = df.index.strftime('%Y-%m-%d')
-    records = df[['Open', 'High', 'Low', 'Close', 'Volume']].round(4).to_dict('index')
-    return {
-        "ticker": ticker,
-        "market": market,
-        "source": "yfinance",
-        "start_date": start_date,
-        "end_date": end_date,
-        "records": records,
-        "count": len(records),
-    }
+    if df is not None:
+        df.index = df.index.strftime("%Y-%m-%d")
+        records = df[["Open", "High", "Low", "Close", "Volume"]].round(4).to_dict("index")
+        return {"ticker": ticker, "market": market, "source": "yfinance",
+                "start_date": start_date, "end_date": end_date,
+                "records": records, "count": len(records)}
+    return _get_price_history_alpha_vantage(ticker, start_date, end_date)
 
 
 def get_stock_info(ticker: str) -> dict:
-    """Fetch basic stock metadata."""
+    """
+    A-share  : Tushare (if token) → AkShare
+    US / HK  : yfinance
+    """
     _, market = _normalize_ticker(ticker)
-
-    if market == 'cn':
+    if market == "cn":
+        if os.environ.get("TUSHARE_TOKEN"):
+            r = _get_stock_info_tushare(ticker)
+            if "error" not in r:
+                return r
         return _get_stock_info_akshare(ticker)
-
     yf_ticker, _ = _normalize_ticker(ticker)
     try:
         info = yf.Ticker(yf_ticker).info
         return {
-            "ticker": ticker,
-            "market": market,
-            "source": "yfinance",
+            "ticker": ticker, "market": market, "source": "yfinance",
             "name": info.get("longName") or info.get("shortName", ""),
             "sector": info.get("sector", ""),
             "industry": info.get("industry", ""),
