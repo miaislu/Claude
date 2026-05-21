@@ -24,6 +24,26 @@ from dotenv import load_dotenv
 
 from .llm_router import get_routing_config
 
+
+def _coerce_list_fields(data: dict) -> dict:
+    """
+    Some OpenAI-compatible models (incl. DeepSeek) occasionally serialize
+    array tool-call arguments as JSON strings instead of native lists.
+    E.g. key_risks='["risk1","risk2"]' instead of key_risks=["risk1","risk2"].
+    This helper parses any such string-encoded arrays back to Python lists.
+    """
+    out = {}
+    for k, v in data.items():
+        if isinstance(v, str) and v.strip().startswith("["):
+            try:
+                parsed = json.loads(v)
+                out[k] = parsed if isinstance(parsed, list) else v
+            except (json.JSONDecodeError, ValueError):
+                out[k] = v
+        else:
+            out[k] = v
+    return out
+
 load_dotenv()
 
 _anthropic_client: Optional[anthropic.AsyncAnthropic] = None
@@ -173,7 +193,8 @@ async def _openai_loop(
         if output_tool_name:
             for tc in msg.tool_calls:
                 if tc.function.name == output_tool_name:
-                    return json.loads(tc.function.arguments)
+                    raw = json.loads(tc.function.arguments)
+                    return _coerce_list_fields(raw)
 
         # Append assistant message (serialize tool_calls to dict)
         messages.append({
