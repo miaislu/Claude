@@ -5,6 +5,7 @@ description = "Multi-market trading agent system for assisted decision making"
 requires-python = ">=3.9"
 dependencies = [
     "anthropic>=0.40.0",
+    "openai>=1.0.0",
     "python-dotenv>=1.0.0",
     "yfinance>=0.2.63",
     "pandas>=2.2.0",
