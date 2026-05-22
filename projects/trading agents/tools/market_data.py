@@ -287,12 +287,62 @@ def _get_price_history_alpha_vantage(ticker: str, start_date: str,
         return {"error": f"alpha_vantage: {e}"}
 
 
+# ── AkShare ── Hong Kong price history (primary for HK) ───────────────────────
+
+def _hk_code(ticker: str) -> str:
+    """'3690.HK' or '3690' → '03690' (5-digit zero-padded AkShare format)."""
+    code = ticker.strip().upper().split(".")[0].lstrip("0") or "0"
+    return code.zfill(5)
+
+
+def _get_price_history_akshare_hk(ticker: str, start_date: str,
+                                   end_date: str) -> dict:
+    """Fetch HK stock OHLCV via AkShare stock_hk_hist (no rate limits)."""
+    try:
+        import akshare as ak
+    except ImportError:
+        return {"error": "akshare not installed"}
+    code = _hk_code(ticker)
+    last_err = ""
+    for attempt in range(3):
+        try:
+            df = ak.stock_hk_hist(
+                symbol=code,
+                period="daily",
+                start_date=start_date.replace("-", ""),
+                end_date=end_date.replace("-", ""),
+                adjust="qfq",
+            )
+            break           # success
+        except Exception as e:
+            last_err = str(e)
+            if attempt < 2:
+                time.sleep(2)
+    else:
+        return {"error": f"akshare hk: {last_err}"}
+    if df is None or df.empty:
+        return {"error": f"akshare hk: no data for {ticker}"}
+    col_map = {"日期": "date", "开盘": "Open", "收盘": "Close",
+               "最高": "High", "最低": "Low", "成交量": "Volume"}
+    df = df.rename(columns=col_map)
+    df["date"] = df["date"].astype(str)
+    df = df.set_index("date")
+    cols = [c for c in ["Open", "High", "Low", "Close", "Volume"] if c in df.columns]
+    return {
+        "ticker": ticker, "market": "hk", "source": "akshare",
+        "start_date": start_date, "end_date": end_date,
+        "records": df[cols].round(4).to_dict("index"),
+        "count": len(df),
+    }
+
+
 # ── Public API ─────────────────────────────────────────────────────────────────
 
 def get_price_history(ticker: str, start_date: str, end_date: str) -> dict:
     """
     A-share  : baostock → Tushare → AkShare
-    US / HK  : yfinance → Alpha Vantage
+    HK       : AkShare → yfinance → Alpha Vantage
+    US       : yfinance → Alpha Vantage
     """
     _, market = _normalize_ticker(ticker)
     if market == "cn":
@@ -302,7 +352,11 @@ def get_price_history(ticker: str, start_date: str, end_date: str) -> dict:
         if "error" in r:
             r = _get_price_history_akshare(ticker, start_date, end_date)
         return r
-    # US / HK
+    if market == "hk":
+        r = _get_price_history_akshare_hk(ticker, start_date, end_date)
+        if "error" not in r:
+            return r
+    # US (and HK fallback)
     yf_ticker, _ = _normalize_ticker(ticker)
     df = _yf_download_with_retry(yf_ticker, start_date, end_date)
     if df is not None:
