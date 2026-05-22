@@ -7,6 +7,7 @@ from .macro import (
     get_northbound_flow,
     get_energy_commodity_prices,
     get_china_macro_indicators,
+    get_china_consumer_data,
 )
 
 __all__ = [

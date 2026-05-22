@@ -13,20 +13,22 @@ from agents.technical import run_technical_analysis
 from agents.fundamental import run_fundamental_analysis
 from agents.sentiment import run_sentiment_analysis
 from agents.macro_policy import run_macro_analysis
+from agents.industry import run_industry_analysis
 
-_AGENT_NAMES = ["technical", "fundamental", "sentiment", "macro_policy"]
+_AGENT_NAMES = ["technical", "fundamental", "sentiment", "macro_policy", "industry"]
 
 
 async def run_analyst_team(ticker: str, date: str) -> List[AnalystReport]:
     """
-    Run all 4 analyst agents in parallel.
-    Failed agents produce a neutral placeholder so downstream always gets 4 results.
+    Run all 5 analyst agents in parallel.
+    Failed agents produce a neutral placeholder so downstream always gets 5 results.
     """
     tasks = [
         run_technical_analysis(ticker, date),
         run_fundamental_analysis(ticker, date),
         run_sentiment_analysis(ticker, date),
         run_macro_analysis(ticker, date),
+        run_industry_analysis(ticker, date),
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)

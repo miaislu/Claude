@@ -37,17 +37,32 @@ TOOLS: List[dict] = [
             "type": "object",
             "properties": {
                 "ticker": {"type": "string"},
+                "date": {
+                    "type": "string",
+                    "description": (
+                        "Analysis date YYYY-MM-DD. Only returns data available on or "
+                        "before this date. Always pass the analysis date to avoid "
+                        "look-ahead bias."
+                    ),
+                },
             },
             "required": ["ticker"],
         },
     },
     {
         "name": "get_earnings_history",
-        "description": "Get the last 8 quarters of EPS actual vs estimate with surprise %.",
+        "description": "Get annual/quarterly earnings history — revenue, net income, EPS.",
         "input_schema": {
             "type": "object",
             "properties": {
                 "ticker": {"type": "string"},
+                "date": {
+                    "type": "string",
+                    "description": (
+                        "Analysis date YYYY-MM-DD. Only returns reports available on "
+                        "or before this date."
+                    ),
+                },
             },
             "required": ["ticker"],
         },
@@ -80,6 +95,8 @@ async def run_fundamental_analysis(ticker: str, date: str) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
     query = (
         f"Perform fundamental analysis for {ticker} as of {date}. "
+        f"When calling get_valuation_metrics and get_earnings_history, always pass date='{date}' "
+        "to ensure only data available on that date is used. "
         "Evaluate the company's valuation, financial health, growth trajectory, and earnings quality. "
         "Then call submit_analysis with your conclusions."
     )

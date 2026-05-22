@@ -75,7 +75,10 @@ def _load_single_agent(name: str):
     if name == "macro_policy":
         from agents.macro_policy import run_macro_analysis
         return run_macro_analysis
-    print(f"Unknown agent: {name}. Choose: technical, fundamental, sentiment, macro_policy")
+    if name == "industry":
+        from agents.industry import run_industry_analysis
+        return run_industry_analysis
+    print(f"Unknown agent: {name}. Choose: technical, fundamental, sentiment, macro_policy, industry")
     sys.exit(1)
 
 

@@ -166,6 +166,77 @@ def get_china_macro_indicators() -> dict:
         return {"error": f"Caixin PMI fetch failed: {e}"}
 
 
+def get_china_consumer_data(months: int = 6) -> dict:
+    """
+    China social retail sales (社零) + CPI data.
+    Use for consumer-facing businesses to assess spending environment.
+
+    社零 YoY > 5%: robust consumption, tailwind for consumer platforms.
+    社零 YoY 2-5%: moderate growth, selective tailwind.
+    社零 YoY < 2%: weak consumption, headwind — consumers tightening wallets.
+    """
+    result: dict = {"social_retail": [], "cpi": [], "signals": []}
+
+    # ── 社零 (Social Retail Sales) ─────────────────────────────────────────────
+    try:
+        import akshare as ak
+        df = ak.macro_china_consumer_goods_retail()
+        if df is not None and not df.empty:
+            recent = df.head(months)
+            for _, row in recent.iterrows():
+                monthly = row.get("当月")
+                yoy = row.get("同比增长")
+                ytd_yoy = row.get("累计-同比增长")
+                result["social_retail"].append({
+                    "month":            str(row.get("月份", "")),
+                    "monthly_bn_cny":   round(float(monthly) / 10, 1) if monthly and str(monthly) not in ("nan", "") else None,
+                    "yoy_pct":          float(yoy) if yoy and str(yoy) not in ("nan", "") else None,
+                    "ytd_yoy_pct":      float(ytd_yoy) if ytd_yoy and str(ytd_yoy) not in ("nan", "") else None,
+                })
+            # Generate signal from latest valid YoY
+            for rec in result["social_retail"]:
+                if rec["yoy_pct"] is not None:
+                    yoy_val = rec["yoy_pct"]
+                    signal = ("strong" if yoy_val > 5 else
+                              "moderate" if yoy_val > 2 else
+                              "weak" if yoy_val >= 0 else "contracting")
+                    result["signals"].append(
+                        f"Social retail YoY {yoy_val:+.1f}% ({rec['month']}) → "
+                        f"{signal} consumer spending environment"
+                    )
+                    break
+    except Exception as e:
+        result["social_retail_error"] = str(e)
+
+    # ── CPI ────────────────────────────────────────────────────────────────────
+    try:
+        import akshare as ak
+        cpi_df = ak.macro_china_cpi_monthly()
+        if cpi_df is not None and not cpi_df.empty:
+            china_cpi = cpi_df[cpi_df["商品"] == "中国CPI月率报告"].head(3)
+            for _, row in china_cpi.iterrows():
+                val = row.get("今值") or row.get("前值")
+                result["cpi"].append({
+                    "date": str(row.get("日期", "")),
+                    "cpi_mom_pct": float(val) if val and str(val) not in ("nan", "") else None,
+                })
+            if result["cpi"] and result["cpi"][0]["cpi_mom_pct"] is not None:
+                cpi_val = result["cpi"][0]["cpi_mom_pct"]
+                result["signals"].append(
+                    f"CPI MoM {cpi_val:+.1f}% → "
+                    f"{'inflationary pressure' if cpi_val > 0.3 else 'deflationary risk' if cpi_val < 0 else 'price stable'}"
+                )
+    except Exception as e:
+        result["cpi_error"] = str(e)
+
+    result["interpretation"] = (
+        "Low/negative 社零 + negative CPI = deflationary, consumers spending less "
+        "→ headwind for Meituan/JD/Alibaba order volumes and AOV. "
+        "Strong 社零 + mild CPI = goldilocks for consumer platforms."
+    )
+    return result
+
+
 def get_northbound_flow(date: str, days_back: int = 5) -> dict:
     """
     Northbound capital flow for A-share market (沪深港通北向资金).

@@ -168,11 +168,10 @@ def _parse_cn_value(v) -> Optional[float]:
         return None
 
 
-def _get_valuation_metrics_akshare(ticker: str) -> dict:
+def _get_valuation_metrics_akshare(ticker: str, date: Optional[str] = None) -> dict:
     """
     Key profitability + leverage metrics via AkShare stock_financial_abstract_ths.
-    Most recent annual report (12-31 period).
-    Note: PE/PB not available here — falls back to yfinance for those.
+    date: if provided, only use reports published on or before this date (YYYY-MM-DD).
     """
     try:
         import akshare as ak
@@ -183,8 +182,11 @@ def _get_valuation_metrics_akshare(ticker: str) -> dict:
         df = ak.stock_financial_abstract_ths(symbol=code, indicator="按报告期")
         if df is None or df.empty:
             return {"error": "akshare: no financial abstract data"}
-        # Most recent year-end (12-31) report; fall back to last row
+        # Filter to reports available as of the analysis date
         annual = df[df["报告期"].str.endswith("12-31")]
+        if date:
+            date_compact = date.replace("-", "")
+            annual = annual[annual["报告期"].str.replace("-", "") <= date_compact]
         row = annual.iloc[-1] if not annual.empty else df.iloc[-1]
         return {
             "ticker": ticker, "market": "cn", "source": "akshare",
@@ -206,8 +208,10 @@ def _get_valuation_metrics_akshare(ticker: str) -> dict:
         return {"error": f"akshare financial abstract: {e}"}
 
 
-def _get_earnings_history_akshare(ticker: str) -> dict:
-    """Annual income statement history via AkShare stock_financial_benefit_ths."""
+def _get_earnings_history_akshare(ticker: str, date: Optional[str] = None) -> dict:
+    """Annual income statement history via AkShare stock_financial_benefit_ths.
+    date: if provided, only return reports for years up to and including this date.
+    """
     try:
         import akshare as ak
     except ImportError:
@@ -217,6 +221,10 @@ def _get_earnings_history_akshare(ticker: str) -> dict:
         df = ak.stock_financial_benefit_ths(symbol=code, indicator="年报")
         if df is None or df.empty:
             return {"ticker": ticker, "quarters": [], "note": "akshare: no data"}
+        # Filter to years available as of the analysis date
+        if date:
+            cutoff_year = int(date[:4])
+            df = df[df["报告期"].apply(lambda x: int(str(x)[:4]) <= cutoff_year)]
         quarters = []
         for _, row in df.head(6).iterrows():
             quarters.append({
@@ -241,18 +249,20 @@ def _safe_float(v) -> Optional[float]:
         return None
 
 
-def get_valuation_metrics(ticker: str) -> dict:
+def get_valuation_metrics(ticker: str, date: Optional[str] = None) -> dict:
     """
     A-share  : AkShare → Tushare (if token + points) → yfinance
     US / HK  : yfinance
+    date     : YYYY-MM-DD — only return data available on or before this date.
+               Defaults to None (latest available).
     """
     _, market = _normalize_ticker(ticker)
     if market == "cn":
-        r = _get_valuation_metrics_akshare(ticker)
+        r = _get_valuation_metrics_akshare(ticker, date=date)
         if "error" not in r:
             return r
         if os.environ.get("TUSHARE_TOKEN"):
-            r = _get_valuation_metrics_tushare(ticker)
+            r = _get_valuation_metrics_tushare(ticker, date=date)
             if "error" not in r:
                 return r
 
@@ -292,14 +302,16 @@ def get_valuation_metrics(ticker: str) -> dict:
         return {"error": str(e)}
 
 
-def get_earnings_history(ticker: str) -> dict:
+def get_earnings_history(ticker: str, date: Optional[str] = None) -> dict:
     """
     A-share  : AkShare → Tushare (if token + points) → yfinance
     US / HK  : yfinance
+    date     : YYYY-MM-DD — only return reports available on or before this date.
+               Defaults to None (latest available).
     """
     _, market = _normalize_ticker(ticker)
     if market == "cn":
-        r = _get_earnings_history_akshare(ticker)
+        r = _get_earnings_history_akshare(ticker, date=date)
         if "error" not in r:
             return r
         if os.environ.get("TUSHARE_TOKEN"):
