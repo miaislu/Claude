@@ -5,6 +5,7 @@ from .news import get_news_headlines, get_analyst_ratings
 from .macro import (
     get_market_context,
     get_northbound_flow,
+    get_southbound_flow,
     get_energy_commodity_prices,
     get_china_macro_indicators,
     get_china_consumer_data,

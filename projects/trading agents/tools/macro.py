@@ -34,22 +34,42 @@ _US_SECTOR_ETFS = {
 
 
 def _period_return(ticker: str, end_date: str, days: int) -> float | None:
+    """Compute % return using get_price_history (supports any ticker)."""
     start = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=days)).strftime("%Y-%m-%d")
     hist = get_price_history(ticker, start, end_date)
     if "error" in hist or hist["count"] < 2:
         return None
-    records = hist["records"]
-    prices = [v["Close"] for v in records.values()]
+    prices = [v["Close"] for v in hist["records"].values()]
     return round((prices[-1] / prices[0] - 1) * 100, 2)
+
+
+def _index_return_akshare(ak_fn, symbol: str, end_date: str, days: int,
+                          date_col: str = "date", close_col: str = "close") -> float | None:
+    """Compute % return from an AkShare index DataFrame."""
+    try:
+        import akshare as ak
+        df = ak_fn(symbol=symbol)
+        if df is None or df.empty:
+            return None
+        df[date_col] = df[date_col].astype(str)
+        start = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=days)).strftime("%Y-%m-%d")
+        df = df[(df[date_col] >= start) & (df[date_col] <= end_date)]
+        if len(df) < 2:
+            return None
+        prices = df[close_col].astype(float).tolist()
+        return round((prices[-1] / prices[0] - 1) * 100, 2)
+    except Exception:
+        return None
 
 
 def get_market_context(ticker: str, date: str) -> dict:
     """
-    Return benchmark performance and basic market breadth for the stock's market.
-    Covers 1W, 1M, 3M returns to contextualize the individual stock's moves.
+    Benchmark performance and market breadth.
+    CN: CSI 300 via AkShare. HK: Hang Seng via AkShare(Sina). US: SPY via yfinance.
     """
+    import akshare as ak
     _, market = _normalize_ticker(ticker)
-    benchmark_ticker, benchmark_name = _BENCHMARKS.get(market, _BENCHMARKS["us"])
+    _, benchmark_name = _BENCHMARKS.get(market, _BENCHMARKS["us"])
 
     result: dict = {
         "ticker": ticker,
@@ -60,10 +80,18 @@ def get_market_context(ticker: str, date: str) -> dict:
     }
 
     for label, days in [("1w", 7), ("1m", 30), ("3m", 90)]:
-        ret = _period_return(benchmark_ticker, date, days)
+        ret = None
+        if market == "cn":
+            ret = _index_return_akshare(ak.stock_zh_index_daily, "sh000300", date, days)
+        elif market == "hk":
+            ret = _index_return_akshare(ak.stock_hk_index_daily_sina, "HSI", date, days)
+        if ret is None:
+            # fallback: yfinance via get_price_history
+            bm_ticker, _ = _BENCHMARKS.get(market, _BENCHMARKS["us"])
+            ret = _period_return(bm_ticker, date, days)
         result["benchmark_returns"][label] = ret
 
-    # US market: add sector ETF performance (1M)
+    # US market: sector ETF rotation (1M) via yfinance
     if market == "us":
         for sector, etf in list(_US_SECTOR_ETFS.items())[:6]:
             ret = _period_return(etf, date, 30)
@@ -74,38 +102,70 @@ def get_market_context(ticker: str, date: str) -> dict:
     return result
 
 
+def _futures_return_akshare(symbol: str, end_date: str, days: int) -> tuple:
+    """Return (latest_price, period_return_pct) for an AkShare futures symbol."""
+    try:
+        import akshare as ak
+        df = ak.futures_main_sina(symbol=symbol)
+        if df is None or df.empty:
+            return None, None
+        df["日期"] = df["日期"].astype(str)
+        start = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=days)).strftime("%Y-%m-%d")
+        window = df[(df["日期"] >= start) & (df["日期"] <= end_date)]
+        if window.empty or len(window) < 2:
+            return None, None
+        prices = window["收盘价"].astype(float).tolist()
+        latest = round(prices[-1], 2)
+        ret = round((prices[-1] / prices[0] - 1) * 100, 2)
+        return latest, ret
+    except Exception:
+        return None, None
+
+
 def get_energy_commodity_prices(date: str) -> dict:
     """
-    Fetch recent prices and trends for key energy commodities:
-    WTI Crude Oil, Natural Gas, and Coal ETF (KOL).
-    Use these to assess energy substitution dynamics and coal demand signals.
+    Energy commodity prices for macro context.
+    Primary: AkShare SC0 (China crude oil futures).
+    Fallback: yfinance for WTI / Natural Gas.
+    Note: China thermal coal (ZC0) trading suspended 2022 — use SC0 + market knowledge.
     """
-    commodities = {
-        "wti_crude":    ("CL=F",  "WTI Crude Oil (USD/barrel)"),
-        "natural_gas":  ("NG=F",  "Henry Hub Natural Gas (USD/MMBtu)"),
-        "coal_etf":     ("KOL",   "VanEck Coal ETF (USD) — coal sector proxy"),
+    results: dict = {}
+
+    # ── China crude oil (SC0, SHFE) via AkShare ───────────────────────────────
+    sc0_prices = {}
+    for label, days in [("1w", 7), ("1m", 30), ("3m", 90)]:
+        latest, ret = _futures_return_akshare("SC0", date, days)
+        sc0_prices[f"{label}_return_pct"] = ret
+        if label == "1m" and latest:
+            sc0_prices["latest_price_cny"] = latest
+    results["china_crude_sc0"] = {
+        "symbol": "SC0", "description": "Shanghai Crude Oil Futures (CNY/barrel)",
+        **sc0_prices,
+        "note": "China's domestic oil benchmark. SC0 > ¥580 = elevated oil costs.",
     }
-    results = {}
-    for key, (symbol, description) in commodities.items():
-        entry: dict = {"symbol": symbol, "description": description}
+
+    # ── International: WTI + Natural Gas via yfinance (fallback) ─────────────
+    for key, symbol, desc in [
+        ("wti_crude",   "CL=F", "WTI Crude Oil (USD/barrel)"),
+        ("natural_gas", "NG=F", "Henry Hub Natural Gas (USD/MMBtu)"),
+    ]:
+        entry: dict = {"symbol": symbol, "description": desc}
         for label, days in [("1w", 7), ("1m", 30), ("3m", 90)]:
-            ret = _period_return(symbol, date, days)
-            entry[f"{label}_return_pct"] = ret
-        # Try to get latest price
+            entry[f"{label}_return_pct"] = _period_return(symbol, date, days)
         try:
-            df = _yf_recent_close(symbol, date)
-            if df is not None:
-                entry["latest_price"] = round(float(df), 4)
+            close = _yf_recent_close(symbol, date)
+            if close is not None:
+                entry["latest_price"] = round(float(close), 2)
         except Exception:
             pass
         results[key] = entry
 
     results["interpretation_guide"] = (
-        "WTI > $85: tight global supply, coal substitution demand likely elevated. "
-        "WTI < $70: loose supply, coal demand pressure. "
-        "Natural gas rising: gas-to-coal switching reduces coal demand. "
-        "Natural gas falling: cheaper gas competes with coal. "
-        "KOL trend confirms or contradicts individual coal stock thesis."
+        "SC0 (China crude) > ¥600: high domestic energy costs, utilities favour coal. "
+        "WTI > $85: tight global oil, LNG premium widens → coal substitution demand up. "
+        "WTI < $70: loose oil/gas supply → coal substitution premium shrinks. "
+        "Natural gas rising → gas-fired power more expensive → more coal dispatch. "
+        "Thermal coal (ZC0) trading suspended since 2022 — use SC0 + Qinhuangdao spot price knowledge."
     )
     return results
 
@@ -237,33 +297,67 @@ def get_china_consumer_data(months: int = 6) -> dict:
     return result
 
 
-def get_northbound_flow(date: str, days_back: int = 5) -> dict:
+def _hsgt_flow(direction: str, days_back: int) -> dict:
     """
-    Northbound capital flow for A-share market (沪深港通北向资金).
-    Requires AkShare — returns a note if not available.
+    Shared helper for northbound (北向) and southbound (南向) capital flows.
+    Uses stock_hsgt_fund_flow_summary_em which contains both directions.
+    direction: '北向' or '南向'
     """
     try:
         import akshare as ak
-        df = ak.stock_connect_north_net_flow_em()
+        df = ak.stock_hsgt_fund_flow_summary_em()
         if df is None or df.empty:
-            return {"error": "No northbound flow data"}
-        # Filter to requested date range
-        df = df.tail(days_back)
-        records = []
-        for _, row in df.iterrows():
-            records.append({
-                "date": str(row.iloc[0]),
-                "net_flow_cny_bn": round(float(row.iloc[1]) / 1e8, 2) if row.iloc[1] else None,
-            })
+            return {"error": "No HSGT flow data"}
+
+        df_dir = df[df["资金方向"] == direction]
+        if df_dir.empty:
+            return {"error": f"No {direction} data"}
+
+        # Aggregate by date (sum 沪 + 深 channels)
+        by_date = {}
+        for _, row in df_dir.iterrows():
+            date_str = str(row.get("交易日", ""))
+            net = float(row.get("成交净买额", 0) or 0)
+            by_date[date_str] = by_date.get(date_str, 0) + net
+
+        recent_dates = sorted(by_date.keys(), reverse=True)[:days_back]
+        records = [{"date": d, "net_buy_bn_cny": round(by_date[d], 2)} for d in recent_dates]
+
+        total = sum(r["net_buy_bn_cny"] for r in records)
+        signal = "bullish" if total > 0 else "bearish"
+        label = "外资流入A股" if direction == "北向" else "内资流入港股"
+
         return {
-            "description": "Northbound capital net flow (positive = inflow from HK/foreign)",
-            "unit": "CNY 100M (亿元)",
+            "direction": direction,
+            "description": f"{label} net flow",
+            "days": days_back,
+            "total_net_buy_bn_cny": round(total, 2),
+            "signal": signal,
             "records": records,
+            "guide": (
+                "北向>¥50亿/week = foreign institutions accumulating A-shares (bullish). "
+                "南向>¥30亿/day = mainland buying HK stocks (bullish for HK-listed names)."
+                if direction == "北向"
+                else
+                "南向 net buy >¥30亿/day = strong mainland interest in HK stocks → bullish. "
+                "Sustained southbound outflow = mainland de-risking from HK market."
+            ),
         }
     except ImportError:
-        return {
-            "note": "AkShare not installed. Install with: pip install akshare",
-            "records": [],
-        }
+        return {"note": "akshare not installed", "records": []}
     except Exception as e:
         return {"error": str(e), "records": []}
+
+
+def get_northbound_flow(date: str, days_back: int = 5) -> dict:
+    """Northbound capital flow into A-shares (外资/北向资金)."""
+    return _hsgt_flow("北向", days_back)
+
+
+def get_southbound_flow(date: str, days_back: int = 5) -> dict:
+    """
+    Southbound capital flow into HK stocks (港股通/南向资金).
+    Key indicator for HK-listed Chinese stocks (Meituan, Alibaba, Tencent).
+    Net buy > ¥30B/week = strong mainland accumulation, bullish for HK names.
+    """
+    return _hsgt_flow("南向", days_back)

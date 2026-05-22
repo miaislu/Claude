@@ -1,5 +1,5 @@
 ---
-description: Macro and policy risk agent — market context, geopolitics, AI power demand, industrial cycle
+description: Macro and policy risk agent — market context, geopolitics, AI power demand, industrial cycle, sector-specific frameworks
 ---
 
 # Macro and Policy Analysis Skill
@@ -102,6 +102,123 @@ Use `get_china_macro_indicators()` for Caixin Composite PMI. Interpret the trend
 
 ### Energy Security vs. Transition Trade-off
 China faces a real dilemma: aggressive decarbonization vs. keeping the lights on during demand surges (summer heat, cold winters, AI buildout). The resolution historically favors **short-term energy security** (bullish coal) over ideology.
+
+---
+
+---
+
+## Framework 6: 消费类 / Consumer & Internet
+
+**Applicable to**: Meituan (3690.HK), JD, Alibaba, PDD, Kuaishou, etc.
+
+**Core principle: Focus on DEMAND-SIDE changes.**
+
+### Key Signals
+1. **社零 (Social Retail Sales)**: Monthly barometer of consumer willingness to spend.
+   - YoY > 5%: robust, direct tailwind for order volumes and AOV
+   - YoY 2–5%: moderate, selective growth
+   - YoY < 2%: consumers tightening — platforms feel GMV/AOV pressure first
+   - YoY negative: recession conditions, severe headwind
+
+2. **CPI & Deflation**: Negative CPI + weak 社零 = consumers trading down.
+   - Trading down → switch from restaurant delivery to grocery/cooking at home
+   - Mild inflation = price stability, neutral to mildly positive for platforms
+
+3. **Consumer Policy Stimulus**: Government vouchers, trade-in subsidies, platform subsidies
+   - Targeted consumption support programs are direct near-term demand catalysts
+
+4. **Consumer Confidence vs. PMI**: PMI measures industrial/services output — NOT consumer spending willingness. They can diverge significantly. Low PMI + high 社零 = B2B weak but C2C spending intact, and vice versa.
+
+5. **Southbound Capital (HK stocks)**: Internal mainland buying of HK-listed consumer names signals domestic institutional belief in consumption recovery.
+
+---
+
+## Framework 7: 中游制造业 / Mid-stream Manufacturing
+
+**Applicable to**: Auto parts, machinery, electronics assembly, chemicals, textiles
+
+**Core principle: Two-sided squeeze or expansion — upstream cost AND downstream inventory.**
+
+### The Mid-stream Squeeze Logic
+```
+Upstream commodity prices ↑  →  input cost rises  →  margins compress
+Downstream customer inventory ↑ (destocking) →  orders cut  →  volume falls
+
+Worst case: both happen simultaneously → severe earnings pressure
+Best case: upstream deflation + downstream restocking → volume+margin expansion
+```
+
+### Key Data Points
+1. **Upstream cost signals**: Steel, copper, chemical feedstock price trends (from energy commodity tool + training knowledge)
+2. **Downstream inventory cycle**:
+   - Are end-customers (auto OEMs, electronics brands) destocking or restocking?
+   - PMI new orders sub-index: rising = customers placing more orders
+   - Inventory-to-sales ratio trends in key downstream industries
+3. **PPI (Producer Price Index)**: Best single indicator for mid-stream pressure
+   - PPI > CPI: raw material cost rising faster than final goods → margin squeeze
+   - PPI < CPI (rare): upstream deflation benefits mid-stream margins
+
+---
+
+## Framework 8: 上游资源 / Upstream Resources
+
+**Applicable to**: Coal (神华), Oil & Gas (中海油), Metals (紫金矿业), Chemicals (万华化学)
+
+**Core principle: International supply-demand balance + futures pricing leads fundamentals.**
+
+### Key Signals
+1. **Global supply events** (geopolitical, weather, accidents):
+   - Mine closures, pipeline disruptions, export bans → supply shock → price spike
+   - Production quota changes (OPEC+, major miners) → sustained price shift
+   - China: NDRC import policy, safety inspection → domestic supply constraint
+
+2. **Futures pricing** (leading indicator):
+   - Futures curve: contango (futures > spot) = oversupply/storage cost
+   - Backwardation (futures < spot) = physical shortage → bullish spot
+   - SC0 (China crude), copper, iron ore futures all track this
+
+3. **Inventory levels**:
+   - Low inventory (days of supply) at ports/power plants → spot demand spikes
+   - China: Qinhuangdao coal port inventory, steel mill raw material inventory
+
+4. **AI Power Demand Structural Trend** (relevant for coal/power):
+   - China AI data center buildout adds persistent 24/7 baseload electricity demand
+   - Creates structural floor for thermal coal demand despite renewable growth
+   - Particularly relevant for 神华 (601088) and similar thermal coal operators
+
+---
+
+## Framework 9: 房地产/基建/金融 / Real Estate, Infrastructure & Finance
+
+**Applicable to**: Property developers, banks, construction materials, REITs, insurance
+
+**Core principle: Monetary policy AND fiscal spending are the dominant drivers.**
+
+### Key Signals
+
+1. **Monetary Policy (PBOC)**:
+   - MLF rate (Medium-term Lending Facility): PBOC's key policy anchor
+   - LPR (Loan Prime Rate): direct mortgage and corporate loan benchmark
+   - RRR (Reserve Requirement Ratio) cuts: inject liquidity → asset price reflation
+   - Signal chain: PBOC easing → cheaper mortgages → property sales recovery
+
+2. **Fiscal & Infrastructure Stimulus**:
+   - Special bond (专项债) issuance pace: faster issuance = more infrastructure spending
+   - Fixed Asset Investment (FAI) growth: infrastructure FAI is government-driven
+   - Budget deficit target: wider deficit = more stimulus capacity
+
+3. **Property Market Health**:
+   - 70-city new home price index: MoM decline > 3 months = structural weakness
+   - Commercial floor space sold: leads developer revenue and land demand
+   - Developer liquidity: bond defaults, access to credit lines
+
+4. **Credit & Money Supply**:
+   - New social financing (新增社融): broad credit expansion signal
+   - M2 growth: monetary environment for asset prices
+   - Bank NIM (net interest margin): declining NIMs = bank profitability pressure
+
+### Key Interaction
+Property weakness → lower land sales → less municipal revenue → tighter fiscal → less infrastructure → construction materials headwind. This chain affects: cement, steel, glass, REITs, and regional banks with property exposure.
 
 ---
 
