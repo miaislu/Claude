@@ -316,16 +316,19 @@ def get_price_history(ticker: str, start_date: str, end_date: str) -> dict:
 
 def get_stock_info(ticker: str) -> dict:
     """
-    A-share  : Tushare (if token) → AkShare
+    A-share  : AkShare → Tushare (if token)
     US / HK  : yfinance
     """
     _, market = _normalize_ticker(ticker)
     if market == "cn":
+        r = _get_stock_info_akshare(ticker)
+        if r.get("name"):          # only accept if we got a name
+            return r
         if os.environ.get("TUSHARE_TOKEN"):
-            r = _get_stock_info_tushare(ticker)
-            if "error" not in r:
-                return r
-        return _get_stock_info_akshare(ticker)
+            rt = _get_stock_info_tushare(ticker)
+            if "error" not in rt:
+                return rt
+        return r                   # return akshare result even if name is empty
     yf_ticker, _ = _normalize_ticker(ticker)
     try:
         info = yf.Ticker(yf_ticker).info

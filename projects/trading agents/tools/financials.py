@@ -243,18 +243,18 @@ def _safe_float(v) -> Optional[float]:
 
 def get_valuation_metrics(ticker: str) -> dict:
     """
-    A-share  : Tushare (if token + points) → AkShare → yfinance
+    A-share  : AkShare → Tushare (if token + points) → yfinance
     US / HK  : yfinance
     """
     _, market = _normalize_ticker(ticker)
     if market == "cn":
+        r = _get_valuation_metrics_akshare(ticker)
+        if "error" not in r:
+            return r
         if os.environ.get("TUSHARE_TOKEN"):
             r = _get_valuation_metrics_tushare(ticker)
             if "error" not in r:
                 return r
-        r = _get_valuation_metrics_akshare(ticker)
-        if "error" not in r:
-            return r
 
     # yfinance path
     yf_ticker, _ = _normalize_ticker(ticker)
@@ -294,18 +294,18 @@ def get_valuation_metrics(ticker: str) -> dict:
 
 def get_earnings_history(ticker: str) -> dict:
     """
-    A-share  : Tushare (if token + points) → AkShare → yfinance
+    A-share  : AkShare → Tushare (if token + points) → yfinance
     US / HK  : yfinance
     """
     _, market = _normalize_ticker(ticker)
     if market == "cn":
+        r = _get_earnings_history_akshare(ticker)
+        if "error" not in r:
+            return r
         if os.environ.get("TUSHARE_TOKEN"):
             r = _get_earnings_history_tushare(ticker)
             if "error" not in r:
                 return r
-        r = _get_earnings_history_akshare(ticker)
-        if "error" not in r:
-            return r
 
     # yfinance path
     yf_ticker, _ = _normalize_ticker(ticker)
