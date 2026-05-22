@@ -74,6 +74,98 @@ def get_market_context(ticker: str, date: str) -> dict:
     return result
 
 
+def get_energy_commodity_prices(date: str) -> dict:
+    """
+    Fetch recent prices and trends for key energy commodities:
+    WTI Crude Oil, Natural Gas, and Coal ETF (KOL).
+    Use these to assess energy substitution dynamics and coal demand signals.
+    """
+    commodities = {
+        "wti_crude":    ("CL=F",  "WTI Crude Oil (USD/barrel)"),
+        "natural_gas":  ("NG=F",  "Henry Hub Natural Gas (USD/MMBtu)"),
+        "coal_etf":     ("KOL",   "VanEck Coal ETF (USD) — coal sector proxy"),
+    }
+    results = {}
+    for key, (symbol, description) in commodities.items():
+        entry: dict = {"symbol": symbol, "description": description}
+        for label, days in [("1w", 7), ("1m", 30), ("3m", 90)]:
+            ret = _period_return(symbol, date, days)
+            entry[f"{label}_return_pct"] = ret
+        # Try to get latest price
+        try:
+            df = _yf_recent_close(symbol, date)
+            if df is not None:
+                entry["latest_price"] = round(float(df), 4)
+        except Exception:
+            pass
+        results[key] = entry
+
+    results["interpretation_guide"] = (
+        "WTI > $85: tight global supply, coal substitution demand likely elevated. "
+        "WTI < $70: loose supply, coal demand pressure. "
+        "Natural gas rising: gas-to-coal switching reduces coal demand. "
+        "Natural gas falling: cheaper gas competes with coal. "
+        "KOL trend confirms or contradicts individual coal stock thesis."
+    )
+    return results
+
+
+def _yf_recent_close(symbol: str, date: str):
+    """Get the most recent closing price at or before `date`."""
+    start = (datetime.strptime(date, "%Y-%m-%d") - timedelta(days=10)).strftime("%Y-%m-%d")
+    hist = get_price_history(symbol, start, date)
+    if "error" in hist or not hist.get("records"):
+        return None
+    closes = [v["Close"] for v in hist["records"].values()]
+    return closes[-1] if closes else None
+
+
+def get_china_macro_indicators() -> dict:
+    """
+    Fetch China Caixin Composite PMI (most market-oriented indicator).
+    PMI > 52 = strong expansion, coal/industrial demand bullish.
+    PMI 50-52 = steady, neutral.
+    PMI < 50 = contraction, coal demand headwind.
+    """
+    try:
+        import akshare as ak
+        df = ak.index_pmi_com_cx()
+        if df is None or df.empty:
+            return {"error": "No Caixin PMI data"}
+
+        # Get the last 6 months
+        recent = df.tail(6).copy()
+        records = []
+        for _, row in recent.iterrows():
+            records.append({
+                "period":   str(row.get("日期", "")),
+                "pmi":      float(row.get("综合PMI", 0)),
+                "change":   float(row.get("变化值", 0)),
+            })
+
+        latest = records[-1] if records else {}
+        pmi_val = latest.get("pmi", 0)
+        signal = (
+            "strong_expansion" if pmi_val > 52 else
+            "moderate_expansion" if pmi_val >= 50 else
+            "contraction"
+        )
+        return {
+            "source": "Caixin Composite PMI",
+            "latest": latest,
+            "signal": signal,
+            "recent_trend": records,
+            "coal_demand_implication": (
+                "PMI expanding and rising → industrial electricity demand up → coal demand supported." if pmi_val >= 50
+                else "PMI contracting → industrial slowdown → coal demand headwind."
+            ),
+        }
+    except ImportError:
+        return {"error": "akshare not installed"}
+    except Exception as e:
+        return {"error": f"Caixin PMI fetch failed: {e}"}
+
+
 def get_northbound_flow(date: str, days_back: int = 5) -> dict:
     """
     Northbound capital flow for A-share market (沪深港通北向资金).

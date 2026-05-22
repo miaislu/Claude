@@ -2,7 +2,12 @@ from .market_data import get_price_history, get_stock_info
 from .indicators import get_technical_indicators
 from .financials import get_valuation_metrics, get_earnings_history
 from .news import get_news_headlines, get_analyst_ratings
-from .macro import get_market_context, get_northbound_flow
+from .macro import (
+    get_market_context,
+    get_northbound_flow,
+    get_energy_commodity_prices,
+    get_china_macro_indicators,
+)
 
 __all__ = [
     "get_price_history",
