@@ -1,18 +1,19 @@
 """
-Fundamental / financial data:
-  A-share  : Tushare (daily_basic + fina_indicator + income) → yfinance fallback
+Fundamental / financial data routing:
+  A-share  : Tushare → AkShare (THS) → yfinance
   US / HK  : yfinance
 """
 
 from __future__ import annotations
 
 import os
+import re
 import time
 from typing import Optional
 
 import yfinance as yf
 
-from .market_data import _normalize_ticker, _ts_code, _tushare_pro
+from .market_data import _normalize_ticker, _ts_code, _tushare_pro, _bare_cn_code
 
 
 def _ts_call(fn, *args, retries: int = 2, **kwargs):
@@ -143,6 +144,94 @@ def _get_earnings_history_tushare(ticker: str) -> dict:
         return {"ticker": ticker, "quarters": [], "error": f"tushare: {e}"}
 
 
+# ── AkShare ── A-share fundamentals (free, no points required) ────────────────
+
+def _parse_cn_value(v) -> Optional[float]:
+    """
+    Parse Chinese financial format strings to float.
+    '78.87亿' → 7887000000.0  |  '23.80%' → 23.80  |  'False'/'-' → None
+    """
+    if v is None:
+        return None
+    s = str(v).strip()
+    if s in ("False", "None", "-", ""):
+        return None
+    try:
+        if "亿" in s:
+            return round(float(s.replace("亿", "").strip()) * 1e8, 2)
+        if "万" in s:
+            return round(float(s.replace("万", "").strip()) * 1e4, 2)
+        if "%" in s:
+            return round(float(s.replace("%", "").strip()), 4)
+        return round(float(s), 4)
+    except (ValueError, TypeError):
+        return None
+
+
+def _get_valuation_metrics_akshare(ticker: str) -> dict:
+    """
+    Key profitability + leverage metrics via AkShare stock_financial_abstract_ths.
+    Most recent annual report (12-31 period).
+    Note: PE/PB not available here — falls back to yfinance for those.
+    """
+    try:
+        import akshare as ak
+    except ImportError:
+        return {"error": "akshare not installed"}
+    code = _bare_cn_code(ticker)
+    try:
+        df = ak.stock_financial_abstract_ths(symbol=code, indicator="按报告期")
+        if df is None or df.empty:
+            return {"error": "akshare: no financial abstract data"}
+        # Most recent year-end (12-31) report; fall back to last row
+        annual = df[df["报告期"].str.endswith("12-31")]
+        row = annual.iloc[-1] if not annual.empty else df.iloc[-1]
+        return {
+            "ticker": ticker, "market": "cn", "source": "akshare",
+            "as_of_date": str(row.get("报告期", "")),
+            "roe":                  _parse_cn_value(row.get("净资产收益率")),
+            "roe_diluted":          _parse_cn_value(row.get("净资产收益率-摊薄")),
+            "gross_margin":         _parse_cn_value(row.get("销售毛利率")),
+            "net_margin":           _parse_cn_value(row.get("销售净利率")),
+            "debt_to_assets":       _parse_cn_value(row.get("资产负债率")),
+            "current_ratio":        _parse_cn_value(row.get("流动比率")),
+            "quick_ratio":          _parse_cn_value(row.get("速动比率")),
+            "netprofit_growth_yoy": _parse_cn_value(row.get("净利润同比增长率")),
+            "revenue_growth_yoy":   _parse_cn_value(row.get("营业总收入同比增长率")),
+            "eps":                  _parse_cn_value(row.get("基本每股收益")),
+            "bps":                  _parse_cn_value(row.get("每股净资产")),
+            "operating_cashflow_ps":_parse_cn_value(row.get("每股经营现金流")),
+        }
+    except Exception as e:
+        return {"error": f"akshare financial abstract: {e}"}
+
+
+def _get_earnings_history_akshare(ticker: str) -> dict:
+    """Annual income statement history via AkShare stock_financial_benefit_ths."""
+    try:
+        import akshare as ak
+    except ImportError:
+        return {"error": "akshare not installed"}
+    code = _bare_cn_code(ticker)
+    try:
+        df = ak.stock_financial_benefit_ths(symbol=code, indicator="年报")
+        if df is None or df.empty:
+            return {"ticker": ticker, "quarters": [], "note": "akshare: no data"}
+        quarters = []
+        for _, row in df.head(6).iterrows():
+            quarters.append({
+                "period":           str(row.get("报告期", "")),
+                "revenue_cny":      _parse_cn_value(row.get("*营业总收入")),
+                "net_income_cny":   _parse_cn_value(
+                    row.get("*归属于母公司所有者的净利润") or row.get("*净利润")
+                ),
+                "eps":              _parse_cn_value(row.get("（一）基本每股收益")),
+            })
+        return {"ticker": ticker, "source": "akshare", "quarters": quarters}
+    except Exception as e:
+        return {"ticker": ticker, "quarters": [], "error": f"akshare earnings: {e}"}
+
+
 # ── yfinance ── US/HK (and A-share fallback) ──────────────────────────────────
 
 def _safe_float(v) -> Optional[float]:
@@ -154,12 +243,16 @@ def _safe_float(v) -> Optional[float]:
 
 def get_valuation_metrics(ticker: str) -> dict:
     """
-    A-share (Tushare token set): Tushare daily_basic + fina_indicator
-    Others / fallback           : yfinance info
+    A-share  : Tushare (if token + points) → AkShare → yfinance
+    US / HK  : yfinance
     """
     _, market = _normalize_ticker(ticker)
-    if market == "cn" and os.environ.get("TUSHARE_TOKEN"):
-        r = _get_valuation_metrics_tushare(ticker)
+    if market == "cn":
+        if os.environ.get("TUSHARE_TOKEN"):
+            r = _get_valuation_metrics_tushare(ticker)
+            if "error" not in r:
+                return r
+        r = _get_valuation_metrics_akshare(ticker)
         if "error" not in r:
             return r
 
@@ -201,12 +294,16 @@ def get_valuation_metrics(ticker: str) -> dict:
 
 def get_earnings_history(ticker: str) -> dict:
     """
-    A-share (Tushare token set): Tushare income statement
-    Others / fallback           : yfinance earnings history
+    A-share  : Tushare (if token + points) → AkShare → yfinance
+    US / HK  : yfinance
     """
     _, market = _normalize_ticker(ticker)
-    if market == "cn" and os.environ.get("TUSHARE_TOKEN"):
-        r = _get_earnings_history_tushare(ticker)
+    if market == "cn":
+        if os.environ.get("TUSHARE_TOKEN"):
+            r = _get_earnings_history_tushare(ticker)
+            if "error" not in r:
+                return r
+        r = _get_earnings_history_akshare(ticker)
         if "error" not in r:
             return r
 
