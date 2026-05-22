@@ -152,7 +152,11 @@ Steps:
    - Policy risk (A-share: NDRC, dual-carbon, energy security trade-off)
 6. Call submit_analysis with your comprehensive assessment.
 
-Be explicit about which macro factors are tailwinds vs. headwinds for this specific stock."""
+Be explicit about which macro factors are tailwinds vs. headwinds for this specific stock.
+
+IMPORTANT: If any tool returns an error (rate limit, no data), do NOT retry that tool.
+Skip to the next step, use your training knowledge for that dimension, and call
+submit_analysis with confidence reflecting what data was actually available."""
 
     result = await run_agent(
         query=query,

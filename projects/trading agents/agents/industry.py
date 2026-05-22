@@ -108,7 +108,10 @@ async def run_industry_analysis(ticker: str, date: str) -> AnalystReport:
         "structural threats/opportunities, and industry cycle stage.\n"
         "5. Call submit_analysis with your assessment.\n\n"
         "Focus on the INDUSTRY and COMPETITIVE layer — not just company financials. "
-        "Be specific about competitor names, data points, and industry dynamics."
+        "Be specific about competitor names, data points, and industry dynamics.\n\n"
+        "IMPORTANT: If any tool returns an error or empty data, do NOT retry. "
+        "Use your training knowledge for that dimension and call submit_analysis with "
+        "confidence reflecting what data was actually available."
     )
 
     result = await run_agent(

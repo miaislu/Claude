@@ -95,8 +95,11 @@ async def run_fundamental_analysis(ticker: str, date: str) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
     query = (
         f"Perform fundamental analysis for {ticker} as of {date}. "
-        f"When calling get_valuation_metrics and get_earnings_history, always pass date='{date}' "
+        f"When calling get_valuation_metrics and get_earnings_history, pass date='{date}' "
         "to ensure only data available on that date is used. "
+        "If any tool returns an error (e.g. rate limit or no data), do NOT retry. "
+        "Instead, use your training knowledge about the company and sector to complete the analysis, "
+        "and call submit_analysis with reduced confidence (0.3–0.4) noting data unavailability. "
         "Evaluate the company's valuation, financial health, growth trajectory, and earnings quality. "
         "Then call submit_analysis with your conclusions."
     )
