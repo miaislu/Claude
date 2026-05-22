@@ -297,36 +297,31 @@ def _hk_code(ticker: str) -> str:
 
 def _get_price_history_akshare_hk(ticker: str, start_date: str,
                                    end_date: str) -> dict:
-    """Fetch HK stock OHLCV via AkShare stock_hk_hist (no rate limits)."""
+    """
+    Fetch HK stock OHLCV via AkShare stock_hk_daily.
+    Uses a stable data source (not eastmoney), returns full history filtered by range.
+    """
     try:
         import akshare as ak
     except ImportError:
         return {"error": "akshare not installed"}
     code = _hk_code(ticker)
-    last_err = ""
-    for attempt in range(3):
-        try:
-            df = ak.stock_hk_hist(
-                symbol=code,
-                period="daily",
-                start_date=start_date.replace("-", ""),
-                end_date=end_date.replace("-", ""),
-                adjust="qfq",
-            )
-            break           # success
-        except Exception as e:
-            last_err = str(e)
-            if attempt < 2:
-                time.sleep(2)
-    else:
-        return {"error": f"akshare hk: {last_err}"}
+    try:
+        df = ak.stock_hk_daily(symbol=code, adjust="qfq")
+    except Exception as e:
+        return {"error": f"akshare hk: {e}"}
     if df is None or df.empty:
         return {"error": f"akshare hk: no data for {ticker}"}
-    col_map = {"日期": "date", "开盘": "Open", "收盘": "Close",
-               "最高": "High", "最低": "Low", "成交量": "Volume"}
-    df = df.rename(columns=col_map)
+    # Filter to requested date range; 'date' column is already string YYYY-MM-DD
     df["date"] = df["date"].astype(str)
+    df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
+    if df.empty:
+        return {"error": f"akshare hk: no data in range {start_date}–{end_date} for {ticker}"}
     df = df.set_index("date")
+    # Columns are already lowercase English; capitalise to match standard format
+    col_map = {"open": "Open", "high": "High", "low": "Low",
+               "close": "Close", "volume": "Volume"}
+    df = df.rename(columns=col_map)
     cols = [c for c in ["Open", "High", "Low", "Close", "Volume"] if c in df.columns]
     return {
         "ticker": ticker, "market": "hk", "source": "akshare",
