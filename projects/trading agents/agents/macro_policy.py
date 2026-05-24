@@ -39,6 +39,13 @@ _CONSUMER_SECTORS = {
     "消费", "互联网", "零售", "餐饮", "本地生活", "电商", "旅游", "平台",
 }
 
+# Tech sectors: AI capex + interest rates + export controls matter most
+_TECH_SECTORS = {
+    "technology", "semiconductor", "software", "hardware", "electronics",
+    "artificial intelligence", "cloud", "data center", "chip", "foundry",
+    "科技", "半导体", "芯片", "云计算", "软件", "电子", "人工智能",
+}
+
 TOOLS: List[dict] = [
     {
         "name": "get_stock_info",
@@ -161,7 +168,7 @@ def _is_hk(ticker: str) -> bool:
 
 
 def _detect_sector_type(stock_info: dict) -> str:
-    """Return 'cyclical', 'consumer', or 'general' based on sector/industry."""
+    """Return 'cyclical', 'consumer', 'tech', or 'general' based on sector/industry."""
     combined = " ".join([
         str(stock_info.get("sector", "")),
         str(stock_info.get("industry", "")),
@@ -170,6 +177,8 @@ def _detect_sector_type(stock_info: dict) -> str:
         return "cyclical"
     if any(s in combined for s in _CONSUMER_SECTORS):
         return "consumer"
+    if any(s in combined for s in _TECH_SECTORS):
+        return "tech"
     return "general"
 
 
@@ -211,6 +220,13 @@ async def run_macro_analysis(ticker: str, date: str) -> AnalystReport:
             "(社零 YoY, CPI trend, consumption strength/weakness).\n"
             "4. Call get_china_macro_indicators for PMI context.\n"
         )
+    elif sector_type == "tech":
+        sector_steps = (
+            "3. Call get_china_macro_indicators for PMI context (cloud/enterprise IT spending correlates with industrial activity).\n"
+            "4. Do NOT call get_energy_commodity_prices — use Framework 10 from SKILL.md instead: "
+            "assess AI capex cycle, interest rate sensitivity, export controls & 国产替代, and semiconductor inventory cycle "
+            "using your training knowledge.\n"
+        )
     else:
         sector_steps = (
             "3. Call get_china_macro_indicators for the China macro environment.\n"
@@ -234,6 +250,7 @@ Steps:
    - Consumer/Internet → Framework 6: demand-side 社零 + consumer trends
    - Mid-stream manufacturing → Framework 7: upstream cost + downstream inventory
    - Property/Finance/Infrastructure → Framework 9: monetary policy + fiscal stimulus
+   - Technology/Semiconductors/AI → Framework 10: AI capex cycle + rates + export controls + chip inventory
 7. Call submit_analysis with your comprehensive assessment.
 
 Be explicit about tailwinds vs. headwinds for this specific stock and sector.

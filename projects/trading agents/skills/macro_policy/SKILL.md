@@ -222,6 +222,47 @@ Property weakness → lower land sales → less municipal revenue → tighter fi
 
 ---
 
+## Framework 10: 科技板块 / Technology
+
+**Applicable to**: Semiconductors (中芯国际/SMIC, 寒武纪, ASML), AI hardware (NVDA, 华为), cloud/software (阿里云, 腾讯云), hardware supply chain
+
+**Core principle: Three independent demand drivers — AI capex cycle, interest rate environment, and tech de-coupling/substitution.**
+
+### Driver 1: AI Capex Cycle（算力需求）
+- **Hyperscaler capex** (AWS/Azure/GCP/阿里云/腾讯云 quarterly reports): rising capex = strong GPU/server demand → bullish for chip designers and foundries
+- **AI training cluster buildout**: large model training requires thousands of accelerators → demand spikes are lumpy but large
+- **AI inference scaling**: every deployed LLM application requires inference compute → more sustained, predictable demand
+- **China domestic AI**: DeepSeek, Alibaba Qwen, Baidu ERNIE buildout → demand for domestic chips (华为 Ascend, 寒武纪) as Nvidia H100/H200 exports restricted
+
+### Driver 2: Interest Rate & Valuation Sensitivity
+- High-growth tech stocks are long-duration assets — their valuations are highly sensitive to discount rates
+- **Rising rates** (Fed tightening): compress P/E multiples for growth stocks, even if fundamentals are intact
+- **Falling rates** (Fed cutting): multiple expansion tailwind, especially for unprofitable/high-P/E growth names
+- Rule of thumb: tech P/E contracts ~2-3x for every 100bps of rate rise; expands similarly on cuts
+- **For Chinese tech**: PBOC rate policy + CNY stability matter more than Fed for domestic valuations
+
+### Driver 3: US-China Tech Decoupling & 国产替代
+- **Export controls**: US restrictions on Nvidia A100/H100/H200/B200 to China → accelerates domestic substitution (华为 Ascend 910B/910C, 寒武纪 MLU590)
+- **SMIC / foundry capacity**: advanced node capacity (28nm, 14nm, 7nm attempt) directly affects domestic chip supply
+- **EDA/materials substitution**: Synopsys/Cadence alternatives, semiconductor materials supply chain localization
+- **Policy support**: 大基金三期, major semiconductor fund injections → government backstop for domestic fabs
+- Signal: Rising state funding + export control escalation → accelerating domestic substitution cycle (bullish for domestic chip names)
+
+### Driver 4: Semiconductor Inventory Cycle
+- **Boom**: inventory depletion + new application demand → foundry utilization rises → ASP increases
+- **Bust**: excess inventory correction → utilization falls → ASP pressure → foundry revenue decline
+- Key indicators: DRAM/NAND spot prices (Samsung, Micron guidance), PC/smartphone shipment forecasts, book-to-bill ratio
+- China context: smartphone recovery (华为 Mate revival) + AI PC cycle = next upcycle catalyst for consumer semiconductors
+
+### Output for Tech Stocks
+Key factors must address:
+1. Where are we in the AI capex cycle? (accelerating / plateauing / pulling back)
+2. Interest rate trajectory and current tech valuation multiple vs. history
+3. Export control status — is domestic substitution accelerating?
+4. Semiconductor inventory position (destocking done? new upcycle started?)
+
+---
+
 ## Output Guidelines
 
 Call `submit_analysis` with a **sector-aware** assessment. For energy/commodity stocks, your `key_factors` must include:
