@@ -83,7 +83,7 @@ def _load_single_agent(name: str):
 
 
 def _save_report(ticker: str, date: str, content: str, tag: str = "") -> Path:
-    output_dir = Path.home() / ".trading-agents" / "reports"
+    output_dir = Path(__file__).parent / "reports"
     output_dir.mkdir(parents=True, exist_ok=True)
     filename = output_dir / f"{ticker.replace('.', '_')}_{date.replace('-', '')}{tag}.md"
     filename.write_text(content, encoding="utf-8")
