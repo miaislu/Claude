@@ -222,7 +222,66 @@ def _get_stock_info_akshare(ticker: str) -> dict:
     return base
 
 
-# ── yfinance ── US/HK prices (primary) ────────────────────────────────────────
+# ── Polygon.io ── US prices (primary) ────────────────────────────────────────
+
+def _get_price_history_polygon(ticker: str, start_date: str, end_date: str) -> dict:
+    """Fetch US stock OHLCV via Polygon.io (reliable, no rate limits on free tier)."""
+    key = os.environ.get("POLYGON_API_KEY", "")
+    if not key:
+        return {"error": "POLYGON_API_KEY not set"}
+    try:
+        from polygon import RESTClient
+        client = RESTClient(key)
+        aggs = list(client.list_aggs(
+            ticker, 1, "day", start_date, end_date,
+            adjusted=True, sort="asc", limit=5000,
+        ))
+        if not aggs:
+            return {"error": f"polygon: no data for {ticker}"}
+        records = {}
+        for bar in aggs:
+            # timestamp is Unix milliseconds → YYYY-MM-DD
+            from datetime import timezone
+            import datetime as _dt
+            d = _dt.datetime.fromtimestamp(bar.timestamp / 1000, tz=timezone.utc).strftime("%Y-%m-%d")
+            records[d] = {
+                "Open":   round(float(bar.open), 4),
+                "High":   round(float(bar.high), 4),
+                "Low":    round(float(bar.low), 4),
+                "Close":  round(float(bar.close), 4),
+                "Volume": int(bar.volume or 0),
+            }
+        return {"ticker": ticker, "market": "us", "source": "polygon",
+                "start_date": start_date, "end_date": end_date,
+                "records": records, "count": len(records)}
+    except Exception as e:
+        return {"error": f"polygon: {e}"}
+
+
+def _get_stock_info_polygon(ticker: str) -> dict:
+    """Fetch US stock metadata via Polygon.io ticker details."""
+    key = os.environ.get("POLYGON_API_KEY", "")
+    if not key:
+        return {"error": "POLYGON_API_KEY not set"}
+    try:
+        from polygon import RESTClient
+        client = RESTClient(key)
+        d = client.get_ticker_details(ticker)
+        return {
+            "ticker": ticker, "market": "us", "source": "polygon",
+            "name":       d.name or "",
+            "sector":     (d.sic_description or ""),
+            "industry":   (d.sic_description or ""),
+            "exchange":   (d.primary_exchange or ""),
+            "market_cap": d.market_cap,
+            "currency":   (d.currency_name or "USD"),
+            "description": (d.description or "")[:200] if d.description else "",
+        }
+    except Exception as e:
+        return {"error": f"polygon: {e}"}
+
+
+# ── yfinance ── US/HK prices (secondary) ──────────────────────────────────────
 
 def _yf_download_with_retry(yf_ticker: str, start: str, end: str,
                              retries: int = 3) -> Optional[object]:
@@ -337,7 +396,7 @@ def get_price_history(ticker: str, start_date: str, end_date: str) -> dict:
     """
     A-share  : baostock → Tushare → AkShare
     HK       : AkShare → yfinance → Alpha Vantage
-    US       : yfinance → Alpha Vantage
+    US       : Polygon.io → yfinance → Alpha Vantage
     """
     _, market = _normalize_ticker(ticker)
     if market == "cn":
@@ -351,7 +410,12 @@ def get_price_history(ticker: str, start_date: str, end_date: str) -> dict:
         r = _get_price_history_akshare_hk(ticker, start_date, end_date)
         if "error" not in r:
             return r
-    # US (and HK fallback)
+    # US (primary: Polygon; fallback: yfinance → Alpha Vantage)
+    # Also used as HK fallback
+    if market == "us":
+        r = _get_price_history_polygon(ticker, start_date, end_date)
+        if "error" not in r:
+            return r
     yf_ticker, _ = _normalize_ticker(ticker)
     df = _yf_download_with_retry(yf_ticker, start_date, end_date)
     if df is not None:
@@ -378,6 +442,11 @@ def get_stock_info(ticker: str) -> dict:
             if "error" not in rt:
                 return rt
         return r                   # return akshare result even if name is empty
+    # US: Polygon first, yfinance fallback
+    if market == "us":
+        r = _get_stock_info_polygon(ticker)
+        if "error" not in r:
+            return r
     yf_ticker, _ = _normalize_ticker(ticker)
     try:
         info = yf.Ticker(yf_ticker).info
