@@ -1,7 +1,7 @@
 """
 Fundamental / financial data routing:
-  A-share  : Tushare → AkShare (THS) → yfinance
-  US / HK  : yfinance
+  A-share  : AkShare (THS) → Tushare → yfinance
+  US / HK  : FMP (Financial Modeling Prep) → yfinance
 """
 
 from __future__ import annotations
@@ -240,6 +240,101 @@ def _get_earnings_history_akshare(ticker: str, date: Optional[str] = None) -> di
         return {"ticker": ticker, "quarters": [], "error": f"akshare earnings: {e}"}
 
 
+# ── FMP ── US / HK fundamentals (primary) ────────────────────────────────────
+
+_FMP_BASE = "https://financialmodelingprep.com/stable"
+
+
+def _fmp_get(path: str, params: dict) -> list:
+    """Call FMP stable API. Returns JSON list or [] on error/missing key."""
+    key = os.environ.get("FMP_API_KEY", "")
+    if not key:
+        return []
+    try:
+        import requests
+        r = requests.get(f"{_FMP_BASE}/{path}",
+                         params={**params, "apikey": key}, timeout=12)
+        if r.status_code != 200 or not r.text:
+            return []
+        data = r.json()
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
+def _get_valuation_metrics_fmp(ticker: str, date: Optional[str] = None) -> dict:
+    """
+    Valuation ratios + key metrics via FMP stable API.
+    Covers PE, PB, EV/EBITDA, margins, ROE, debt ratios.
+    """
+    if not os.environ.get("FMP_API_KEY"):
+        return {"error": "FMP_API_KEY not set"}
+
+    ratios = _fmp_get("ratios", {"symbol": ticker, "limit": 4})
+    if not ratios:
+        return {"error": f"fmp: no ratios data for {ticker}"}
+
+    # Pick most recent row on or before date
+    if date:
+        ratios = [r for r in ratios if r.get("date", "") <= date]
+    if not ratios:
+        return {"error": f"fmp: no ratios data for {ticker} as of {date}"}
+    row = ratios[0]
+
+    # Key metrics for EV/EBITDA and cash flow ratios
+    km_rows = _fmp_get("key-metrics", {"symbol": ticker, "limit": 4})
+    if date:
+        km_rows = [r for r in km_rows if r.get("date", "") <= date]
+    km = km_rows[0] if km_rows else {}
+
+    return {
+        "ticker": ticker, "market": "us", "source": "fmp",
+        "as_of_date":       row.get("date"),
+        "reported_currency": row.get("reportedCurrency", "USD"),
+        "pe_trailing":       _safe_float(row.get("peRatio")),
+        "pb_ratio":          _safe_float(row.get("priceToBookRatio")),
+        "ps_ratio":          _safe_float(row.get("priceToSalesRatio")),
+        "ev_ebitda":         _safe_float(km.get("evToEBITDA")),
+        "ev_fcf":            _safe_float(km.get("evToFreeCashFlow")),
+        "gross_margin":      _safe_float(row.get("grossProfitMargin")),
+        "operating_margin":  _safe_float(row.get("operatingProfitMargin")),
+        "net_margin":        _safe_float(row.get("netProfitMargin")),
+        "roe":               _safe_float(row.get("returnOnEquity")),
+        "roa":               _safe_float(row.get("returnOnAssets")),
+        "debt_to_equity":    _safe_float(row.get("debtEquityRatio")),
+        "current_ratio":     _safe_float(row.get("currentRatio")),
+        "dividend_yield":    _safe_float(row.get("dividendYield")),
+        "peg_ratio":         _safe_float(row.get("priceEarningsToGrowthRatio")),
+        "income_quality":    _safe_float(km.get("incomeQuality")),
+    }
+
+
+def _get_earnings_history_fmp(ticker: str, date: Optional[str] = None) -> dict:
+    """Annual income statement history via FMP stable API."""
+    if not os.environ.get("FMP_API_KEY"):
+        return {"error": "FMP_API_KEY not set"}
+
+    rows = _fmp_get("income-statement", {"symbol": ticker, "limit": 5})  # free tier max=5
+    if not rows:
+        return {"ticker": ticker, "quarters": [], "error": f"fmp: no income data for {ticker}"}
+
+    if date:
+        rows = [r for r in rows if r.get("date", "") <= date]
+
+    quarters = []
+    for row in rows[:8]:
+        quarters.append({
+            "period":           row.get("date"),
+            "revenue":          row.get("revenue"),
+            "net_income":       row.get("netIncome"),
+            "eps":              row.get("eps"),
+            "gross_margin":     row.get("grossProfitRatio"),
+            "net_margin":       row.get("netProfitMargin"),
+            "reported_currency": row.get("reportedCurrency", "USD"),
+        })
+    return {"ticker": ticker, "source": "fmp", "quarters": quarters}
+
+
 # ── yfinance ── US/HK (and A-share fallback) ──────────────────────────────────
 
 def _safe_float(v) -> Optional[float]:
@@ -252,7 +347,7 @@ def _safe_float(v) -> Optional[float]:
 def get_valuation_metrics(ticker: str, date: Optional[str] = None) -> dict:
     """
     A-share  : AkShare → Tushare (if token + points) → yfinance
-    US / HK  : yfinance
+    US / HK  : FMP → yfinance
     date     : YYYY-MM-DD — only return data available on or before this date.
                Defaults to None (latest available).
     """
@@ -265,6 +360,10 @@ def get_valuation_metrics(ticker: str, date: Optional[str] = None) -> dict:
             r = _get_valuation_metrics_tushare(ticker, date=date)
             if "error" not in r:
                 return r
+    elif os.environ.get("FMP_API_KEY"):
+        r = _get_valuation_metrics_fmp(ticker, date=date)
+        if "error" not in r:
+            return r
 
     # yfinance path
     yf_ticker, _ = _normalize_ticker(ticker)
@@ -305,7 +404,7 @@ def get_valuation_metrics(ticker: str, date: Optional[str] = None) -> dict:
 def get_earnings_history(ticker: str, date: Optional[str] = None) -> dict:
     """
     A-share  : AkShare → Tushare (if token + points) → yfinance
-    US / HK  : yfinance
+    US / HK  : FMP → yfinance
     date     : YYYY-MM-DD — only return reports available on or before this date.
                Defaults to None (latest available).
     """
@@ -318,6 +417,10 @@ def get_earnings_history(ticker: str, date: Optional[str] = None) -> dict:
             r = _get_earnings_history_tushare(ticker)
             if "error" not in r:
                 return r
+    elif os.environ.get("FMP_API_KEY"):
+        r = _get_earnings_history_fmp(ticker, date=date)
+        if "error" not in r:
+            return r
 
     # yfinance path
     yf_ticker, _ = _normalize_ticker(ticker)
