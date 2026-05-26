@@ -23,9 +23,9 @@ _TABLES: dict[str, dict] = {
         "fast":       {"provider": "anthropic", "model": "claude-haiku-4-5-20251001", "thinking": False},
     },
     "deepseek": {
-        "deep_think": {"provider": "deepseek", "model": "deepseek-chat", "thinking": False},
-        "standard":   {"provider": "deepseek", "model": "deepseek-chat", "thinking": False},
-        "fast":       {"provider": "deepseek", "model": "deepseek-chat", "thinking": False},
+        "deep_think": {"provider": "deepseek", "model": "deepseek-v4-pro",   "thinking": False},
+        "standard":   {"provider": "deepseek", "model": "deepseek-v4-pro",   "thinking": False},
+        "fast":       {"provider": "deepseek", "model": "deepseek-chat",      "thinking": False},  # v4-flash
     },
 }
 
