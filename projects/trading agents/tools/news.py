@@ -97,6 +97,53 @@ def get_cn_stock_news(ticker: str, max_items: int = 10) -> dict:
         return {"ticker": ticker, "error": str(e), "articles": []}
 
 
+def get_cn_macro_news(keywords: list | None = None, max_items: int = 15) -> dict:
+    """
+    Fetch broad Chinese macro/financial news from 财新 (Caixin) via AkShare.
+    Returns market overviews, geopolitical events, sector dynamics.
+    No ticker needed — covers domestic and international macro events.
+
+    Use keywords to filter: e.g. ['煤炭','矿难','霍尔木兹','伊朗','减产']
+    Without keywords: returns latest 15 general financial news items.
+
+    Examples of covered content:
+    - 霍尔木兹海峡封锁 → energy supply disruption
+    - 煤矿安全事故 / 山西整改 → domestic coal supply shock
+    - OPEC减产 → global oil supply
+    - 央行降准 → monetary easing signal
+    - 科技板块资金流向 → sector rotation
+    """
+    try:
+        import akshare as ak
+        df = ak.stock_news_main_cx()
+        if df is None or df.empty:
+            return {"error": "财新新闻获取失败", "articles": []}
+
+        if keywords:
+            def _matches(row) -> bool:
+                text = " ".join(str(v) for v in row.values)
+                return any(kw in text for kw in keywords)
+            df = df[df.apply(_matches, axis=1)]
+
+        articles = []
+        for _, row in df.head(max_items).iterrows():
+            articles.append({
+                "tag":     str(row.get("tag", "")),
+                "summary": str(row.get("summary", "")),
+                "url":     str(row.get("url", "")),
+            })
+        return {
+            "source":   "caixin_via_akshare",
+            "keywords": keywords,
+            "count":    len(articles),
+            "articles": articles,
+        }
+    except ImportError:
+        return {"error": "akshare not installed", "articles": []}
+    except Exception as e:
+        return {"error": str(e), "articles": []}
+
+
 def get_analyst_ratings(ticker: str) -> dict:
     """Fetch recent analyst price target changes and upgrade/downgrades."""
     yf_ticker, _ = _normalize_ticker(ticker)

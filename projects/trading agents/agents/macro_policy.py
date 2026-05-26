@@ -20,7 +20,7 @@ from tools.macro import (
     get_china_macro_indicators,
     get_china_consumer_data,
 )
-from tools.news import get_news_headlines, get_cn_stock_news
+from tools.news import get_news_headlines, get_cn_stock_news, get_cn_macro_news
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
 
 _SKILLS_DIR = Path(__file__).parent.parent / "skills"
@@ -170,6 +170,33 @@ TOOLS: List[dict] = [
         },
     },
     {
+        "name": "get_cn_macro_news",
+        "description": (
+            "Fetch broad Chinese macro/financial news from 财新 (Caixin). "
+            "Covers geopolitical events, energy supply disruptions, domestic policy, "
+            "sector dynamics — no ticker needed. "
+            "Use keywords to filter: e.g. ['煤炭','矿难'] for coal supply news, "
+            "['伊朗','霍尔木兹','OPEC'] for Middle East energy news, "
+            "['央行','降准','降息'] for monetary policy news. "
+            "Call WITHOUT keywords to get the latest 15 top financial headlines."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "keywords": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": (
+                        "Optional keyword filter list (Chinese). "
+                        "e.g. ['煤炭','矿难'] or ['伊朗','能源'] or ['央行'] "
+                        "Leave empty for all latest news."
+                    ),
+                },
+                "max_items": {"type": "integer", "description": "Max articles, default 15"},
+            },
+        },
+    },
+    {
         "name": "get_cn_stock_news",
         "description": (
             "Fetch Chinese-language financial news for A-share stocks via 东方财富. "
@@ -203,6 +230,7 @@ TOOL_REGISTRY = {
     "get_southbound_flow": get_southbound_flow,
     "get_news_headlines": get_news_headlines,
     "get_cn_stock_news": get_cn_stock_news,
+    "get_cn_macro_news": get_cn_macro_news,
 }
 
 
@@ -257,49 +285,48 @@ async def run_macro_analysis(ticker: str, date: str) -> AnalystReport:
     # Build sector-specific tool steps
     if sector_type == "cyclical":
         sector_steps = (
-            "3. Call get_energy_commodity_prices to assess energy market tightness, "
-            "geopolitical supply risk, and commodity price trends.\n"
-            "4. Call get_china_macro_indicators for PMI trend (industrial demand cycle).\n"
-            "5. Call get_news_headlines('XLE') or get_news_headlines('USO') for latest "
-            "energy geopolitical news (Middle East, OPEC, Iran, Russia supply events).\n"
+            "3. Call get_energy_commodity_prices to assess energy market tightness.\n"
+            "4. Call get_china_macro_indicators for PMI trend.\n"
+            "5. Call get_cn_macro_news with keywords like ['能源','石油','煤炭','中东','伊朗','OPEC'] "
+            "to search for latest geopolitical energy supply events and domestic macro news.\n"
             + (
-                "6. Call get_cn_stock_news for latest Chinese-language news: "
-                "coal mine accidents, safety inspection notices, production curbs, "
-                "domestic supply disruptions — these events are only covered in Chinese media.\n"
-                if is_a else ""
+                "6. Call get_cn_stock_news to get company-specific Chinese news: "
+                "coal mine accidents, safety inspections, production curbs.\n"
+                if is_a else
+                "6. Call get_news_headlines('XLE') for English energy sector news.\n"
             )
         )
     elif sector_type == "consumer":
         sector_steps = (
-            "3. Call get_china_consumer_data to assess the consumer spending environment "
-            "(社零 YoY, CPI trend, consumption strength/weakness).\n"
+            "3. Call get_china_consumer_data for 社零 and CPI data.\n"
             "4. Call get_china_macro_indicators for PMI context.\n"
+            "5. Call get_cn_macro_news with keywords like ['消费','社零','刺激政策','平台监管'] "
+            "for latest domestic consumption and policy news.\n"
             + (
-                "5. Call get_cn_stock_news for latest Chinese-language news on "
-                "domestic consumption policy, platform regulation, or competitive events.\n"
+                "6. Call get_cn_stock_news for company-specific Chinese news.\n"
                 if is_a else
-                "5. Call get_news_headlines(ticker) for latest news on "
-                "competitive dynamics, regulatory changes, or macro catalysts.\n"
+                "6. Call get_news_headlines(ticker) for English news.\n"
             )
         )
     elif sector_type == "tech":
         sector_steps = (
             "3. Call get_china_macro_indicators for PMI context.\n"
-            "4. Call get_news_headlines(ticker) for latest news on AI capex, "
-            "export controls, or semiconductor developments.\n"
+            "4. Call get_cn_macro_news with keywords like ['芯片','AI','人工智能','出口管制','国产替代'] "
+            "for latest tech policy and geopolitical news.\n"
             + (
-                "5. Call get_cn_stock_news for Chinese-language tech policy news "
-                "(国产替代 progress, MIIT announcements, data security regulations).\n"
-                if is_a else ""
+                "5. Call get_cn_stock_news for Chinese-language tech sector events.\n"
+                if is_a else
+                "5. Call get_news_headlines(ticker) for English tech news.\n"
             )
         )
     else:
         sector_steps = (
             "3. Call get_china_macro_indicators for the China macro environment.\n"
+            "4. Call get_cn_macro_news (no keywords) for the latest top financial headlines.\n"
             + (
-                "4. Call get_cn_stock_news for latest domestic news and events.\n"
+                "5. Call get_cn_stock_news for company-specific domestic news.\n"
                 if is_a else
-                "4. Call get_news_headlines(ticker) for latest relevant news.\n"
+                "5. Call get_news_headlines(ticker) for latest relevant news.\n"
             )
         )
 
