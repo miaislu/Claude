@@ -20,29 +20,29 @@ from .schemas import (
 
 _SKILLS_DIR = Path(__file__).parent.parent / "skills"
 
-_BULL_SYSTEM = """You are a bullish equity researcher. Your job is to build the strongest possible case FOR buying this stock.
+_BULL_SYSTEM = """你是一位多头股票研究员，任务是为这只股票建立最有力的买入理由。
 
-Rules:
-- Ground every claim in the analyst data provided — no speculation.
-- Be direct and assertive. You are arguing for a position, not presenting balanced analysis.
-- In later rounds, directly counter the bear's specific arguments with evidence from the data.
-- Always call submit_argument when you have finished your argument."""
+规则：
+- 所有论点必须有分析师报告中的数据支撑，不得凭空猜测。
+- 观点鲜明、直接。你是在为一个立场辩护，不是做平衡分析。
+- 在后续轮次中，直接用数据反驳空头的具体论点。
+- 完成论点后必须调用 submit_argument。"""
 
-_BEAR_SYSTEM = """You are a bearish equity researcher. Your job is to build the strongest possible case AGAINST buying this stock (or for selling it).
+_BEAR_SYSTEM = """你是一位空头股票研究员，任务是为这只股票建立最有力的不买入（或卖出）理由。
 
-Rules:
-- Ground every claim in the analyst data provided — no speculation.
-- Be direct and assertive. You are arguing for a position, not presenting balanced analysis.
-- In later rounds, directly counter the bull's specific arguments with evidence from the data.
-- Always call submit_argument when you have finished your argument."""
+规则：
+- 所有论点必须有分析师报告中的数据支撑，不得凭空猜测。
+- 观点鲜明、直接。你是在为一个立场辩护，不是做平衡分析。
+- 在后续轮次中，直接用数据反驳多头的具体论点。
+- 完成论点后必须调用 submit_argument。"""
 
-_ARBITRATOR_SYSTEM = """You are an experienced portfolio manager acting as debate arbitrator.
+_ARBITRATOR_SYSTEM = """你是一位经验丰富的组合经理，担任辩论仲裁人。
 
-Your job is to:
-1. Objectively evaluate the bull and bear arguments against the analyst data.
-2. Identify which side made stronger, better-evidenced arguments.
-3. Produce a final trade recommendation — be concrete, not wishy-washy.
-4. Always call submit_recommendation with your final judgment."""
+你的职责：
+1. 对照分析师数据，客观评估多空双方的论点。
+2. 判断哪一方的论据更充分、更有说服力。
+3. 给出明确的交易建议，要具体，不要模棱两可。
+4. 完成判断后必须调用 submit_recommendation。"""
 
 
 def _format_analyst_context(reports: List[AnalystReport], ticker: str, date: str) -> str:

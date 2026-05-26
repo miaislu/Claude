@@ -1,6 +1,5 @@
 """
-Final report generator — combines analyst reports, debate result, and risk parameters
-into a structured Markdown document for human decision-making.
+Final report generator — Chinese output.
 """
 
 from __future__ import annotations
@@ -10,8 +9,14 @@ from typing import List, Optional
 
 from agents.schemas import AnalystReport, DebateResult, RiskParameters
 
-_SIGNAL_ICON = {"bullish": "▲ BULLISH", "bearish": "▼ BEARISH", "neutral": "◆ NEUTRAL"}
-_CONF_LABEL = {True: "High", False: "Moderate"}
+_SIGNAL_ICON  = {"bullish": "▲ 看多", "bearish": "▼ 看空", "neutral": "◆ 中性"}
+_AGENT_NAMES  = {
+    "technical":    "技术分析",
+    "fundamental":  "基本面分析",
+    "sentiment":    "情绪分析",
+    "macro_policy": "宏观政策",
+    "industry":     "行业分析",
+}
 
 
 def _conf_bar(confidence: float) -> str:
@@ -28,109 +33,108 @@ def generate_full_report(
 ) -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     final_signal = debate.final_signal if debate else _analyst_consensus(analyst_reports)
-    final_conf = debate.final_confidence if debate else _avg_confidence(analyst_reports)
+    final_conf   = debate.final_confidence if debate else _avg_confidence(analyst_reports)
 
     lines: List[str] = []
 
-    # ── Header ─────────────────────────────────────────────────────────────────
+    # ── 标题 ───────────────────────────────────────────────────────────────────
     lines += [
-        f"# Trading Analysis Report: {ticker}",
-        f"**Analysis Date:** {date}  |  **Generated:** {now}",
+        f"# 交易分析报告：{ticker}",
+        f"**分析日期：** {date}  |  **生成时间：** {now}",
         "",
         "---",
         "",
     ]
 
-    # ── Final Verdict ──────────────────────────────────────────────────────────
+    # ── 最终裁决 ───────────────────────────────────────────────────────────────
     lines += [
-        "## Final Verdict",
+        "## 最终裁决",
         "",
         f"**{_SIGNAL_ICON[final_signal]}**",
-        f"**Confidence:** {_conf_bar(final_conf)}",
+        f"**置信度：** {_conf_bar(final_conf)}",
         "",
     ]
     if debate:
         lines += [
-            f"**Trade Recommendation:** {debate.trade_recommendation}",
+            f"**操作建议：** {debate.trade_recommendation}",
             "",
-            f"**Rationale:** {debate.rationale}",
+            f"**仲裁理由：** {debate.rationale}",
             "",
         ]
 
-    # ── Risk Parameters ────────────────────────────────────────────────────────
+    # ── 风险参数 ───────────────────────────────────────────────────────────────
     if risk and risk.current_price:
         lines += [
-            "## Risk Parameters",
+            "## 风险参数",
             "",
-            f"| Parameter | Value |",
-            f"|---|---|",
-            f"| Current Price | {risk.current_price} |",
-            f"| Recommended Position | **{risk.position_size_pct:.1f}% of portfolio** |",
+            "| 参数 | 数值 |",
+            "|---|---|",
+            f"| 当前价格 | {risk.current_price} |",
+            f"| 建议仓位 | **{risk.position_size_pct:.1f}% 组合占比** |",
         ]
         if risk.stop_loss_price:
-            lines.append(f"| Stop Loss | {risk.stop_loss_price} ({risk.stop_loss_pct:.1f}% from entry) |")
+            lines.append(f"| 止损价 | {risk.stop_loss_price}（距入场 {risk.stop_loss_pct:.1f}%）|")
         if risk.take_profit_price:
-            lines.append(f"| Take Profit | {risk.take_profit_price} ({risk.take_profit_pct:.1f}% from entry) |")
+            lines.append(f"| 止盈价 | {risk.take_profit_price}（距入场 {risk.take_profit_pct:.1f}%）|")
         if risk.risk_reward_ratio:
-            lines.append(f"| Risk/Reward | {risk.risk_reward_ratio:.1f} : 1 |")
+            lines.append(f"| 盈亏比 | {risk.risk_reward_ratio:.1f} : 1 |")
         if risk.atr_14:
-            lines.append(f"| ATR (14) | {risk.atr_14} |")
+            lines.append(f"| ATR(14) | {risk.atr_14} |")
         lines += ["", f"*{risk.position_rationale}*", ""]
         if risk.warnings:
-            lines.append("**Warnings:**")
+            lines.append("**风险提示：**")
             lines += [f"- ⚠️  {w}" for w in risk.warnings]
             lines.append("")
 
-    # ── Debate Summary ─────────────────────────────────────────────────────────
+    # ── 研究员辩论 ─────────────────────────────────────────────────────────────
     if debate:
         lines += [
-            "## Researcher Debate",
+            "## 研究员辩论",
             "",
-            "### Winning Arguments",
+            "### 获胜论点",
         ]
         lines += [f"- {a}" for a in debate.winning_arguments]
         lines += [
             "",
-            "### Key Risks to Monitor",
+            "### 需监控的关键风险",
         ]
         lines += [f"- {r}" for r in debate.key_risks]
 
-        # Debate transcript (collapsed)
-        lines += ["", "### Debate Transcript", ""]
+        lines += ["", "### 辩论记录", ""]
         all_rounds = sorted(
-            [(a.round_num, "Bull", a) for a in debate.bull_arguments]
-            + [(a.round_num, "Bear", a) for a in debate.bear_arguments],
+            [(a.round_num, "多头", a) for a in debate.bull_arguments]
+            + [(a.round_num, "空头", a) for a in debate.bear_arguments],
             key=lambda x: (x[0], x[1]),
         )
         for round_num, side, arg in all_rounds:
-            lines.append(f"**Round {round_num} — {side} Researcher**")
+            lines.append(f"**第{round_num}轮 — {side}研究员**")
             lines.append(arg.argument)
             if arg.key_points:
-                lines.append("Key points: " + " · ".join(arg.key_points))
+                lines.append("关键论点：" + " · ".join(arg.key_points))
             lines.append("")
 
-    # ── Analyst Reports ────────────────────────────────────────────────────────
-    lines += ["---", "", "## Analyst Reports", ""]
+    # ── 分析师报告 ─────────────────────────────────────────────────────────────
+    lines += ["---", "", "## 分析师报告", ""]
     for r in analyst_reports:
-        icon = _SIGNAL_ICON[r.signal]
+        icon        = _SIGNAL_ICON[r.signal]
+        agent_name  = _AGENT_NAMES.get(r.agent, r.agent.replace("_", " ").title())
         lines += [
-            f"### {r.agent.replace('_', ' ').title()}",
-            f"**Signal:** {icon}  **Confidence:** {_conf_bar(r.confidence)}",
+            f"### {agent_name}",
+            f"**信号：** {icon}  **置信度：** {_conf_bar(r.confidence)}",
             "",
             r.summary,
             "",
-            "**Key Factors:**",
+            "**关键因素：**",
         ]
         lines += [f"- {f}" for f in r.key_factors]
-        lines += ["", "**Risks:**"]
+        lines += ["", "**风险：**"]
         lines += [f"- {risk_}" for risk_ in r.risks]
         lines.append("")
 
-    # ── Footer ─────────────────────────────────────────────────────────────────
+    # ── 免责声明 ───────────────────────────────────────────────────────────────
     lines += [
         "---",
-        "*This report is for informational purposes only and does not constitute financial advice. "
-        "Always conduct your own due diligence before making investment decisions.*",
+        "*本报告仅供参考，不构成投资建议。投资决策前请做好独立尽职调查。*",
     ]
 
     return "\n".join(lines)

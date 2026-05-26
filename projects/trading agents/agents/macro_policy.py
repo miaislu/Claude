@@ -257,7 +257,9 @@ Be explicit about tailwinds vs. headwinds for this specific stock and sector.
 
 IMPORTANT: If any tool returns an error (rate limit, no data), do NOT retry.
 Use your training knowledge for that dimension and call submit_analysis with
-confidence reflecting what data was actually available."""
+confidence reflecting what data was actually available.
+
+请全程使用中文回复，包括所有分析内容、关键因素、风险描述和操作建议。"""
 
     result = await run_agent(
         query=query,

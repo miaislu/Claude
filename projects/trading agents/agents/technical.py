@@ -90,7 +90,8 @@ async def run_technical_analysis(ticker: str, date: str) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
     query = (
         f"Perform technical analysis for {ticker} as of {date}. "
-        "Use the available tools to fetch indicator data, then call submit_analysis with your conclusions."
+        "Use the available tools to fetch indicator data, then call submit_analysis with your conclusions. "
+        "请全程使用中文回复，包括分析摘要、关键因素和风险描述。"
     )
 
     result = await run_agent(

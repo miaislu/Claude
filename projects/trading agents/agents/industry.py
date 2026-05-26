@@ -111,7 +111,8 @@ async def run_industry_analysis(ticker: str, date: str) -> AnalystReport:
         "Be specific about competitor names, data points, and industry dynamics.\n\n"
         "IMPORTANT: If any tool returns an error or empty data, do NOT retry. "
         "Use your training knowledge for that dimension and call submit_analysis with "
-        "confidence reflecting what data was actually available."
+        "confidence reflecting what data was actually available. "
+        "请全程使用中文回复，包括分析摘要、关键因素和风险描述。"
     )
 
     result = await run_agent(

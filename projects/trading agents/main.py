@@ -19,7 +19,7 @@ from agents.schemas import AnalystReport, DebateResult, RiskParameters
 from harness.orchestrator import run_analyst_team, consensus_signal, run_full_pipeline
 from output.report import generate_full_report
 
-_SIGNAL_ICON = {"bullish": "▲", "bearish": "▼", "neutral": "◆"}
+_SIGNAL_ICON = {"bullish": "▲ 看多", "bearish": "▼ 看空", "neutral": "◆ 中性"}
 
 
 def _parse_args() -> dict:
@@ -92,10 +92,9 @@ def _save_report(ticker: str, date: str, content: str, tag: str = "") -> Path:
 
 async def run_single_agent(ticker: str, date: str, agent_name: str) -> None:
     """Run one analyst agent and print a simple report."""
-    print(f"[{agent_name}] Analyzing {ticker} as of {date}...")
+    print(f"[{agent_name}] 分析 {ticker}，日期 {date}...")
     fn = _load_single_agent(agent_name)
     report = await fn(ticker, date)
-    icon = _SIGNAL_ICON[report.signal]
 
     output = generate_full_report(
         ticker=ticker,
@@ -107,7 +106,7 @@ async def run_single_agent(ticker: str, date: str, agent_name: str) -> None:
     print("\n" + output)
 
     path = _save_report(ticker, date, output, f"_{agent_name}")
-    print(f"\nReport saved: {path}")
+    print(f"\n报告已保存：{path}")
 
 
 async def run_pipeline(
@@ -117,8 +116,12 @@ async def run_pipeline(
     debate_rounds: int,
 ) -> None:
     """Run the full pipeline and generate a complete report."""
-    mode = "analysts only" if no_debate else f"full pipeline ({debate_rounds}-round debate)"
-    print(f"Analyzing {ticker} as of {date}  [{mode}]")
+    _AGENT_CN = {
+        "technical": "技术分析", "fundamental": "基本面", "sentiment": "情绪",
+        "macro_policy": "宏观政策", "industry": "行业分析",
+    }
+    mode = "仅分析师" if no_debate else f"完整流程（{debate_rounds}轮辩论）"
+    print(f"分析 {ticker}，日期 {date}  [{mode}]")
     print("─" * 60)
 
     analyst_reports, debate, risk = await run_full_pipeline(
@@ -128,25 +131,24 @@ async def run_pipeline(
         skip_debate=no_debate,
     )
 
-    # Print progress summary
+    # 进度摘要
     signal, conf = consensus_signal(analyst_reports)
-    print(f"\nAnalyst consensus: {_SIGNAL_ICON[signal]} {signal.upper()} ({conf:.0%})")
+    print(f"\n分析师共识：{_SIGNAL_ICON[signal]} ({conf:.0%})")
     for r in analyst_reports:
-        icon = _SIGNAL_ICON[r.signal]
-        print(f"  {r.agent:<15} {icon} {r.signal:<8} {r.confidence:.0%}")
+        name = _AGENT_CN.get(r.agent, r.agent)
+        print(f"  {name:<8} {_SIGNAL_ICON[r.signal]:<8} {r.confidence:.0%}")
 
     if debate:
-        icon = _SIGNAL_ICON[debate.final_signal]
-        print(f"\nDebate verdict:    {icon} {debate.final_signal.upper()} ({debate.final_confidence:.0%})")
+        print(f"\n辩论裁决：{_SIGNAL_ICON[debate.final_signal]} ({debate.final_confidence:.0%})")
         print(f"  {debate.trade_recommendation}")
 
     if risk and risk.current_price:
-        print(f"\nRisk parameters:")
-        print(f"  Position size:  {risk.position_size_pct:.1f}% of portfolio")
+        print(f"\n风险参数：")
+        print(f"  建议仓位：{risk.position_size_pct:.1f}%")
         if risk.stop_loss_price:
-            print(f"  Stop loss:      {risk.stop_loss_price} ({risk.stop_loss_pct:.1f}%)")
+            print(f"  止损价：  {risk.stop_loss_price}（{risk.stop_loss_pct:.1f}%）")
         if risk.take_profit_price:
-            print(f"  Take profit:    {risk.take_profit_price} ({risk.take_profit_pct:.1f}%)")
+            print(f"  止盈价：  {risk.take_profit_price}（{risk.take_profit_pct:.1f}%）")
 
     # Generate and save full report
     full_report = generate_full_report(
@@ -159,7 +161,7 @@ async def run_pipeline(
 
     tag = "_no_debate" if no_debate else ""
     path = _save_report(ticker, date, full_report, tag)
-    print(f"\nFull report saved: {path}")
+    print(f"\n完整报告已保存：{path}")
 
 
 def main() -> None:

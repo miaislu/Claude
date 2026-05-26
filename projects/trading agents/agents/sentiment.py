@@ -74,7 +74,8 @@ async def run_sentiment_analysis(ticker: str, date: str) -> AnalystReport:
     query = (
         f"Analyze news sentiment and analyst opinion for {ticker} as of {date}. "
         "Review recent headlines, analyst rating changes, and the overall narrative around this stock. "
-        "Then call submit_analysis with your assessment."
+        "Then call submit_analysis with your assessment. "
+        "请全程使用中文回复，包括分析摘要、关键因素和风险描述。"
     )
 
     result = await run_agent(

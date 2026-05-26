@@ -101,7 +101,8 @@ async def run_fundamental_analysis(ticker: str, date: str) -> AnalystReport:
         "Instead, use your training knowledge about the company and sector to complete the analysis, "
         "and call submit_analysis with reduced confidence (0.3–0.4) noting data unavailability. "
         "Evaluate the company's valuation, financial health, growth trajectory, and earnings quality. "
-        "Then call submit_analysis with your conclusions."
+        "Then call submit_analysis with your conclusions. "
+        "请全程使用中文回复，包括分析摘要、关键因素和风险描述。"
     )
 
     result = await run_agent(
