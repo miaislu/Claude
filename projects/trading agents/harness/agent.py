@@ -196,8 +196,8 @@ async def _openai_loop(
                     raw = json.loads(tc.function.arguments)
                     return _coerce_list_fields(raw)
 
-        # Append assistant message (serialize tool_calls to dict)
-        messages.append({
+        # Append assistant message — include reasoning_content for DeepSeek thinking models
+        assistant_msg: dict = {
             "role": "assistant",
             "content": msg.content,
             "tool_calls": [
@@ -208,7 +208,11 @@ async def _openai_loop(
                 }
                 for tc in msg.tool_calls
             ],
-        })
+        }
+        reasoning = getattr(msg, "reasoning_content", None)
+        if reasoning:
+            assistant_msg["reasoning_content"] = reasoning
+        messages.append(assistant_msg)
 
         # Execute tools and append results (one message per result in OpenAI format)
         for tc in msg.tool_calls:
