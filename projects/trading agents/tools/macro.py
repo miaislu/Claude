@@ -170,6 +170,28 @@ def get_energy_commodity_prices(date: str) -> dict:
     return results
 
 
+def _keep_recent(df, date_col: str, months: int = 24, sort_desc: bool = True,
+                  value_col: str | None = None):
+    """
+    Universal time-series guard: keep only rows from the last `months` months,
+    optionally sort descending, and drop NaN rows in value_col.
+    Prevents stale historical data (e.g. 1996 CPI) from polluting results.
+    """
+    import pandas as pd
+    df = df.copy()
+    try:
+        dates = pd.to_datetime(df[date_col], errors="coerce")
+        cutoff = pd.Timestamp.now() - pd.DateOffset(months=months)
+        df = df[dates >= cutoff]
+        if sort_desc:
+            df = df.iloc[::-1].reset_index(drop=True)  # reverse in-place
+    except Exception:
+        pass
+    if value_col and value_col in df.columns:
+        df = df[df[value_col].notna()]
+    return df
+
+
 def _yf_recent_close(symbol: str, date: str):
     """Get the most recent closing price at or before `date`."""
     start = (datetime.strptime(date, "%Y-%m-%d") - timedelta(days=10)).strftime("%Y-%m-%d")
@@ -193,8 +215,9 @@ def get_china_macro_indicators() -> dict:
         if df is None or df.empty:
             return {"error": "No Caixin PMI data"}
 
-        # Get the last 6 months
-        recent = df.tail(6).copy()
+        # Get the last 6 months — tail() is correct (sorted oldest-first)
+        # _keep_recent adds extra safety against stale historical rows
+        recent = _keep_recent(df, "日期", months=18, sort_desc=False).tail(6).copy()
         records = []
         for _, row in recent.iterrows():
             records.append({
@@ -273,9 +296,12 @@ def get_china_consumer_data(months: int = 6) -> dict:
         import akshare as ak
         cpi_df = ak.macro_china_cpi_monthly()
         if cpi_df is not None and not cpi_df.empty:
-            china_cpi = cpi_df[cpi_df["商品"] == "中国CPI月率报告"].head(3)
+            # Bug fix: data is sorted oldest-first; filter to recent + drop NaN
+            china_cpi_raw = cpi_df[cpi_df["商品"] == "中国CPI月率报告"]
+            china_cpi = _keep_recent(china_cpi_raw, "日期", months=24,
+                                      sort_desc=True, value_col="今值").head(6)
             for _, row in china_cpi.iterrows():
-                val = row.get("今值") or row.get("前值")
+                val = row.get("今值")
                 result["cpi"].append({
                     "date": str(row.get("日期", "")),
                     "cpi_mom_pct": float(val) if val and str(val) not in ("nan", "") else None,
@@ -284,7 +310,7 @@ def get_china_consumer_data(months: int = 6) -> dict:
                 cpi_val = result["cpi"][0]["cpi_mom_pct"]
                 result["signals"].append(
                     f"CPI MoM {cpi_val:+.1f}% → "
-                    f"{'inflationary pressure' if cpi_val > 0.3 else 'deflationary risk' if cpi_val < 0 else 'price stable'}"
+                    f"{'通胀压力' if cpi_val > 0.3 else '通缩风险' if cpi_val < 0 else '价格平稳'}"
                 )
     except Exception as e:
         result["cpi_error"] = str(e)
