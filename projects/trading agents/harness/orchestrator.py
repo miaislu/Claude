@@ -18,17 +18,21 @@ from agents.industry import run_industry_analysis
 _AGENT_NAMES = ["technical", "fundamental", "sentiment", "macro_policy", "industry"]
 
 
-async def run_analyst_team(ticker: str, date: str) -> List[AnalystReport]:
+async def run_analyst_team(
+    ticker: str, date: str,
+    user_context: Optional[str] = None,
+) -> List[AnalystReport]:
     """
     Run all 5 analyst agents in parallel.
-    Failed agents produce a neutral placeholder so downstream always gets 5 results.
+    user_context: optional extra information provided by the user (research notes,
+    earnings call transcripts, etc.) — passed to every agent as highest-priority context.
     """
     tasks = [
-        run_technical_analysis(ticker, date),
-        run_fundamental_analysis(ticker, date),
-        run_sentiment_analysis(ticker, date),
-        run_macro_analysis(ticker, date),
-        run_industry_analysis(ticker, date),
+        run_technical_analysis(ticker, date, user_context=user_context),
+        run_fundamental_analysis(ticker, date, user_context=user_context),
+        run_sentiment_analysis(ticker, date, user_context=user_context),
+        run_macro_analysis(ticker, date, user_context=user_context),
+        run_industry_analysis(ticker, date, user_context=user_context),
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -77,6 +81,7 @@ async def run_full_pipeline(
     date: str,
     debate_rounds: int = 2,
     skip_debate: bool = False,
+    user_context: Optional[str] = None,
 ) -> Tuple[List[AnalystReport], Optional[DebateResult], Optional[RiskParameters]]:
     """
     Full pipeline:
@@ -88,7 +93,7 @@ async def run_full_pipeline(
     debate_result and risk_params are None if skipped or failed.
     """
     # Step 1: Analyst team (parallel)
-    analyst_reports = await run_analyst_team(ticker, date)
+    analyst_reports = await run_analyst_team(ticker, date, user_context=user_context)
 
     debate: Optional[DebateResult] = None
     risk: Optional[RiskParameters] = None
@@ -97,7 +102,10 @@ async def run_full_pipeline(
     if not skip_debate:
         try:
             from agents.researcher import run_researcher_debate
-            debate = await run_researcher_debate(analyst_reports, ticker, date, rounds=debate_rounds)
+            debate = await run_researcher_debate(
+                analyst_reports, ticker, date,
+                rounds=debate_rounds, user_context=user_context,
+            )
         except Exception as e:
             print(f"[orchestrator] Debate failed: {e}")
 

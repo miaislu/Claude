@@ -11,6 +11,7 @@ from typing import List
 from harness.agent import run_agent
 from tools.news import get_news_headlines, get_analyst_ratings
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
+from . import user_context_block
 
 _SKILLS_DIR = Path(__file__).parent.parent / "skills"
 
@@ -69,9 +70,10 @@ def _build_system_prompt(ticker: str) -> str:
     return prompt
 
 
-async def run_sentiment_analysis(ticker: str, date: str) -> AnalystReport:
+async def run_sentiment_analysis(ticker: str, date: str, user_context=None) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
     query = (
+        user_context_block(user_context) +
         f"Analyze news sentiment and analyst opinion for {ticker} as of {date}. "
         "Review recent headlines, analyst rating changes, and the overall narrative around this stock. "
         "Then call submit_analysis with your assessment. "

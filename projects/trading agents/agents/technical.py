@@ -10,6 +10,7 @@ from harness.agent import run_agent
 from tools.market_data import get_price_history, get_stock_info
 from tools.indicators import get_technical_indicators
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
+from . import user_context_block
 
 _SKILLS_DIR = Path(__file__).parent.parent / "skills"
 
@@ -86,9 +87,10 @@ def _build_system_prompt(ticker: str) -> str:
     return prompt
 
 
-async def run_technical_analysis(ticker: str, date: str) -> AnalystReport:
+async def run_technical_analysis(ticker: str, date: str, user_context=None) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
     query = (
+        user_context_block(user_context) +
         f"Perform technical analysis for {ticker} as of {date}. "
         "Use the available tools to fetch indicator data, then call submit_analysis with your conclusions. "
         "请全程使用中文回复，包括分析摘要、关键因素和风险描述。"

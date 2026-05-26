@@ -30,6 +30,7 @@ def generate_full_report(
     analyst_reports: List[AnalystReport],
     debate: Optional[DebateResult],
     risk: Optional[RiskParameters],
+    user_context: Optional[str] = None,
 ) -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     final_signal = debate.final_signal if debate else _analyst_consensus(analyst_reports)
@@ -45,6 +46,15 @@ def generate_full_report(
         "---",
         "",
     ]
+
+    # ── 用户补充信息（如有）────────────────────────────────────────────────────
+    if user_context and user_context.strip():
+        lines += [
+            "## 用户补充背景",
+            "",
+            "> " + user_context.strip().replace("\n", "\n> "),
+            "",
+        ]
 
     # ── 最终裁决 ───────────────────────────────────────────────────────────────
     lines += [

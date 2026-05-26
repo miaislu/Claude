@@ -12,6 +12,7 @@ from harness.agent import run_agent
 from tools.market_data import get_stock_info
 from tools.financials import get_valuation_metrics, get_earnings_history
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
+from . import user_context_block
 
 _SKILLS_DIR = Path(__file__).parent.parent / "skills"
 
@@ -91,9 +92,10 @@ def _build_system_prompt(ticker: str) -> str:
     return prompt
 
 
-async def run_fundamental_analysis(ticker: str, date: str) -> AnalystReport:
+async def run_fundamental_analysis(ticker: str, date: str, user_context=None) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
     query = (
+        user_context_block(user_context) +
         f"Perform fundamental analysis for {ticker} as of {date}. "
         f"When calling get_valuation_metrics and get_earnings_history, pass date='{date}' "
         "to ensure only data available on that date is used. "

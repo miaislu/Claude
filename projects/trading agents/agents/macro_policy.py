@@ -22,6 +22,7 @@ from tools.macro import (
 )
 from tools.news import get_news_headlines, get_cn_stock_news, get_cn_macro_news
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
+from . import user_context_block
 
 _SKILLS_DIR = Path(__file__).parent.parent / "skills"
 
@@ -266,7 +267,7 @@ def _build_system_prompt(ticker: str) -> str:
     return prompt
 
 
-async def run_macro_analysis(ticker: str, date: str) -> AnalystReport:
+async def run_macro_analysis(ticker: str, date: str, user_context=None) -> AnalystReport:
     is_a = _is_a_share(ticker)
     is_hk = _is_hk(ticker)
     system_prompt = _build_system_prompt(ticker)
@@ -337,7 +338,7 @@ async def run_macro_analysis(ticker: str, date: str) -> AnalystReport:
     elif is_hk:
         flow_steps = "5. Call get_southbound_flow to assess mainland capital sentiment toward HK stocks.\n"
 
-    query = f"""Perform macro and policy analysis for {ticker} as of {date}.
+    query = user_context_block(user_context) + f"""Perform macro and policy analysis for {ticker} as of {date}.
 
 Steps:
 1. Call get_stock_info to identify the sector and market.

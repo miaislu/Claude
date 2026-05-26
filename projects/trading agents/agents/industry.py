@@ -14,6 +14,7 @@ from tools.market_data import get_stock_info
 from tools.news import get_news_headlines
 from tools.macro import get_china_consumer_data
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
+from . import user_context_block
 
 _SKILLS_DIR = Path(__file__).parent.parent / "skills"
 
@@ -91,10 +92,11 @@ def _build_system_prompt(ticker: str) -> str:
     return prompt
 
 
-async def run_industry_analysis(ticker: str, date: str) -> AnalystReport:
+async def run_industry_analysis(ticker: str, date: str, user_context=None) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
 
     query = (
+        user_context_block(user_context) +
         f"Perform industry and competitive analysis for {ticker} as of {date}.\n\n"
         "Steps:\n"
         "1. Call get_stock_info to identify the sector.\n"

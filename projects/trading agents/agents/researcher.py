@@ -17,6 +17,7 @@ from .schemas import (
     SUBMIT_ARGUMENT_TOOL,
     SUBMIT_RECOMMENDATION_TOOL,
 )
+from . import user_context_block
 
 _SKILLS_DIR = Path(__file__).parent.parent / "skills"
 
@@ -168,13 +169,17 @@ async def run_researcher_debate(
     ticker: str,
     date: str,
     rounds: int = 2,
+    user_context=None,
 ) -> DebateResult:
     """
     Run multi-round bull/bear debate over analyst reports, then arbitrate.
     Round 1: both researchers argue independently in parallel.
     Round 2+: each sees the opponent's previous argument.
+    user_context: optional extra information from the user (research notes, etc.)
     """
-    analyst_context = _format_analyst_context(reports, ticker, date)
+    base_context = _format_analyst_context(reports, ticker, date)
+    # Prepend user-supplied context as highest-priority evidence for the debate
+    analyst_context = user_context_block(user_context) + base_context
     bull_args: List[DebateArgument] = []
     bear_args: List[DebateArgument] = []
 

@@ -2,10 +2,12 @@
 Trading Agents CLI.
 
 Usage:
-  python main.py <ticker> <date>                          # Full pipeline
-  python main.py <ticker> <date> --no-debate              # Skip researcher debate
-  python main.py <ticker> <date> --agent technical        # Single analyst only
-  python main.py <ticker> <date> --debate-rounds 3        # More debate rounds (default 2)
+  python main.py <ticker> <date>                          # 完整流程（含用户输入提示）
+  python main.py <ticker> <date> --no-debate              # 跳过辩论
+  python main.py <ticker> <date> --no-prompt              # 跳过用户输入提示
+  python main.py <ticker> <date> --context "调研纪要..."   # 直接传入背景信息
+  python main.py <ticker> <date> --agent technical        # 单个分析师
+  python main.py <ticker> <date> --debate-rounds 3        # 辩论轮次（默认2）
 """
 
 from __future__ import annotations
@@ -28,11 +30,13 @@ def _parse_args() -> dict:
         _usage()
 
     result = {
-        "ticker": args[0],
-        "date": args[1],
-        "agent": None,
-        "no_debate": "--no-debate" in args,
+        "ticker":        args[0],
+        "date":          args[1],
+        "agent":         None,
+        "no_debate":     "--no-debate" in args,
+        "no_prompt":     "--no-prompt" in args,
         "debate_rounds": 2,
+        "user_context":  None,
     }
 
     if "--agent" in args:
@@ -46,20 +50,65 @@ def _parse_args() -> dict:
         except (IndexError, ValueError):
             pass
 
+    if "--context" in args:
+        idx = args.index("--context")
+        result["user_context"] = args[idx + 1] if idx + 1 < len(args) else None
+
     return result
 
 
 def _usage():
-    print("Usage: python main.py <ticker> <date> [options]")
-    print("Options:")
-    print("  --agent technical|fundamental|sentiment|macro_policy")
-    print("  --no-debate          Skip researcher debate (faster)")
-    print("  --debate-rounds N    Number of debate rounds (default 2)")
-    print("Examples:")
-    print("  python main.py AAPL 2024-05-10")
-    print("  python main.py 600519 2024-05-10 --no-debate")
-    print("  python main.py NVDA 2024-05-10 --agent technical")
+    print("用法: python main.py <ticker> <date> [选项]")
+    print("选项:")
+    print("  --agent technical|fundamental|sentiment|macro_policy|industry")
+    print("  --no-debate            跳过研究员辩论（更快）")
+    print("  --no-prompt            跳过用户背景信息提示")
+    print("  --context \"文本\"       直接传入背景信息（调研纪要等）")
+    print("  --debate-rounds N      辩论轮次（默认2）")
+    print("示例:")
+    print("  python main.py BABA 2026-05-23")
+    print("  python main.py 601088 2026-05-23 --no-prompt")
+    print("  python main.py BABA 2026-05-23 --context \"电话会议：管理层下调Q2指引\"")
     sys.exit(1)
+
+
+def _collect_user_context(ticker: str, date: str) -> Optional[str]:
+    """
+    交互式收集用户补充信息。
+    支持粘贴多行文本（调研纪要、电话会议纪要等）。
+    输入空行结束，直接回车跳过。
+    """
+    print()
+    print("─" * 60)
+    print(f"  [可选] 您是否有关于 {ticker} 的额外背景信息？")
+    print()
+    print("  可提供：调研纪要 · 电话会议纪要 · 分析师路演摘要")
+    print("          渠道反馈 · 行业专家访谈 · 内部消息")
+    print()
+    print("  提示：可直接粘贴文本；输入完成后回车两次提交；")
+    print("        直接回车跳过。")
+    print("─" * 60)
+
+    lines: List[str] = []
+    try:
+        while True:
+            line = input("  > " if not lines else "    ")
+            if line == "":
+                if lines:          # 第一个空行 = 结束
+                    break
+                else:              # 一开始就空行 = 跳过
+                    return None
+            lines.append(line)
+    except (EOFError, KeyboardInterrupt):
+        print()
+
+    text = "\n".join(lines).strip()
+    if not text:
+        return None
+
+    print(f"  ✓ 已接收 {len(text)} 字符的补充信息")
+    print("─" * 60)
+    return text
 
 
 def _load_single_agent(name: str):
@@ -78,7 +127,7 @@ def _load_single_agent(name: str):
     if name == "industry":
         from agents.industry import run_industry_analysis
         return run_industry_analysis
-    print(f"Unknown agent: {name}. Choose: technical, fundamental, sentiment, macro_policy, industry")
+    print(f"未知分析师：{name}。可选：technical, fundamental, sentiment, macro_policy, industry")
     sys.exit(1)
 
 
@@ -90,21 +139,20 @@ def _save_report(ticker: str, date: str, content: str, tag: str = "") -> Path:
     return filename
 
 
-async def run_single_agent(ticker: str, date: str, agent_name: str) -> None:
-    """Run one analyst agent and print a simple report."""
+async def run_single_agent(
+    ticker: str, date: str, agent_name: str,
+    user_context: Optional[str] = None,
+) -> None:
     print(f"[{agent_name}] 分析 {ticker}，日期 {date}...")
     fn = _load_single_agent(agent_name)
-    report = await fn(ticker, date)
+    report = await fn(ticker, date, user_context=user_context)
 
     output = generate_full_report(
-        ticker=ticker,
-        date=date,
-        analyst_reports=[report],
-        debate=None,
-        risk=None,
+        ticker=ticker, date=date,
+        analyst_reports=[report], debate=None, risk=None,
+        user_context=user_context,
     )
     print("\n" + output)
-
     path = _save_report(ticker, date, output, f"_{agent_name}")
     print(f"\n报告已保存：{path}")
 
@@ -114,14 +162,17 @@ async def run_pipeline(
     date: str,
     no_debate: bool,
     debate_rounds: int,
+    user_context: Optional[str] = None,
 ) -> None:
-    """Run the full pipeline and generate a complete report."""
     _AGENT_CN = {
         "technical": "技术分析", "fundamental": "基本面", "sentiment": "情绪",
         "macro_policy": "宏观政策", "industry": "行业分析",
     }
     mode = "仅分析师" if no_debate else f"完整流程（{debate_rounds}轮辩论）"
     print(f"分析 {ticker}，日期 {date}  [{mode}]")
+    if user_context:
+        preview = user_context[:60].replace("\n", " ")
+        print(f"补充信息：「{preview}{'...' if len(user_context) > 60 else ''}」")
     print("─" * 60)
 
     analyst_reports, debate, risk = await run_full_pipeline(
@@ -129,9 +180,9 @@ async def run_pipeline(
         date=date,
         debate_rounds=debate_rounds,
         skip_debate=no_debate,
+        user_context=user_context,
     )
 
-    # 进度摘要
     signal, conf = consensus_signal(analyst_reports)
     print(f"\n分析师共识：{_SIGNAL_ICON[signal]} ({conf:.0%})")
     for r in analyst_reports:
@@ -150,13 +201,10 @@ async def run_pipeline(
         if risk.take_profit_price:
             print(f"  止盈价：  {risk.take_profit_price}（{risk.take_profit_pct:.1f}%）")
 
-    # Generate and save full report
     full_report = generate_full_report(
-        ticker=ticker,
-        date=date,
-        analyst_reports=analyst_reports,
-        debate=debate,
-        risk=risk,
+        ticker=ticker, date=date,
+        analyst_reports=analyst_reports, debate=debate, risk=risk,
+        user_context=user_context,
     )
 
     tag = "_no_debate" if no_debate else ""
@@ -167,14 +215,23 @@ async def run_pipeline(
 def main() -> None:
     params = _parse_args()
 
+    # 收集用户补充信息（命令行直接传入 或 交互提示）
+    user_context = params["user_context"]
+    if user_context is None and not params["no_prompt"] and not params["agent"]:
+        user_context = _collect_user_context(params["ticker"], params["date"])
+
     if params["agent"]:
-        asyncio.run(run_single_agent(params["ticker"], params["date"], params["agent"]))
+        asyncio.run(run_single_agent(
+            params["ticker"], params["date"], params["agent"],
+            user_context=user_context,
+        ))
     else:
         asyncio.run(run_pipeline(
             ticker=params["ticker"],
             date=params["date"],
             no_debate=params["no_debate"],
             debate_rounds=params["debate_rounds"],
+            user_context=user_context,
         ))
 
 
