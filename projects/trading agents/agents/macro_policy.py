@@ -20,6 +20,7 @@ from tools.macro import (
     get_china_macro_indicators,
     get_china_consumer_data,
 )
+from tools.news import get_news_headlines, get_cn_stock_news
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
 
 _SKILLS_DIR = Path(__file__).parent.parent / "skills"
@@ -145,6 +146,50 @@ TOOLS: List[dict] = [
             "required": ["date"],
         },
     },
+    {
+        "name": "get_news_headlines",
+        "description": (
+            "Fetch recent English-language news for a stock or ETF proxy. "
+            "For geopolitical energy events (Middle East, Iran, OPEC): use 'XLE' or 'USO'. "
+            "For US/HK stock news: use the actual ticker. "
+            "For global macro news: use 'SPY' or relevant sector ETF."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "ticker": {
+                    "type": "string",
+                    "description": (
+                        "Stock/ETF ticker. Use proxy tickers for thematic news: "
+                        "XLE=energy sector, USO=oil, GLD=gold, FXI=China large-cap"
+                    ),
+                },
+                "max_items": {"type": "integer", "description": "Max articles, default 10"},
+            },
+            "required": ["ticker"],
+        },
+    },
+    {
+        "name": "get_cn_stock_news",
+        "description": (
+            "Fetch Chinese-language financial news for A-share stocks via 东方财富. "
+            "Essential for: domestic policy announcements, coal/mine safety incidents, "
+            "production curbs, supply disruptions, sector capital flow reports. "
+            "Use this for all A-share cyclical/energy stocks to catch domestic events "
+            "that won't appear in English news."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "ticker": {
+                    "type": "string",
+                    "description": "A-share 6-digit code e.g. 601088 for 中国神华",
+                },
+                "max_items": {"type": "integer", "description": "Max articles, default 10"},
+            },
+            "required": ["ticker"],
+        },
+    },
     SUBMIT_ANALYSIS_TOOL,
 ]
 
@@ -156,6 +201,8 @@ TOOL_REGISTRY = {
     "get_china_consumer_data": get_china_consumer_data,
     "get_northbound_flow": get_northbound_flow,
     "get_southbound_flow": get_southbound_flow,
+    "get_news_headlines": get_news_headlines,
+    "get_cn_stock_news": get_cn_stock_news,
 }
 
 
@@ -213,23 +260,47 @@ async def run_macro_analysis(ticker: str, date: str) -> AnalystReport:
             "3. Call get_energy_commodity_prices to assess energy market tightness, "
             "geopolitical supply risk, and commodity price trends.\n"
             "4. Call get_china_macro_indicators for PMI trend (industrial demand cycle).\n"
+            "5. Call get_news_headlines('XLE') or get_news_headlines('USO') for latest "
+            "energy geopolitical news (Middle East, OPEC, Iran, Russia supply events).\n"
+            + (
+                "6. Call get_cn_stock_news for latest Chinese-language news: "
+                "coal mine accidents, safety inspection notices, production curbs, "
+                "domestic supply disruptions — these events are only covered in Chinese media.\n"
+                if is_a else ""
+            )
         )
     elif sector_type == "consumer":
         sector_steps = (
             "3. Call get_china_consumer_data to assess the consumer spending environment "
             "(社零 YoY, CPI trend, consumption strength/weakness).\n"
             "4. Call get_china_macro_indicators for PMI context.\n"
+            + (
+                "5. Call get_cn_stock_news for latest Chinese-language news on "
+                "domestic consumption policy, platform regulation, or competitive events.\n"
+                if is_a else
+                "5. Call get_news_headlines(ticker) for latest news on "
+                "competitive dynamics, regulatory changes, or macro catalysts.\n"
+            )
         )
     elif sector_type == "tech":
         sector_steps = (
-            "3. Call get_china_macro_indicators for PMI context (cloud/enterprise IT spending correlates with industrial activity).\n"
-            "4. Do NOT call get_energy_commodity_prices — use Framework 10 from SKILL.md instead: "
-            "assess AI capex cycle, interest rate sensitivity, export controls & 国产替代, and semiconductor inventory cycle "
-            "using your training knowledge.\n"
+            "3. Call get_china_macro_indicators for PMI context.\n"
+            "4. Call get_news_headlines(ticker) for latest news on AI capex, "
+            "export controls, or semiconductor developments.\n"
+            + (
+                "5. Call get_cn_stock_news for Chinese-language tech policy news "
+                "(国产替代 progress, MIIT announcements, data security regulations).\n"
+                if is_a else ""
+            )
         )
     else:
         sector_steps = (
             "3. Call get_china_macro_indicators for the China macro environment.\n"
+            + (
+                "4. Call get_cn_stock_news for latest domestic news and events.\n"
+                if is_a else
+                "4. Call get_news_headlines(ticker) for latest relevant news.\n"
+            )
         )
 
     # Capital flow steps
