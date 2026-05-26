@@ -280,37 +280,41 @@ def get_china_consumer_data(months: int = 6) -> dict:
             for rec in result["social_retail"]:
                 if rec["yoy_pct"] is not None:
                     yoy_val = rec["yoy_pct"]
-                    signal = ("strong" if yoy_val > 5 else
-                              "moderate" if yoy_val > 2 else
-                              "weak" if yoy_val >= 0 else "contracting")
+                    signal = ("强劲" if yoy_val > 5 else
+                              "温和" if yoy_val > 2 else
+                              "疲弱" if yoy_val >= 0 else "负增长")
                     result["signals"].append(
-                        f"Social retail YoY {yoy_val:+.1f}% ({rec['month']}) → "
-                        f"{signal} consumer spending environment"
+                        f"社零同比{yoy_val:+.1f}%（{rec['month']}）→ {signal}消费环境"
                     )
                     break
     except Exception as e:
         result["social_retail_error"] = str(e)
 
-    # ── CPI ────────────────────────────────────────────────────────────────────
+    # ── CPI (国家统计局, macro_china_cpi) ──────────────────────────────────────
+    # Uses NBS data — sorted newest-first, covers through current month.
+    # Replaces macro_china_cpi_monthly which only reached Aug 2025.
     try:
         import akshare as ak
-        cpi_df = ak.macro_china_cpi_monthly()
+        cpi_df = ak.macro_china_cpi()
         if cpi_df is not None and not cpi_df.empty:
-            # Bug fix: data is sorted oldest-first; filter to recent + drop NaN
-            china_cpi_raw = cpi_df[cpi_df["商品"] == "中国CPI月率报告"]
-            china_cpi = _keep_recent(china_cpi_raw, "日期", months=24,
-                                      sort_desc=True, value_col="今值").head(6)
+            # macro_china_cpi() is already sorted newest-first (NBS source).
+            # Drop NaN rows and take the 6 most recent valid entries.
+            china_cpi = cpi_df[cpi_df["全国-同比增长"].notna()].head(6)
             for _, row in china_cpi.iterrows():
-                val = row.get("今值")
+                yoy = row.get("全国-同比增长")
+                mom = row.get("全国-环比增长")
                 result["cpi"].append({
-                    "date": str(row.get("日期", "")),
-                    "cpi_mom_pct": float(val) if val and str(val) not in ("nan", "") else None,
+                    "month":        str(row.get("月份", "")),
+                    "cpi_yoy_pct":  float(yoy) if yoy and str(yoy) not in ("nan", "") else None,
+                    "cpi_mom_pct":  float(mom) if mom and str(mom) not in ("nan", "") else None,
                 })
-            if result["cpi"] and result["cpi"][0]["cpi_mom_pct"] is not None:
-                cpi_val = result["cpi"][0]["cpi_mom_pct"]
+            if result["cpi"] and result["cpi"][0]["cpi_yoy_pct"] is not None:
+                yoy_val = result["cpi"][0]["cpi_yoy_pct"]
+                mom_val = result["cpi"][0].get("cpi_mom_pct")
+                mom_str = f"，环比{mom_val:+.1f}%" if mom_val is not None else ""
                 result["signals"].append(
-                    f"CPI MoM {cpi_val:+.1f}% → "
-                    f"{'通胀压力' if cpi_val > 0.3 else '通缩风险' if cpi_val < 0 else '价格平稳'}"
+                    f"CPI同比{yoy_val:+.1f}%{mom_str}（{result['cpi'][0]['month']}）→ "
+                    f"{'通胀压力' if yoy_val > 2 else '温和通胀' if yoy_val > 0 else '通缩风险'}"
                 )
     except Exception as e:
         result["cpi_error"] = str(e)
