@@ -14,8 +14,22 @@ from agents.fundamental import run_fundamental_analysis
 from agents.sentiment import run_sentiment_analysis
 from agents.macro_policy import run_macro_analysis
 from agents.industry import run_industry_analysis
+from harness.agent import _AGENT_TIMEOUT
 
 _AGENT_NAMES = ["technical", "fundamental", "sentiment", "macro_policy", "industry"]
+
+
+async def _timed(coro, name: str) -> AnalystReport:
+    """Wrap an agent coroutine with a timeout; return a neutral placeholder on expiry."""
+    try:
+        return await asyncio.wait_for(coro, timeout=_AGENT_TIMEOUT)
+    except asyncio.TimeoutError:
+        return AnalystReport(
+            agent=name, signal="neutral", confidence=0.0,
+            key_factors=[],
+            risks=[f"分析超时（>{_AGENT_TIMEOUT}s），可能因网络或模型延迟导致"],
+            summary="Agent 超时未完成分析。",
+        )
 
 
 async def run_analyst_team(
@@ -23,16 +37,15 @@ async def run_analyst_team(
     user_context: Optional[str] = None,
 ) -> List[AnalystReport]:
     """
-    Run all 5 analyst agents in parallel.
-    user_context: optional extra information provided by the user (research notes,
-    earnings call transcripts, etc.) — passed to every agent as highest-priority context.
+    Run all 5 analyst agents in parallel, each with a hard timeout.
+    user_context: optional extra information provided by the user.
     """
     tasks = [
-        run_technical_analysis(ticker, date, user_context=user_context),
-        run_fundamental_analysis(ticker, date, user_context=user_context),
-        run_sentiment_analysis(ticker, date, user_context=user_context),
-        run_macro_analysis(ticker, date, user_context=user_context),
-        run_industry_analysis(ticker, date, user_context=user_context),
+        _timed(run_technical_analysis(ticker, date, user_context=user_context),  "technical"),
+        _timed(run_fundamental_analysis(ticker, date, user_context=user_context), "fundamental"),
+        _timed(run_sentiment_analysis(ticker, date, user_context=user_context),  "sentiment"),
+        _timed(run_macro_analysis(ticker, date, user_context=user_context),      "macro_policy"),
+        _timed(run_industry_analysis(ticker, date, user_context=user_context),   "industry"),
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)

@@ -75,6 +75,10 @@ def _to_openai_tools(tools: List[dict]) -> List[dict]:
 
 # ── Tool execution (shared) ────────────────────────────────────────────────────
 
+_TOOL_TIMEOUT = 30  # seconds per individual tool call
+_AGENT_TIMEOUT = 120  # seconds per agent (used by orchestrator)
+
+
 async def _execute_tool(
     name: str,
     inputs: dict,
@@ -85,8 +89,13 @@ async def _execute_tool(
         return json.dumps({"error": f"Unknown tool: {name}"})
     try:
         fn = functools.partial(tool_registry[name], **inputs)
-        result_data = await loop.run_in_executor(None, fn)
+        result_data = await asyncio.wait_for(
+            loop.run_in_executor(None, fn),
+            timeout=_TOOL_TIMEOUT,
+        )
         return json.dumps(result_data, ensure_ascii=False, indent=2)
+    except asyncio.TimeoutError:
+        return json.dumps({"error": f"Tool '{name}' timed out after {_TOOL_TIMEOUT}s"})
     except Exception as e:
         return json.dumps({"error": str(e)})
 
@@ -132,14 +141,12 @@ async def _anthropic_loop(
                 if b.name == output_tool_name:
                     return dict(b.input)
 
-        tool_results = []
-        for b in tool_use_blocks:
+        # Execute all tools in parallel (order preserved by asyncio.gather)
+        async def _exec_anthropic(b) -> dict:
             result = await _execute_tool(b.name, dict(b.input), tool_registry, loop)
-            tool_results.append({
-                "type": "tool_result",
-                "tool_use_id": b.id,
-                "content": result,
-            })
+            return {"type": "tool_result", "tool_use_id": b.id, "content": result}
+
+        tool_results = list(await asyncio.gather(*[_exec_anthropic(b) for b in tool_use_blocks]))
 
         messages.append({"role": "assistant", "content": response.content})
         messages.append({"role": "user", "content": tool_results})
@@ -214,15 +221,14 @@ async def _openai_loop(
             assistant_msg["reasoning_content"] = reasoning
         messages.append(assistant_msg)
 
-        # Execute tools and append results (one message per result in OpenAI format)
-        for tc in msg.tool_calls:
+        # Execute all tools in parallel, then append results in order
+        async def _exec_openai(tc) -> dict:
             inputs = json.loads(tc.function.arguments)
             result = await _execute_tool(tc.function.name, inputs, tool_registry, loop)
-            messages.append({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": result,
-            })
+            return {"role": "tool", "tool_call_id": tc.id, "content": result}
+
+        tool_msgs = list(await asyncio.gather(*[_exec_openai(tc) for tc in msg.tool_calls]))
+        messages.extend(tool_msgs)
 
     return "[max iterations reached]"
 
