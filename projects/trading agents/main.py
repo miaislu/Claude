@@ -139,9 +139,11 @@ def _load_single_agent(name: str):
 
 
 def _save_report(ticker: str, date: str, content: str, tag: str = "") -> Path:
+    from datetime import datetime as _dt
     output_dir = Path(__file__).parent / "reports"
     output_dir.mkdir(parents=True, exist_ok=True)
-    filename = output_dir / f"{ticker.replace('.', '_')}_{date.replace('-', '')}{tag}.md"
+    ts = _dt.now().strftime("%H%M%S")
+    filename = output_dir / f"{ticker.replace('.', '_')}_{date.replace('-', '')}_{ts}{tag}.md"
     filename.write_text(content, encoding="utf-8")
     return filename
 
