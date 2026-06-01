@@ -29,8 +29,6 @@ def _coerce_list_fields(data: dict) -> dict:
     """
     Some OpenAI-compatible models (incl. DeepSeek) occasionally serialize
     array tool-call arguments as JSON strings instead of native lists.
-    E.g. key_risks='["risk1","risk2"]' instead of key_risks=["risk1","risk2"].
-    This helper parses any such string-encoded arrays back to Python lists.
     """
     out = {}
     for k, v in data.items():
@@ -43,6 +41,37 @@ def _coerce_list_fields(data: dict) -> dict:
         else:
             out[k] = v
     return out
+
+
+def _try_parse_tool_json(text: str) -> Optional[dict]:
+    """
+    Robustly parse tool-call argument JSON.
+    Handles truncation (e.g. DeepSeek cuts off mid-JSON at max_tokens).
+    Tries progressively more aggressive repair before giving up.
+    """
+    if not text or not text.strip():
+        return None
+    # 1. Try as-is
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    # 2. Try appending common truncation closers
+    for suffix in ["}", '"}', '"]}', '"]}}', '"]}}}']:
+        try:
+            return json.loads(text + suffix)
+        except json.JSONDecodeError:
+            continue
+    # 3. Try extracting up to the last complete key-value pair
+    # Walk back from end to find the last complete comma-terminated field
+    for i in range(len(text) - 1, 0, -1):
+        if text[i] in (',', '{'):
+            candidate = text[:i] + "}"
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                continue
+    return None
 
 load_dotenv()
 
@@ -75,8 +104,15 @@ def _to_openai_tools(tools: List[dict]) -> List[dict]:
 
 # ── Tool execution (shared) ────────────────────────────────────────────────────
 
-_TOOL_TIMEOUT = 30  # seconds per individual tool call
-_AGENT_TIMEOUT = 120  # seconds per agent (used by orchestrator)
+_TOOL_TIMEOUT = 30   # seconds per individual tool call
+_AGENT_TIMEOUT = 180  # seconds per agent — increased for thinking models (was 120)
+
+# max_tokens per routing key — thinking models produce longer responses
+_MAX_TOKENS: dict[str, int] = {
+    "deep_think": 16384,  # arbitrator / researcher with thinking
+    "standard":   12288,  # analyst agents
+    "fast":        8192,  # sentiment, quick tasks
+}
 
 
 async def _execute_tool(
@@ -111,6 +147,7 @@ async def _anthropic_loop(
     use_thinking: bool,
     output_tool_name: Optional[str],
     max_iterations: int,
+    max_tokens: int = 8192,
 ) -> Any:
     client = _get_anthropic_client()
     loop = asyncio.get_running_loop()
@@ -118,7 +155,7 @@ async def _anthropic_loop(
     messages: List[dict] = [{"role": "user", "content": query}]
     base_kwargs: dict = {
         "model": model,
-        "max_tokens": 8192,
+        "max_tokens": max_tokens,
         "system": system_prompt,
         "tools": tools,
     }
@@ -166,6 +203,7 @@ async def _openai_loop(
     api_key_env: str,
     output_tool_name: Optional[str],
     max_iterations: int,
+    max_tokens: int = 8192,
 ) -> Any:
     import openai as _openai
 
@@ -182,7 +220,7 @@ async def _openai_loop(
     ]
 
     for _ in range(max_iterations):
-        kwargs: dict = {"model": model, "messages": messages}
+        kwargs: dict = {"model": model, "messages": messages, "max_tokens": max_tokens}
         if openai_tools:
             kwargs["tools"] = openai_tools
             kwargs["tool_choice"] = "auto"
@@ -196,11 +234,14 @@ async def _openai_loop(
         if choice.finish_reason not in ("tool_calls", "function_call"):
             return f"[stopped: {choice.finish_reason}]"
 
-        # Check for output tool before executing
+        # Check for output tool before executing — use robust JSON parser
         if output_tool_name:
             for tc in msg.tool_calls:
                 if tc.function.name == output_tool_name:
-                    raw = json.loads(tc.function.arguments)
+                    raw = _try_parse_tool_json(tc.function.arguments)
+                    if raw is None:
+                        # JSON too malformed to recover — skip and let agent retry
+                        break
                     return _coerce_list_fields(raw)
 
         # Append assistant message — include reasoning_content for DeepSeek thinking models
@@ -223,7 +264,7 @@ async def _openai_loop(
 
         # Execute all tools in parallel, then append results in order
         async def _exec_openai(tc) -> dict:
-            inputs = json.loads(tc.function.arguments)
+            inputs = _try_parse_tool_json(tc.function.arguments) or {}
             result = await _execute_tool(tc.function.name, inputs, tool_registry, loop)
             return {"role": "tool", "tool_call_id": tc.id, "content": result}
 
@@ -250,8 +291,9 @@ async def run_agent(
     Routes to Anthropic or OpenAI-compatible backend based on TRADING_LLM_PROVIDER.
     Returns final text str, or a dict if output_tool_name is triggered.
     """
-    config = get_routing_config(routing_key)
+    config   = get_routing_config(routing_key)
     provider = config["provider"]
+    max_tok  = _MAX_TOKENS.get(routing_key, 8192)
 
     if provider == "anthropic":
         return await _anthropic_loop(
@@ -263,6 +305,7 @@ async def run_agent(
             use_thinking=config.get("thinking", False),
             output_tool_name=output_tool_name,
             max_iterations=max_iterations,
+            max_tokens=max_tok,
         )
     else:
         return await _openai_loop(
@@ -275,4 +318,5 @@ async def run_agent(
             api_key_env=config["api_key_env"],
             output_tool_name=output_tool_name,
             max_iterations=max_iterations,
+            max_tokens=max_tok,
         )
