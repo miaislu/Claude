@@ -18,6 +18,18 @@ from harness.agent import _AGENT_TIMEOUT
 
 _AGENT_NAMES = ["technical", "fundamental", "sentiment", "macro_policy", "industry"]
 
+# Agent reliability weights for consensus signal.
+# technical/macro_policy use real-time data → higher weight.
+# sentiment is often rate-limited → lower weight.
+# These are starting priors; update once signal_tracker accumulates data.
+AGENT_WEIGHTS: dict[str, float] = {
+    "technical":    1.2,
+    "fundamental":  1.0,
+    "sentiment":    0.7,
+    "macro_policy": 1.1,
+    "industry":     1.0,
+}
+
 
 async def _timed(coro, name: str) -> AnalystReport:
     """Wrap an agent coroutine with a timeout; return a neutral placeholder on expiry."""
@@ -69,21 +81,32 @@ async def run_analyst_team(
 
 def consensus_signal(reports: List[AnalystReport]) -> Tuple[str, float]:
     """
-    Confidence-weighted consensus signal.
-    Returns (signal, avg_confidence).
+    Agent-weighted consensus signal.
+    Each agent's vote is weighted by confidence × agent_reliability_weight.
+    Returns (signal, weighted_avg_confidence).
     """
     if not reports:
         return "neutral", 0.0
 
-    total_weight = sum(r.confidence for r in reports)
+    total_weight = sum(
+        r.confidence * AGENT_WEIGHTS.get(r.agent, 1.0)
+        for r in reports
+    )
     if total_weight == 0:
         return "neutral", 0.0
 
     score = sum(
-        r.confidence * (1 if r.signal == "bullish" else -1 if r.signal == "bearish" else 0)
+        r.confidence * AGENT_WEIGHTS.get(r.agent, 1.0)
+        * (1 if r.signal == "bullish" else -1 if r.signal == "bearish" else 0)
         for r in reports
     ) / total_weight
-    avg_conf = total_weight / len(reports)
+
+    # Weighted average confidence
+    total_agent_weight = sum(AGENT_WEIGHTS.get(r.agent, 1.0) for r in reports)
+    avg_conf = sum(
+        r.confidence * AGENT_WEIGHTS.get(r.agent, 1.0)
+        for r in reports
+    ) / total_agent_weight
 
     signal = "bullish" if score > 0.3 else "bearish" if score < -0.3 else "neutral"
     return signal, round(avg_conf, 2)

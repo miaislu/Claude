@@ -2,7 +2,8 @@
 Trading Agents CLI.
 
 Usage:
-  python main.py <ticker> <date>                          # 完整流程（含用户输入提示）
+  python main.py <ticker> <date>                          # 完整流程
+  python main.py AAPL,BABA,601088 <date> --no-debate      # 多标的扫描
   python main.py <ticker> <date> --no-debate              # 跳过辩论
   python main.py <ticker> <date> --no-prompt              # 跳过用户输入提示
   python main.py <ticker> <date> --context "调研纪要..."   # 直接传入背景信息
@@ -18,8 +19,11 @@ from pathlib import Path
 from typing import List, Optional
 
 from agents.schemas import AnalystReport, DebateResult, RiskParameters
-from harness.orchestrator import run_analyst_team, consensus_signal, run_full_pipeline
+from harness.orchestrator import run_analyst_team, consensus_signal, run_full_pipeline, AGENT_WEIGHTS
 from output.report import generate_full_report
+from risk.signal_tracker import (
+    log_signal, check_open_signals, get_stats, format_resolved_banner
+)
 
 _SIGNAL_ICON = {"bullish": "▲ 看多", "bearish": "▼ 看空", "neutral": "◆ 中性"}
 
@@ -29,8 +33,11 @@ def _parse_args() -> dict:
     if len(args) < 2:
         _usage()
 
+    tickers_raw = args[0]
     result = {
-        "ticker":        args[0],
+        "ticker":        tickers_raw,
+        "tickers":       [t.strip() for t in tickers_raw.split(",")],
+        "scan_mode":     "," in tickers_raw,
         "date":          args[1],
         "agent":         None,
         "no_debate":     "--no-debate" in args,
@@ -58,17 +65,17 @@ def _parse_args() -> dict:
 
 
 def _usage():
-    print("用法: python main.py <ticker> <date> [选项]")
+    print("用法: python main.py <ticker|ticker1,ticker2,...> <date> [选项]")
     print("选项:")
     print("  --agent technical|fundamental|sentiment|macro_policy|industry")
-    print("  --no-debate            跳过研究员辩论（更快）")
+    print("  --no-debate            跳过研究员辩论（扫描模式默认开启）")
     print("  --no-prompt            跳过用户背景信息提示")
     print("  --context \"文本\"       直接传入背景信息（调研纪要等）")
     print("  --debate-rounds N      辩论轮次（默认2）")
     print("示例:")
     print("  python main.py BABA 2026-05-23")
-    print("  python main.py 601088 2026-05-23 --no-prompt")
-    print("  python main.py BABA 2026-05-23 --context \"电话会议：管理层下调Q2指引\"")
+    print("  python main.py BABA,601088,3690.HK 2026-05-23 --no-debate  # 多标的扫描")
+    print("  python main.py 601088 2026-05-23 --context \"电话会议：管理层下调Q2指引\"")
     sys.exit(1)
 
 
@@ -211,16 +218,93 @@ async def run_pipeline(
     path = _save_report(ticker, date, full_report, tag)
     print(f"\n完整报告已保存：{path}")
 
+    # ── 信号追踪 ──────────────────────────────────────────────────────────────
+    final_signal = debate.final_signal if debate else consensus_signal(analyst_reports)[0]
+    final_conf   = debate.final_confidence if debate else consensus_signal(analyst_reports)[1]
+    rec = debate.trade_recommendation if debate else ""
+    price = risk.current_price if risk else None
+    stop  = risk.stop_loss_price if risk else None
+    tgt   = risk.take_profit_price if risk else None
+
+    if final_signal != "neutral" and price:
+        log_signal(ticker, date, final_signal, final_conf, price, stop, tgt, rec)
+        print(f"  信号已记录 → {_SIGNAL_ICON[final_signal]} @ ¥{price}")
+
+        # 检查该 ticker 的历史未结信号是否触达
+        triggered = check_open_signals(ticker, price)
+        if triggered:
+            print(format_resolved_banner(triggered))
+
+    # 历史胜率摘要（有 ≥5 条已结信号时显示）
+    stats = get_stats(ticker)
+    if stats["total_resolved"] >= 5:
+        wr = stats["win_rate"]
+        print(f"  [{ticker} 历史信号] 共{stats['total_resolved']}条已结 | "
+              f"胜率 {wr:.0%} | {stats['kelly_note']}")
+
+
+async def run_scan(
+    tickers: List[str],
+    date: str,
+    user_context: Optional[str] = None,
+) -> None:
+    """多标的扫描：并行跑所有 ticker（无辩论），输出汇总排行表。"""
+    print(f"扫描 {len(tickers)} 个标的，日期 {date}  [并行·无辩论]")
+    print("─" * 60)
+
+    # 并行运行所有 ticker（无辩论，速度快）
+    tasks = [
+        run_full_pipeline(ticker=t, date=date, skip_debate=True,
+                          user_context=user_context)
+        for t in tickers
+    ]
+    all_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # 汇总表
+    rows = []
+    for ticker, result in zip(tickers, all_results):
+        if isinstance(result, Exception):
+            rows.append((ticker, "error", 0.0, f"失败: {result}"))
+            continue
+        reports, _, risk = result
+        sig, conf = consensus_signal(reports)
+        price_str = f"¥{risk.current_price}" if risk and risk.current_price else "N/A"
+        rows.append((ticker, sig, conf, price_str))
+        # 保存各自报告
+        report_md = generate_full_report(ticker, date, reports, None, risk)
+        _save_report(ticker, date, report_md, "_scan")
+
+    # 按置信度排序输出
+    rows.sort(key=lambda x: (-abs(x[2]) if x[1] != "neutral" else 0, -x[2]))
+    print(f"\n{'标的':<12} {'信号':<10} {'置信度':<8} {'现价'}")
+    print("─" * 45)
+    for ticker, sig, conf, price in rows:
+        icon = _SIGNAL_ICON.get(sig, "？")
+        print(f"  {ticker:<12} {icon:<10} {conf:.0%}     {price}")
+
+    # 各类汇总
+    bullish = [t for t, s, *_ in rows if s == "bullish"]
+    bearish = [t for t, s, *_ in rows if s == "bearish"]
+    print(f"\n  看多 ({len(bullish)}): {', '.join(bullish) or '—'}")
+    print(f"  看空 ({len(bearish)}): {', '.join(bearish) or '—'}")
+    print(f"\n报告已分别保存至 reports/ 目录")
+
 
 def main() -> None:
     params = _parse_args()
 
-    # 收集用户补充信息（命令行直接传入 或 交互提示）
+    # 收集用户补充信息
     user_context = params["user_context"]
-    if user_context is None and not params["no_prompt"] and not params["agent"]:
+    if user_context is None and not params["no_prompt"] and not params["agent"] and not params["scan_mode"]:
         user_context = _collect_user_context(params["ticker"], params["date"])
 
-    if params["agent"]:
+    if params["scan_mode"]:
+        asyncio.run(run_scan(
+            tickers=params["tickers"],
+            date=params["date"],
+            user_context=user_context,
+        ))
+    elif params["agent"]:
         asyncio.run(run_single_agent(
             params["ticker"], params["date"], params["agent"],
             user_context=user_context,
