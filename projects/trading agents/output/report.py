@@ -31,6 +31,7 @@ def generate_full_report(
     debate: Optional[DebateResult],
     risk: Optional[RiskParameters],
     user_context: Optional[str] = None,
+    previous_analyses: Optional[List[dict]] = None,
 ) -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     final_signal = debate.final_signal if debate else _analyst_consensus(analyst_reports)
@@ -46,6 +47,44 @@ def generate_full_report(
         "---",
         "",
     ]
+
+    # ── 历史信号回顾（如有）───────────────────────────────────────────────────
+    if previous_analyses:
+        _SIG_CN = {"bullish": "▲ 看多", "bearish": "▼ 看空", "neutral": "◆ 中性"}
+        lines += ["## 历史信号回顾", ""]
+        for i, e in enumerate(previous_analyses[:3]):
+            sig_cn  = _SIG_CN.get(e.get("signal", ""), e.get("signal", ""))
+            conf    = e.get("confidence", 0)
+            price   = e.get("price_at_signal")
+            edate   = e.get("analysis_date", "")
+            outcome = e.get("outcome")
+            rationale = e.get("debate_rationale", "")
+            a_sigs  = e.get("analyst_signals", {})
+            args    = e.get("key_winning_args", [])
+
+            # 价格变化
+            cur_price = risk.current_price if risk else None
+            price_delta = ""
+            if cur_price and price:
+                chg = (cur_price - price) / price * 100
+                icon = "↑" if chg > 0 else "↓"
+                price_delta = f"  →  当前¥{cur_price}（{icon}{abs(chg):.1f}%）"
+
+            outcome_str = ""
+            if outcome:
+                outcome_str = " | " + {"target_hit": "✓ 已止盈", "stop_hit": "✗ 已止损"}.get(outcome, outcome)
+
+            lines += [f"### 第{i+1}次分析（{edate}）{outcome_str}",
+                      f"**信号：** {sig_cn} {conf:.0%}  **价格：** ¥{price}{price_delta}"]
+            if a_sigs:
+                sig_parts = " · ".join(f"{_AGENT_NAMES.get(k,k)}:{_SIG_CN.get(v,v)}" for k,v in a_sigs.items())
+                lines.append(f"**分析师：** {sig_parts}")
+            if rationale:
+                lines.append(f"**仲裁理由：** {rationale}")
+            if args:
+                lines.append("**核心论点：**")
+                lines += [f"- {a}" for a in args]
+            lines.append("")
 
     # ── 用户补充信息（如有）────────────────────────────────────────────────────
     if user_context and user_context.strip():

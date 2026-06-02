@@ -34,8 +34,12 @@ def log_signal(
     stop_loss: Optional[float],
     take_profit: Optional[float],
     trade_recommendation: str = "",
+    # 额外字段：存储分析内容，用于历史对比
+    debate_rationale: str = "",
+    analyst_signals: Optional[dict] = None,   # {"technical": "bearish", ...}
+    key_winning_args: Optional[list] = None,  # 辩论获胜论点（前3条）
 ) -> dict:
-    """记录一条新信号到日志。"""
+    """记录一条新信号到日志（含分析内容，用于历史回顾）。"""
     entry = {
         "id":                   f"{ticker}_{date.replace('-', '')}_{datetime.now().strftime('%H%M%S')}",
         "logged_at":            datetime.now().isoformat(),
@@ -47,8 +51,13 @@ def log_signal(
         "stop_loss":            stop_loss,
         "take_profit":          take_profit,
         "trade_recommendation": trade_recommendation,
+        # 分析内容（用于历史对比）
+        "debate_rationale":     debate_rationale[:300] if debate_rationale else "",
+        "analyst_signals":      analyst_signals or {},
+        "key_winning_args":     (key_winning_args or [])[:3],
+        # 结果追踪
         "resolved":             False,
-        "outcome":              None,   # "target_hit" | "stop_hit" | "expired"
+        "outcome":              None,
         "resolved_at":          None,
         "resolved_price":       None,
     }
@@ -56,6 +65,67 @@ def log_signal(
     entries.append(entry)
     _save_log(entries)
     return entry
+
+
+def get_previous_analyses(ticker: str, limit: int = 3) -> list[dict]:
+    """获取某 ticker 最近 N 次分析记录（按时间倒序）。"""
+    entries = _load_log()
+    ticker_entries = [e for e in entries if e["ticker"] == ticker]
+    # Sort by logged_at descending, skip the very latest (current run)
+    ticker_entries.sort(key=lambda x: x.get("logged_at", ""), reverse=True)
+    return ticker_entries[:limit]
+
+
+def format_history_block(previous: list[dict], current_price: Optional[float] = None) -> str:
+    """
+    将历史分析记录格式化为注入 agent 的上下文块。
+    让 agent 能感知：上次怎么判断、价格如何变化、是否与当前判断一致。
+    """
+    if not previous:
+        return ""
+
+    _SIG_CN = {"bullish": "▲ 看多", "bearish": "▼ 看空", "neutral": "◆ 中性"}
+    lines = [
+        "【历史分析记录 — 请与当前分析对比，说明发生了什么变化及原因】",
+        "",
+    ]
+    for i, e in enumerate(previous):
+        sig_cn    = _SIG_CN.get(e.get("signal", ""), e.get("signal", ""))
+        conf      = e.get("confidence", 0)
+        price     = e.get("price_at_signal")
+        date      = e.get("analysis_date", "")
+        rec       = e.get("trade_recommendation", "")
+        rationale = e.get("debate_rationale", "")
+        a_sigs    = e.get("analyst_signals", {})
+        args      = e.get("key_winning_args", [])
+        outcome   = e.get("outcome")
+
+        price_change = ""
+        if current_price and price:
+            chg = (current_price - price) / price * 100
+            price_change = f"（当前价较信号价 {chg:+.1f}%）"
+
+        lines.append(f"第{i+1}次分析（{date}）：{sig_cn} {conf:.0%}  @¥{price}{price_change}")
+        if outcome:
+            outcome_cn = {"target_hit": "✓ 已止盈", "stop_hit": "✗ 已止损"}.get(outcome, outcome)
+            lines.append(f"  结果：{outcome_cn}")
+        if a_sigs:
+            sig_parts = [f"{k}:{_SIG_CN.get(v,v)}" for k, v in a_sigs.items()]
+            lines.append(f"  分析师：{' | '.join(sig_parts)}")
+        if rationale:
+            lines.append(f"  仲裁理由：{rationale}")
+        if rec:
+            lines.append(f"  操作建议：{rec[:120]}")
+        if args:
+            lines.append(f"  关键论点：{'；'.join(args[:2])}")
+        lines.append("")
+
+    lines += [
+        "请在分析时说明：与上次相比，信号方向/置信度是否发生变化？",
+        "如发生变化，请指出核心驱动因素是什么（新事件？数据更新？市场结构改变？）",
+        "",
+    ]
+    return "\n".join(lines)
 
 
 # ── 检查已有信号是否触达 ────────────────────────────────────────────────────────

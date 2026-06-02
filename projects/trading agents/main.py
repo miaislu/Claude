@@ -22,7 +22,8 @@ from agents.schemas import AnalystReport, DebateResult, RiskParameters
 from harness.orchestrator import run_analyst_team, consensus_signal, run_full_pipeline, AGENT_WEIGHTS
 from output.report import generate_full_report
 from risk.signal_tracker import (
-    log_signal, check_open_signals, get_stats, format_resolved_banner
+    log_signal, check_open_signals, get_stats,
+    format_resolved_banner, get_previous_analyses, format_history_block,
 )
 
 _SIGNAL_ICON = {"bullish": "▲ 看多", "bearish": "▼ 看空", "neutral": "◆ 中性"}
@@ -184,12 +185,20 @@ async def run_pipeline(
         print(f"补充信息：「{preview}{'...' if len(user_context) > 60 else ''}」")
     print("─" * 60)
 
+    # ── 加载历史分析，注入上下文 ────────────────────────────────────────────────
+    previous = get_previous_analyses(ticker, limit=3)
+    history_block = format_history_block(previous) if previous else ""
+    if history_block:
+        print(f"  ↩ 发现 {len(previous)} 次历史分析记录，已注入对比上下文")
+    # 合并：历史对比 + 用户补充信息（历史在前，用户补充在后）
+    combined_context = (history_block + "\n" + (user_context or "")).strip() or None
+
     analyst_reports, debate, risk = await run_full_pipeline(
         ticker=ticker,
         date=date,
         debate_rounds=debate_rounds,
         skip_debate=no_debate,
-        user_context=user_context,
+        user_context=combined_context,  # 历史对比 + 用户补充
     )
 
     signal, conf = consensus_signal(analyst_reports)
@@ -213,7 +222,8 @@ async def run_pipeline(
     full_report = generate_full_report(
         ticker=ticker, date=date,
         analyst_reports=analyst_reports, debate=debate, risk=risk,
-        user_context=user_context,
+        user_context=user_context,       # 只展示用户自己的补充，不含历史
+        previous_analyses=previous,      # 历史分析单独一节
     )
 
     tag = "_no_debate" if no_debate else ""
@@ -229,7 +239,16 @@ async def run_pipeline(
     tgt   = risk.take_profit_price if risk else None
 
     if final_signal != "neutral" and price:
-        log_signal(ticker, date, final_signal, final_conf, price, stop, tgt, rec)
+        # 收集分析师信号快照 + 辩论关键论点（用于未来历史回顾）
+        a_sigs = {r.agent: r.signal for r in analyst_reports}
+        rationale = debate.rationale if debate else ""
+        winning_args = debate.winning_arguments[:3] if debate else []
+        log_signal(
+            ticker, date, final_signal, final_conf, price, stop, tgt, rec,
+            debate_rationale=rationale,
+            analyst_signals=a_sigs,
+            key_winning_args=winning_args,
+        )
         print(f"  信号已记录 → {_SIGNAL_ICON[final_signal]} @ ¥{price}")
 
         # 检查该 ticker 的历史未结信号是否触达
