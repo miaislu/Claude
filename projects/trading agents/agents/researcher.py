@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from harness.agent import run_agent
 from .schemas import (
@@ -92,24 +92,56 @@ async def _run_researcher_turn(
     analyst_context: str,
     opponent_arguments: List[DebateArgument],
     round_num: int,
+    own_arguments: Optional[List[DebateArgument]] = None,
 ) -> DebateArgument:
     """Single debate turn for one researcher."""
+    # ── 对方上一轮论点 ───────────────────────────────────────────────────────
     opponent_section = ""
     if opponent_arguments:
         last = opponent_arguments[-1]
-        opponent_label = "Bear" if position == "bull" else "Bull"
+        opponent_label = "空头" if position == "bull" else "多头"
         opponent_section = (
-            f"\n## {opponent_label} Researcher's Round {last.round_num} Argument\n"
+            f"\n## {opponent_label}研究员第{last.round_num}轮论点\n"
             + last.argument
-            + "\nKey points:\n"
+            + "\n关键论点：\n"
             + "\n".join(f"- {p}" for p in last.key_points)
         )
 
-    label = "Bull" if position == "bull" else "Bear"
+    # ── 自己上一轮论点（Round 2+ 必须 callback）──────────────────────────────
+    own_section = ""
+    if round_num >= 2 and own_arguments:
+        last_own = own_arguments[-1]
+        label_cn = "多头" if position == "bull" else "空头"
+        own_section = (
+            f"\n## 你在第{last_own.round_num}轮的论点（本轮必须回调）\n"
+            + last_own.argument
+            + "\n你的关键论点：\n"
+            + "\n".join(f"- {p}" for p in last_own.key_points)
+        )
+
+    label_cn = "多头" if position == "bull" else "空头"
+
+    if round_num == 1:
+        round_instruction = (
+            f"你是{label_cn}研究员，提出第1轮核心论点。"
+            "第一句话必须是一句话假设（如：'核心假设：……'），整个辩论必须围绕此假设展开。"
+            "完成后调用 submit_argument。"
+        )
+    else:
+        round_instruction = (
+            f"你是{label_cn}研究员，提出第{round_num}轮论点。\n\n"
+            "**第2轮结构要求（严格遵守）**：\n"
+            "1. 首先回顾你在第1轮的核心假设（一句话复述）\n"
+            "2. 说明该假设是否维持、强化还是有限度调整——必须给出原因\n"
+            "3. 直接反驳对方第1轮中最强的1-2个具体论点（不能只是忽略）\n"
+            "4. 不允许静默放弃第1轮的核心论点——如果确实要调整，必须明确说'我在第1轮认为X，"
+            "现在基于对方指出的Y，我修正为Z，因为……'\n\n"
+            "完成后调用 submit_argument。"
+        )
+
     query = (
-        f"{analyst_context}{opponent_section}\n\n"
-        f"You are the {label} researcher. Present your Round {round_num} argument. "
-        "Call submit_argument when done."
+        f"{analyst_context}{own_section}{opponent_section}\n\n"
+        f"{round_instruction}"
     )
 
     system = _BULL_SYSTEM if position == "bull" else _BEAR_SYSTEM
@@ -215,8 +247,10 @@ async def run_researcher_debate(
 
     for round_num in range(1, rounds + 1):
         bull_result, bear_result = await asyncio.gather(
-            _run_researcher_turn("bull", analyst_context, bear_args, round_num),
-            _run_researcher_turn("bear", analyst_context, bull_args, round_num),
+            _run_researcher_turn("bull", analyst_context, bear_args, round_num,
+                                  own_arguments=bull_args),
+            _run_researcher_turn("bear", analyst_context, bull_args, round_num,
+                                  own_arguments=bear_args),
         )
         bull_args.append(bull_result)
         bear_args.append(bear_result)

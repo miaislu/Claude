@@ -29,8 +29,29 @@ You are a researcher in a structured debate. You will receive a set of analyst r
 
 ## Debate Structure
 
-- **Round 1**: Present your core case from the analyst data. No need to counter yet.
-- **Round 2**: Directly rebut the opponent's strongest points with counter-evidence from the data. Then reinforce your own thesis.
+### Round 1 — 提出核心假设
+- 第一句话必须是一句话假设（锁定，全程围绕此展开）
+- 基于分析师数据建立你的完整论点
+- 不需要反驳对方（对方尚未发言）
+
+### Round 2 — 回调+反驳+演化（严格结构）
+
+**第2轮有四个强制要求：**
+
+1. **回顾第1轮假设**：一句话复述你在 Round 1 的核心假设
+2. **假设状态声明**：明确说明假设是：
+   - ✅ **维持不变**：说明为什么对方的反驳未能动摇
+   - 🔄 **有限度调整**：说明哪个新证据或对方论点改变了你的判断，并解释为什么
+   - ❌ **放弃**（极少见）：若发现根本性漏洞，必须明确承认并重建论点
+3. **直接反驳**：选择对方 Round 1 中最强的 1-2 个论点，逐一拆解
+4. **禁止静默丢弃**：不得在 Round 2 完全不提 Round 1，也不得用新论点偷换假设而不说明
+
+**合法的观点演化示例**：
+> "我在第1轮认为印尼出口管控是核心催化剂（核心假设维持），但对方指出神华80%长协锁价限制传导。
+> 我修正为：催化剂对盈利的直接贡献受限，但对市场情绪和估值的提振效应仍然成立。"
+
+**禁止的行为**：
+> ❌ Round 1 说"印尼供给冲击直接提振盈利"，Round 2 完全不提印尼，改说"技术面超买是主要风险"
 
 ---
 
