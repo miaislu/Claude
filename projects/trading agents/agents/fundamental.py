@@ -13,6 +13,7 @@ from tools.market_data import get_stock_info
 from tools.financials import (
     get_valuation_metrics, get_earnings_history,
     get_top_shareholders, get_restricted_release, get_profit_forecast,
+    get_broker_research,
 )
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
 from . import user_context_block
@@ -72,6 +73,24 @@ TOOLS: List[dict] = [
         },
     },
     {
+        "name": "get_broker_research",
+        "description": (
+            "东方财富券商研报库（A.4 投行/分析师来源）。"
+            "返回：评级共识（买入/增持/中性/减持数量）、EPS预测分布（均值/最高/最低）、"
+            "最近N份研报标题+机构+评级+PDF链接。"
+            "EPS spread大（>0.3元）= 分析师分歧大 = 存在预期差机会。"
+            "仅适用于A股。"
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "ticker": {"type": "string"},
+                "limit": {"type": "integer", "description": "返回最近N份研报，默认8"},
+            },
+            "required": ["ticker"],
+        },
+    },
+    {
         "name": "get_profit_forecast",
         "description": (
             "同花顺分析师盈利预测（EPS共识）。"
@@ -120,7 +139,8 @@ TOOL_REGISTRY = {
     "get_stock_info": get_stock_info,
     "get_valuation_metrics": get_valuation_metrics,
     "get_earnings_history": get_earnings_history,
-    "get_profit_forecast": get_profit_forecast,
+    "get_broker_research":  get_broker_research,
+    "get_profit_forecast":  get_profit_forecast,
     "get_top_shareholders": get_top_shareholders,
     "get_restricted_release": get_restricted_release,
 }
@@ -145,7 +165,9 @@ async def run_fundamental_analysis(ticker: str, date: str, user_context=None) ->
     is_cn = _is_a_share(ticker)
     extra_cn = (
         f"对A股标的还可以调用：\n"
-        f"- get_profit_forecast('{ticker}'): 分析师EPS共识预测（前瞻PE/预期差判断）\n"
+        f"- get_broker_research('{ticker}'): 券商研报评级共识+EPS预测分布（A.4投行来源）"
+        f"——重点看评级共识和EPS spread（spread>0.3=分析师分歧大=预期差机会）\n"
+        f"- get_profit_forecast('{ticker}'): 同花顺EPS共识预测（与研报对比验证）\n"
         f"- get_top_shareholders('{ticker}'): 前十大流通股东（机构持仓结构）\n"
         f"- get_restricted_release('{ticker}'): 限售解禁时间表（供给侧压力）\n"
     ) if is_cn else ""

@@ -249,6 +249,85 @@ def get_china_macro_indicators() -> dict:
         return {"error": f"Caixin PMI fetch failed: {e}"}
 
 
+def get_imf_worldbank_macro(country_code: str = "CN") -> dict:
+    """
+    IMF + World Bank 宏观数据（A.1 国际机构来源）。
+
+    提供：IMF GDP增长预测（含未来5年）、通胀率；World Bank历史GDP数据。
+    这是外资机构定价中国宏观预期的权威锚点——与国内统计数据互相验证。
+
+    country_code: ISO-2 代码（CN=中国, US=美国, JP=日本 等）
+    """
+    # ISO-2 → IMF ISO-3 mapping for common countries
+    _IMF_CODE = {
+        "CN": "CHN", "US": "USA", "JP": "JPN", "IN": "IND",
+        "DE": "DEU", "GB": "GBR", "FR": "FRA", "KR": "KOR",
+        "BR": "BRA", "RU": "RUS", "AU": "AUS", "SG": "SGP",
+    }
+    imf_code = _IMF_CODE.get(country_code.upper(), country_code)
+
+    result: dict = {"country": country_code, "imf": {}, "worldbank": {}, "note": ""}
+    try:
+        import requests
+
+        # ── IMF DataMapper API（含前瞻预测）────────────────────────────────────
+        imf_indicators = {
+            "NGDP_RPCH": "GDP实际增长率(%)",
+            "PCPIPCH":   "通胀率(%)",
+            "BCA_NGDPD": "经常账户/GDP(%)",
+        }
+        for code, label in imf_indicators.items():
+            try:
+                r = requests.get(
+                    f"https://www.imf.org/external/datamapper/api/v1/{code}/{imf_code}",
+                    timeout=8,
+                )
+                if r.ok:
+                    values = r.json().get("values", {}).get(code, {}).get(imf_code, {})
+                    # Current + forecast years
+                    recent = {k: round(v, 2) for k, v in sorted(values.items(), reverse=True)[:5] if v is not None}
+                    result["imf"][label] = recent
+            except Exception:
+                pass
+
+        # ── World Bank API（历史数据，质量高）──────────────────────────────────
+        wb_indicators = {
+            "NY.GDP.MKTP.KD.ZG": "GDP增长率(%)",
+            "FP.CPI.TOTL.ZG":    "CPI通胀(%)",
+            "NE.TRD.GNFS.ZS":    "贸易/GDP(%)",
+        }
+        for wb_code, label in wb_indicators.items():
+            try:
+                r = requests.get(
+                    f"https://api.worldbank.org/v2/country/{country_code}/indicator/{wb_code}",
+                    params={"format": "json", "mrv": 4, "per_page": 4},
+                    timeout=8,
+                )
+                if r.ok:
+                    data = r.json()
+                    if len(data) > 1 and data[1]:
+                        vals = {item["date"]: round(item["value"], 2)
+                                for item in data[1] if item["value"] is not None}
+                        result["worldbank"][label] = vals
+            except Exception:
+                pass
+
+        # ── 生成摘要信号 ────────────────────────────────────────────────────────
+        imf_gdp = result["imf"].get("GDP实际增长率(%)", {})
+        if imf_gdp:
+            latest_year = sorted(imf_gdp.keys())[-1]
+            latest_val = imf_gdp[latest_year]
+            result["note"] = (
+                f"IMF预测{country_code} {latest_year}年GDP增长 {latest_val:.1f}%。"
+                + (" 增速维持较高水平，有利于工业产出和大宗商品需求。" if latest_val >= 4.5
+                   else " 增速放缓，大宗商品需求趋于保守。" if latest_val < 3.5
+                   else " 增速温和，结构性分化。")
+            )
+    except Exception as e:
+        result["error"] = str(e)
+    return result
+
+
 def get_china_consumer_data(months: int = 6) -> dict:
     """
     China social retail sales (社零) + CPI data.

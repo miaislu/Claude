@@ -24,6 +24,7 @@ from tools.macro import (
     get_hk_market_pulse,
     get_cn_market_pulse,
     get_us_market_pulse,
+    get_imf_worldbank_macro,
 )
 from tools.news import get_news_headlines, get_cn_stock_news, get_cn_macro_news
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
@@ -165,6 +166,24 @@ TOOLS: List[dict] = [
         },
     },
     {
+        "name": "get_imf_worldbank_macro",
+        "description": (
+            "IMF + World Bank 宏观数据（A.1 国际权威机构来源）。"
+            "返回：IMF GDP增长预测（含未来5年）、通胀率；World Bank历史数据。"
+            "这是外资机构定价宏观预期的权威锚点，与国内统计局数据互相验证。"
+            "country_code: CN=中国, US=美国, JP=日本, IN=印度 等"
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "country_code": {
+                    "type": "string",
+                    "description": "ISO-2国家代码，默认CN（中国）",
+                },
+            },
+        },
+    },
+    {
         "name": "get_cn_market_pulse",
         "description": (
             "A股市场叙事与风格轮动诊断。"
@@ -297,6 +316,7 @@ TOOL_REGISTRY = {
     "get_northbound_flow": get_northbound_flow,
     "get_cn_sector_flows": get_cn_sector_flows,
     "get_limit_up_pool":   get_limit_up_pool,
+    "get_imf_worldbank_macro": get_imf_worldbank_macro,
     "get_cn_market_pulse": get_cn_market_pulse,
     "get_us_market_pulse": get_us_market_pulse,
     "get_hk_market_pulse": get_hk_market_pulse,
@@ -438,7 +458,9 @@ async def run_macro_analysis(ticker: str, date: str, user_context=None) -> Analy
 
 Steps:
 1. Call get_stock_info to identify the sector and market.
-2. Call get_market_context to assess benchmark performance (benchmark data now uses AkShare for A/HK).
+2. Call get_imf_worldbank_macro(country_code='CN') — IMF/World Bank权威宏观预测（A.1来源），
+   与国内数据交叉验证，外资机构定价锚点。
+3. Call get_market_context to assess benchmark performance (benchmark data now uses AkShare for A/HK).
 {sector_steps}{flow_steps}
 6. Synthesize ALL signals and apply the relevant SKILL.md framework for this sector type:
    - Cyclical/Energy/Materials → Framework 8: geopolitics + futures + supply-demand

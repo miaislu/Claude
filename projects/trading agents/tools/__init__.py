@@ -3,6 +3,7 @@ from .indicators import get_technical_indicators
 from .financials import (
     get_valuation_metrics, get_earnings_history,
     get_top_shareholders, get_restricted_release, get_profit_forecast,
+    get_broker_research,
 )
 from .news import (
     get_news_headlines, get_analyst_ratings,
@@ -18,6 +19,7 @@ from .macro import (
     get_china_consumer_data,
     get_cn_sector_flows,
     get_limit_up_pool,
+    get_imf_worldbank_macro,
     get_hk_market_pulse,
     get_cn_market_pulse,
     get_us_market_pulse,
