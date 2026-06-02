@@ -37,6 +37,24 @@ Articles from the last 7 days are more signal-relevant than older coverage. If m
 ## A-share Sentiment Specifics
 For Chinese stocks, Western news sources cover them less thoroughly. Analyst rating action from domestic brokerages (中信, 国泰君安, 华泰) carries more weight. If news headlines are sparse, lower confidence accordingly.
 
+---
+
+## 输出纪律：三态标注（必须遵守）
+
+所有分析内容（summary、key_factors、risks）中，每个数据和判断必须标注来源属性：
+
+| 标签 | 含义 | 示例 |
+|---|---|---|
+| ✅ **事实** | 工具实际返回的数据，可溯源 | "RSI=43.97（`get_technical_indicators` 返回）" |
+| 📊 **估计** | 市场共识/分析师预测/机构数据 | "2026E EPS 2.73元（28家机构均值）" |
+| 🤔 **推断** | 基于数据的逻辑推导，属于分析判断 | "若MACD柱状图继续扩大，可能测试前低（推算）" |
+
+**核心规则：**
+- 严禁三者混用——读者必须能分辨哪些是验证数据，哪些是你的判断
+- 工具有数据时优先引用工具返回值，不用训练知识替代
+- 无法获取时明确标注🤔并说明依据，不得冒充✅事实
+- 同一数字在 key_factors、risks、summary 中必须完全一致
+
 ## Output
 
 Call `submit_analysis`. In `key_factors`, cite specific headlines or analyst actions (e.g., "Goldman Sachs upgraded to Buy on May 8 with $210 PT", "3 of 5 recent headlines discuss supply chain concerns").

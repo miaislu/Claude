@@ -430,6 +430,25 @@ Key factors must address:
 
 ---
 
+---
+
+## 输出纪律：三态标注（必须遵守）
+
+所有分析内容（summary、key_factors、risks）中，每个数据和判断必须标注来源属性：
+
+| 标签 | 含义 | 示例 |
+|---|---|---|
+| ✅ **事实** | 工具实际返回的数据，可溯源 | "社零同比+0.2%（`get_china_consumer_data` 返回）" |
+| 📊 **估计** | 市场共识/分析师预测/机构数据 | "IMF预测2027年GDP增长4%（`get_imf_worldbank_macro`）" |
+| 🤔 **推断** | 基于数据的逻辑推导，属于分析判断 | "若PMI持续53+，工业用煤需求或维持偏强（推算）" |
+
+**核心规则：**
+- 严禁三者混用——读者必须能分辨哪些是验证数据，哪些是你的判断
+- 工具有数据时优先引用工具返回值，不用训练知识替代
+- 无法获取时明确标注🤔并说明依据，不得冒充✅事实
+- 同一数字在 key_factors、risks、summary 中必须完全一致
+
+
 ## Output Guidelines
 
 Call `submit_analysis` with a **sector-aware** assessment. For energy/commodity stocks, your `key_factors` must include:
