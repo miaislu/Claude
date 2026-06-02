@@ -68,21 +68,36 @@ def _format_analyst_context(reports: List[AnalystReport], ticker: str, date: str
     lines = [
         f"## {ticker} 分析师报告（{date}）",
         "",
-        "注意：辩论时请参考各分析师的可信度标注，",
-        "高可信度信号（实时数据驱动）应给予更多权重。",
+        "三态标注说明：✅事实=工具实际返回数据  📊估计=机构共识预测  🤔推断=分析师逻辑推导",
+        "引用数值时请标注来源层级，辩论中高可信度信号（实时数据驱动）应给予更多权重。",
         "",
     ]
     for r in reports:
-        label = _AGENT_LABEL.get(r.agent, r.agent)
-        hint  = _WEIGHT_HINT.get(r.agent, "")
+        label    = _AGENT_LABEL.get(r.agent, r.agent)
+        hint     = _WEIGHT_HINT.get(r.agent, "")
         signal_cn = {"bullish": "看多", "bearish": "看空", "neutral": "中性"}.get(r.signal, r.signal)
+
         lines.append(f"### {label} {hint}")
         lines.append(f"**信号：** {signal_cn}  **置信度：** {r.confidence:.0%}")
         lines.append(r.summary)
+
+        # ── ✅ 数据基准层（工具实际返回值）──────────────────────────────────
+        if r.data_snapshot:
+            lines.append("")
+            lines.append("**✅ 数据基准（工具实际返回值，可直接引用为事实）：**")
+            for k, v in r.data_snapshot.items():
+                if v is not None and str(v).strip() not in ("", "None", "{}"):
+                    lines.append(f"- {k}：{v}")
+
+        # ── 📊🤔 分析师解读层 ───────────────────────────────────────────────
         if r.key_factors:
-            lines.append("**关键因素：** " + "；".join(r.key_factors))
+            lines.append("")
+            lines.append("**📊🤔 分析师解读（key_factors）：**")
+            for f in r.key_factors:
+                lines.append(f"- {f}")
         if r.risks:
             lines.append("**风险：** " + "；".join(r.risks))
+
         lines.append("")
     return "\n".join(lines)
 

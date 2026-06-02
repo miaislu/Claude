@@ -364,6 +364,34 @@ async def run_macro_analysis(ticker: str, date: str, user_context=None) -> Analy
     is_hk = _is_hk(ticker)
     system_prompt = _build_system_prompt(ticker)
 
+
+    # ── 预抓宏观关键数值（✅事实层）─────────────────────────────────────────
+    snapshot: dict = {}
+    try:
+        import asyncio, functools
+        from tools.macro import get_china_macro_indicators, get_china_consumer_data
+        loop = asyncio.get_running_loop()
+        pmi_r  = await loop.run_in_executor(None, get_china_macro_indicators)
+        cons_r = await loop.run_in_executor(None, functools.partial(get_china_consumer_data, 3))
+        if "error" not in pmi_r:
+            latest = pmi_r.get("latest", {})
+            snapshot["财新综合PMI"] = latest.get("pmi")
+            snapshot["PMI环比变化"] = latest.get("change")
+            snapshot["PMI信号"]    = pmi_r.get("signal")
+        if cons_r.get("social_retail"):
+            sr = [r for r in cons_r["social_retail"] if r.get("yoy_pct") is not None]
+            if sr:
+                snapshot["社零最新YoY%"]  = sr[0].get("yoy_pct")
+                snapshot["社零最新月份"]  = sr[0].get("month")
+                snapshot["社零YTD累计%"]  = sr[0].get("ytd_yoy_pct")
+        if cons_r.get("cpi"):
+            cpi = cons_r["cpi"]
+            if cpi:
+                snapshot["CPI同比%"] = cpi[0].get("cpi_yoy_pct")
+                snapshot["CPI环比%"] = cpi[0].get("cpi_mom_pct")
+    except Exception:
+        pass
+
     # Pre-fetch stock info to enable sector-aware query routing
     try:
         from tools.market_data import get_stock_info as _get_info
@@ -488,7 +516,7 @@ confidence reflecting what data was actually available.
     )
 
     if isinstance(result, dict):
-        return AnalystReport(agent="macro_policy", **result)
+        return AnalystReport(agent="macro_policy", data_snapshot=snapshot, **result)
 
     return AnalystReport(
         agent="macro_policy",

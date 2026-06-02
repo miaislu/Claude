@@ -162,6 +162,37 @@ def _build_system_prompt(ticker: str) -> str:
 
 async def run_fundamental_analysis(ticker: str, date: str, user_context=None) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
+
+    # ── 预抓基本面数据，构建数据快照（✅事实层）──────────────────────────────
+    snapshot: dict = {}
+    try:
+        import asyncio, functools
+        loop = asyncio.get_running_loop()
+        val = await loop.run_in_executor(None, functools.partial(get_valuation_metrics, ticker, date))
+        earn = await loop.run_in_executor(None, functools.partial(get_earnings_history, ticker, date))
+        if "error" not in val:
+            snapshot.update({
+                "PE(TTM)":      val.get("pe_ttm") or val.get("pe_trailing"),
+                "PB":           val.get("pb_ratio"),
+                "EV/EBITDA":    val.get("ev_ebitda"),
+                "毛利率":        val.get("gross_margin"),
+                "净利率":        val.get("net_margin"),
+                "ROE":          val.get("roe"),
+                "资产负债率":    val.get("debt_to_assets"),
+                "数据截止":      val.get("as_of_date"),
+                "数据来源":      val.get("source"),
+            })
+        if "error" not in earn and earn.get("quarters"):
+            q = earn["quarters"][:3]
+            snapshot["最近盈利"] = [{
+                "期间": r.get("period"),
+                "营收": r.get("revenue") or r.get("revenue_cny"),
+                "净利润": r.get("net_income") or r.get("net_income_cny"),
+                "EPS": r.get("eps"),
+            } for r in q]
+    except Exception:
+        pass
+
     is_cn = _is_a_share(ticker)
     extra_cn = (
         f"对A股标的还可以调用：\n"
@@ -192,7 +223,7 @@ async def run_fundamental_analysis(ticker: str, date: str, user_context=None) ->
     )
 
     if isinstance(result, dict):
-        return AnalystReport(agent="fundamental", **result)
+        return AnalystReport(agent="fundamental", data_snapshot=snapshot, **result)
 
     return AnalystReport(
         agent="fundamental",

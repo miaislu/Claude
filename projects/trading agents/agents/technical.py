@@ -89,6 +89,33 @@ def _build_system_prompt(ticker: str) -> str:
 
 async def run_technical_analysis(ticker: str, date: str, user_context=None) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
+
+    # ── 预抓技术指标，构建数据快照（✅事实层）───────────────────────────────
+    snapshot: dict = {}
+    try:
+        import asyncio, functools
+        loop = asyncio.get_running_loop()
+        ind = await loop.run_in_executor(
+            None, functools.partial(get_technical_indicators, ticker, date)
+        )
+        if "error" not in ind:
+            snapshot = {
+                "当前价格":    ind.get("current_price"),
+                "SMA20":      ind.get("moving_averages", {}).get("sma20"),
+                "SMA50":      ind.get("moving_averages", {}).get("sma50"),
+                "RSI(14)":    ind.get("rsi", {}).get("value"),
+                "RSI信号":    ind.get("rsi", {}).get("signal"),
+                "MACD线":     ind.get("macd", {}).get("macd_line"),
+                "MACD柱状图": ind.get("macd", {}).get("histogram"),
+                "MACD交叉":   ind.get("macd", {}).get("crossover"),
+                "布林带位置": ind.get("bollinger_bands", {}).get("price_position"),
+                "布林带宽%":  ind.get("bollinger_bands", {}).get("bandwidth_pct"),
+                "ATR(14)":    ind.get("moving_averages", {}).get("sma20"),  # proxy
+                "数据天数":   ind.get("trading_days_used"),
+            }
+    except Exception:
+        pass
+
     query = (
         user_context_block(user_context) +
         f"Perform technical analysis for {ticker} as of {date}. "
@@ -106,7 +133,7 @@ async def run_technical_analysis(ticker: str, date: str, user_context=None) -> A
     )
 
     if isinstance(result, dict):
-        return AnalystReport(agent="technical", **result)
+        return AnalystReport(agent="technical", data_snapshot=snapshot, **result)
 
     # Fallback if agent didn't use submit_analysis
     return AnalystReport(

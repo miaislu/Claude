@@ -11,6 +11,8 @@ class AnalystReport(BaseModel):
     key_factors: List[str]
     risks: List[str]
     summary: str
+    data_snapshot: Dict[str, Any] = Field(default_factory=dict)
+    """工具实际返回的原始关键数值（✅事实层），与 key_factors 的分析解读层分开。"""
 
 
 class DebateArgument(BaseModel):

@@ -95,6 +95,24 @@ def _build_system_prompt(ticker: str) -> str:
 async def run_industry_analysis(ticker: str, date: str, user_context=None) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
 
+    # ── 预抓行业数据快照（✅事实层）──────────────────────────────────────────
+    snapshot: dict = {}
+    try:
+        import asyncio, functools
+        from tools.macro import get_cn_sector_flows, get_china_consumer_data
+        loop = asyncio.get_running_loop()
+        sf = await loop.run_in_executor(None, get_cn_sector_flows)
+        if "error" not in sf and sf.get("top_inflow"):
+            top3 = sf["top_inflow"][:3]
+            snapshot["行业净流入TOP3"] = [
+                f"{s['板块']}(+{s['净流入']:.0f}亿, {s['涨跌幅']:+.1f}%)" for s in top3
+            ]
+            if sf.get("top_outflow"):
+                out = sf["top_outflow"][:2]
+                snapshot["行业净流出TOP2"] = [f"{s['板块']}({s['净流入']:.0f}亿)" for s in out]
+    except Exception:
+        pass
+
     query = (
         user_context_block(user_context) +
         f"Perform industry and competitive analysis for {ticker} as of {date}.\n\n"
@@ -127,7 +145,7 @@ async def run_industry_analysis(ticker: str, date: str, user_context=None) -> An
     )
 
     if isinstance(result, dict):
-        return AnalystReport(agent="industry", **result)
+        return AnalystReport(agent="industry", data_snapshot=snapshot, **result)
 
     return AnalystReport(
         agent="industry",

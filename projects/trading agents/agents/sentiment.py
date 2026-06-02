@@ -147,6 +147,25 @@ def _build_system_prompt(ticker: str) -> str:
 
 async def run_sentiment_analysis(ticker: str, date: str, user_context=None) -> AnalystReport:
     system_prompt = _build_system_prompt(ticker)
+
+    # ── 预抓情绪评分（✅事实层）──────────────────────────────────────────────
+    snapshot: dict = {}
+    try:
+        if re.match(r'^\d{6}', ticker.strip()):
+            import asyncio, functools
+            from tools.news import get_stock_sentiment_score
+            loop = asyncio.get_running_loop()
+            sc = await loop.run_in_executor(None, functools.partial(get_stock_sentiment_score, ticker))
+            if "error" not in sc:
+                snapshot = {
+                    "东财综合得分（0-100）": sc.get("composite_score"),
+                    "机构参与度":            f"{sc.get('inst_participation', 0):.0%}",
+                    "关注指数":              sc.get("attention_index"),
+                    "热度评级":              sc.get("interpretation"),
+                }
+    except Exception:
+        pass
+
     is_cn = _is_a_share(ticker)
     is_hk = _is_hk(ticker)
 
@@ -196,7 +215,7 @@ async def run_sentiment_analysis(ticker: str, date: str, user_context=None) -> A
     )
 
     if isinstance(result, dict):
-        return AnalystReport(agent="sentiment", **result)
+        return AnalystReport(agent="sentiment", data_snapshot=snapshot, **result)
 
     return AnalystReport(
         agent="sentiment",
