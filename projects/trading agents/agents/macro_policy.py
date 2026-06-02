@@ -20,6 +20,8 @@ from tools.macro import (
     get_china_macro_indicators,
     get_china_consumer_data,
     get_hk_market_pulse,
+    get_cn_market_pulse,
+    get_us_market_pulse,
 )
 from tools.news import get_news_headlines, get_cn_stock_news, get_cn_macro_news
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
@@ -133,6 +135,25 @@ TOOLS: List[dict] = [
         },
     },
     {
+        "name": "get_cn_market_pulse",
+        "description": (
+            "A股市场叙事与风格轮动诊断。"
+            "通过创业板/科创50 vs 沪深300的相对表现判断 AI/成长叙事强弱。"
+            "必须为 A股标的调用。"
+        ),
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "get_us_market_pulse",
+        "description": (
+            "美股市场叙事与风格轮动诊断。"
+            "通过 QQQ(NASDAQ) vs SPY(S&P500) 相对表现以及 Magnificent 7（NVDA/MSFT/AAPL/GOOGL/AMZN/META/TSLA）"
+            "的 1 个月表现判断科技/AI叙事是否主导。"
+            "必须为美股标的调用。"
+        ),
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
         "name": "get_hk_market_pulse",
         "description": (
             "港股市场叙事与风格轮动诊断。返回：\n"
@@ -244,6 +265,8 @@ TOOL_REGISTRY = {
     "get_china_macro_indicators": get_china_macro_indicators,
     "get_china_consumer_data": get_china_consumer_data,
     "get_northbound_flow": get_northbound_flow,
+    "get_cn_market_pulse": get_cn_market_pulse,
+    "get_us_market_pulse": get_us_market_pulse,
     "get_hk_market_pulse": get_hk_market_pulse,
     "get_southbound_flow": get_southbound_flow,
     "get_news_headlines": get_news_headlines,
@@ -348,11 +371,26 @@ async def run_macro_analysis(ticker: str, date: str, user_context=None) -> Analy
             )
         )
 
-    # Capital flow steps
+    # Capital flow + market narrative steps
     flow_steps = ""
     if is_a:
-        flow_steps = "5. Call get_northbound_flow to assess foreign capital sentiment toward A-shares.\n"
-    elif is_hk:
+        flow_steps = (
+            "5. Call get_cn_market_pulse() — 必须调用。"
+            "获取创业板/科创50 vs 沪深300相对表现，判断当前A股叙事主线（AI/成长？价值/大盘？高股息？）。"
+            "评估目标股票所在板块是否在当前叙事主线中。\n"
+            "6. Call get_northbound_flow to assess foreign capital flow into A-shares.\n"
+            "   注意：北向总量 ≠ 板块受益，结合 get_cn_market_pulse 的板块信号判断资金实际流向。\n"
+        )
+    elif not is_hk:
+        # US stocks
+        flow_steps = (
+            "5. Call get_us_market_pulse() — 必须调用。"
+            "获取 QQQ vs SPY 相对表现以及 Magnificent 7 近期涨跌，"
+            "判断当前美股是否处于 Mag7/AI 集中交易期。"
+            "评估目标股票是否是市场主流资金关注的标的，还是资金流向 Mag7 后的剩余配置。\n"
+        )
+
+    if is_hk:
         flow_steps = (
             "5. Call get_hk_market_pulse() — 必须调用。"
             "获取 HSTECH vs HSI 表现差、热门股排行，判断当前港股叙事主线（AI/科技？高股息？消费复苏？）。"

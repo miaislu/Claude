@@ -379,6 +379,171 @@ def _hsgt_flow(direction: str, days_back: int) -> dict:
         return {"error": str(e), "records": []}
 
 
+def _multi_window_spread(ak_fn, growth_sym: str, base_sym: str,
+                          windows: list[tuple[str, int]]) -> dict:
+    """
+    计算成长指数 vs 基准指数在多个时间窗口的相对表现。
+    返回各窗口的超额，用于判断叙事持续性而非单日波动。
+    """
+    try:
+        import akshare as ak
+        today = datetime.now().strftime("%Y-%m-%d")
+        spreads = {}
+        for label, days in windows:
+            g = _index_return_akshare(ak_fn, growth_sym, today, days)
+            b = _index_return_akshare(ak_fn, base_sym,   today, days)
+            if g is not None and b is not None:
+                spreads[label] = round(g - b, 2)
+            else:
+                spreads[label] = None
+        return spreads
+    except Exception:
+        return {}
+
+
+def _narrative_from_spreads(spreads: dict, thresholds: tuple = (1.5, 0.5, -0.5)) -> tuple[str, str]:
+    """
+    基于多时间窗口超额的持续性得出叙事判断。
+    只有多个窗口方向一致才输出强叙事，避免单日噪音影响。
+    thresholds: (strong_positive, mild_positive, mild_negative)
+    """
+    valid = {k: v for k, v in spreads.items() if v is not None}
+    if not valid:
+        return "数据不足", "无法获取足够的历史数据。"
+
+    strong, mild = thresholds[0], thresholds[1]
+    neg = thresholds[2]
+
+    positive_count = sum(1 for v in valid.values() if v > mild)
+    negative_count = sum(1 for v in valid.values() if v < neg)
+    strong_positive = sum(1 for v in valid.values() if v > strong)
+    total = len(valid)
+
+    spread_str = "  ".join(f"{k}超额{v:+.1f}%" for k, v in sorted(valid.items()))
+
+    if strong_positive >= 2 and positive_count == total:
+        return "成长/AI叙事持续主导", (
+            f"多个时间窗口成长指数均显著跑赢基准（{spread_str}），"
+            "叙事具有持续性而非单日噪音。非成长/非AI板块面临估值折价。"
+        )
+    elif positive_count >= max(2, total - 1):
+        return "成长叙事温和占优", (
+            f"大多数时间窗口成长指数跑赢基准（{spread_str}），"
+            "叙事方向为成长，但强度温和。"
+        )
+    elif negative_count >= max(2, total - 1):
+        return "价值/防御叙事主导", (
+            f"成长指数持续跑输基准（{spread_str}），"
+            "资金从成长/AI主题轮出，向价值/高股息/防御方向切换，具有持续性。"
+        )
+    else:
+        return "叙事分散/轮动中", (
+            f"不同时间窗口方向不一致（{spread_str}），"
+            "市场可能处于叙事切换过渡期，个股机会大于主题机会。"
+        )
+
+
+def get_cn_market_pulse() -> dict:
+    """
+    A股市场叙事与风格轮动诊断（多时间窗口）。
+    基于创业板/科创50 vs 沪深300的1周/1月/3月超额持续性判断叙事方向。
+    单日或2-3日波动不代表叙事，需要多窗口一致才确立方向。
+    """
+    result: dict = {"narrative_indices": {}, "narrative_signal": "", "note": ""}
+    try:
+        import akshare as ak
+        windows = [("1周", 7), ("1月", 30), ("3月", 90)]
+
+        # 创业板 vs 沪深300
+        gem_spreads  = _multi_window_spread(ak.stock_zh_index_daily,
+                                             "sz399006", "sh000300", windows)
+        # 科创50 vs 沪深300
+        star_spreads = _multi_window_spread(ak.stock_zh_index_daily,
+                                             "sh000688", "sh000300", windows)
+
+        result["narrative_indices"] = {
+            "创业板 vs 沪深300": gem_spreads,
+            "科创50 vs 沪深300": star_spreads,
+        }
+
+        # 取两者中超额较大的作为成长叙事强度信号
+        combined = {}
+        for label, _ in windows:
+            g = gem_spreads.get(label)
+            s = star_spreads.get(label)
+            vals = [v for v in [g, s] if v is not None]
+            combined[label] = round(max(vals), 2) if vals else None
+
+        result["narrative_indices"]["综合成长超额"] = combined
+        signal, note = _narrative_from_spreads(combined)
+        result["narrative_signal"] = signal
+        result["note"] = note
+    except Exception as e:
+        result["error"] = str(e)
+    return result
+
+
+def get_us_market_pulse() -> dict:
+    """
+    美股市场叙事与风格轮动诊断。
+    通过 NASDAQ(QQQ) vs S&P(SPY) 相对表现，以及 Magnificent 7 集中度判断叙事主线。
+    """
+    result: dict = {"narrative_indices": {}, "mag7": [], "narrative_signal": "", "note": ""}
+    _MAG7 = {"NVDA": "英伟达", "MSFT": "微软", "AAPL": "苹果",
+              "GOOGL": "谷歌",  "AMZN": "亚马逊", "META": "Meta", "TSLA": "特斯拉"}
+
+    # QQQ vs SPY 多时间窗口超额（1周/1月/3月），持续性判断叙事
+    today = datetime.now().strftime("%Y-%m-%d")
+    windows_us = [("1周", 7), ("1月", 30), ("3月", 90)]
+    spreads_qqq_spy: dict = {}
+    for label, days in windows_us:
+        qqq = _period_return("QQQ", today, days)
+        spy = _period_return("SPY", today, days)
+        if qqq is not None and spy is not None:
+            spreads_qqq_spy[label] = round(qqq - spy, 2)
+        else:
+            spreads_qqq_spy[label] = None
+
+    result["narrative_indices"]["QQQ vs SPY 多窗口超额"] = spreads_qqq_spy
+
+    spread = None  # keep legacy for Mag7 signal block below
+    valid_spreads = [v for v in spreads_qqq_spy.values() if v is not None]
+    if valid_spreads:
+        spread = round(sum(valid_spreads) / len(valid_spreads), 2)  # avg spread as summary
+
+    # Mag7 performance via Polygon (reliable, no rate limits)
+    try:
+        import os
+        from polygon import RESTClient
+        key = os.environ.get("POLYGON_API_KEY", "")
+        if key:
+            client = RESTClient(key)
+            today = datetime.now().strftime("%Y-%m-%d")
+            start = (datetime.now() - timedelta(days=35)).strftime("%Y-%m-%d")
+            for sym, cn_name in _MAG7.items():
+                try:
+                    aggs = list(client.list_aggs(sym, 1, "day", start, today,
+                                                 adjusted=True, limit=30))
+                    if len(aggs) >= 20:
+                        ret = round((aggs[-1].close / aggs[-20].close - 1) * 100, 2)
+                        result["mag7"].append({"ticker": sym, "name": cn_name, "1m_return_pct": ret})
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    # 用多窗口持续性判断叙事（避免单日/单周噪音影响结论）
+    signal, note = _narrative_from_spreads(spreads_qqq_spy, thresholds=(3.0, 1.0, -1.0))
+    result["narrative_signal"] = signal
+    result["note"] = (
+        note + " 注：美股Mag7（NVDA/MSFT/AAPL/GOOGL/AMZN/META/TSLA）长期集中交易现象明显，"
+        "非Mag7科技股在Mag7叙事主导期通常也面临估值折价；"
+        "中资ADR走势更多由港股和中国因素决定，但全球科技情绪仍有溢出效应。"
+    )
+
+    return result
+
+
 def get_hk_market_pulse() -> dict:
     """
     港股市场叙事与风格轮动诊断工具。
@@ -400,30 +565,20 @@ def get_hk_market_pulse() -> dict:
         "note": "",
     }
 
-    # ── HSTECH vs HSI 相对表现 ──────────────────────────────────────────────────
+    # ── HSTECH vs HSI 多时间窗口相对表现 ────────────────────────────────────────
+    # 使用历史数据计算1周/1月/3月超额，避免单日波动误判叙事
     try:
         import akshare as ak
-        spot = ak.stock_hk_index_spot_sina()
-        indices = {row["代码"]: row for _, row in spot.iterrows()}
-
-        hstech = indices.get("HSTECH", {})
-        hsi    = indices.get("HSI", {})
-
-        hstech_chg = float(hstech.get("涨跌幅", 0) or 0)
-        hsi_chg    = float(hsi.get("涨跌幅", 0) or 0)
-        spread     = round(hstech_chg - hsi_chg, 2)
-
+        windows = [("1周", 7), ("1月", 30), ("3月", 90)]
+        spreads = _multi_window_spread(
+            ak.stock_hk_index_daily_sina, "HSTECH", "HSI", windows
+        )
         result["narrative_indices"] = {
-            "HSI":    {"price": float(hsi.get("最新价", 0) or 0),    "change_pct": hsi_chg},
-            "HSTECH": {"price": float(hstech.get("最新价", 0) or 0), "change_pct": hstech_chg},
-            "hstech_vs_hsi_spread": spread,
-            "interpretation": (
-                "HSTECH 显著跑赢 → AI/科技叙事主导，资金向科技板块集中" if spread > 1.5
-                else "HSTECH 小幅跑赢 → 科技叙事有一定溢价" if spread > 0.5
-                else "HSTECH 基本持平/跑输 → 风格偏防御/价值，科技溢价消退" if spread > -0.5
-                else "HSTECH 明显跑输 → 资金从科技撤出，风格切换至防御"
-            ),
+            "HSTECH vs HSI 多窗口超额": spreads,
         }
+        signal, note = _narrative_from_spreads(spreads)
+        result["narrative_signal"] = signal
+        result["note"] = note
     except Exception as e:
         result["narrative_indices"]["error"] = str(e)
 
@@ -443,23 +598,11 @@ def get_hk_market_pulse() -> dict:
     except Exception as e:
         result["hot_stocks_error"] = str(e)
 
-    # ── 综合叙事信号 ────────────────────────────────────────────────────────────
-    spread = result.get("narrative_indices", {}).get("hstech_vs_hsi_spread", 0)
-    if spread > 1.5:
-        result["narrative_signal"] = "AI/科技叙事主导"
-        result["note"] = (
-            "当前港股资金明显向 AI/科技板块集中（HSTECH 跑赢 HSI）。"
-            "对没有清晰 AI 叙事的股票（如纯消费/能源/地产），即使基本面改善，"
-            "也面临叙事折价风险——机构资金会优先配置 AI 叙事标的，"
-            "非AI板块的 PE/PB 扩张空间受压。"
-            "热门股名单可以辅助判断主线具体集中在哪个细分（半导体/AI软件/机器人等）。"
-        )
-    elif spread < -0.5:
-        result["narrative_signal"] = "防御/价值叙事主导"
-        result["note"] = "科技叙事退潮，资金转向高股息/防御板块。消费/能源等传统板块可能相对受益。"
-    else:
-        result["narrative_signal"] = "叙事分散/震荡"
-        result["note"] = "暂无明显主线，个股分化。基本面驱动型机会需精选。"
+    # narrative_signal and note are already set by the multi-timeframe spread analysis above.
+    # Hot stocks list is supplemental context for the agent to identify specific sectors.
+    if result["hot_stocks"] and not result.get("narrative_signal"):
+        result["narrative_signal"] = "数据不足"
+        result["note"] = "指数历史数据获取失败，请参考热门股名单判断叙事方向。"
 
     return result
 

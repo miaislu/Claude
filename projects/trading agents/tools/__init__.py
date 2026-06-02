@@ -10,6 +10,8 @@ from .macro import (
     get_china_macro_indicators,
     get_china_consumer_data,
     get_hk_market_pulse,
+    get_cn_market_pulse,
+    get_us_market_pulse,
 )
 
 __all__ = [
