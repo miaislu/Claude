@@ -335,6 +335,120 @@ def _get_earnings_history_fmp(ticker: str, date: Optional[str] = None) -> dict:
     return {"ticker": ticker, "source": "fmp", "quarters": quarters}
 
 
+# ── AkShare ── A-share additional fundamental data ────────────────────────────
+
+def get_top_shareholders(ticker: str, date: str = "") -> dict:
+    """
+    A股前十大流通股东（季度持仓）。
+    date: YYYYMMDD，默认最近一期。
+    显示机构持仓结构、股东类型（基金/保险/社保/QFII等）。
+    """
+    try:
+        import akshare as ak
+        from .market_data import _bare_cn_code
+        from datetime import datetime
+        code = _bare_cn_code(ticker)
+        # Determine prefix: sh for Shanghai (6xxxxx), sz for Shenzhen
+        prefix = "sh" if code[0] == '6' else "sz"
+        sym = f"{prefix}{code}"
+        if not date:
+            # Use last quarter end
+            now = datetime.now()
+            quarters = [(now.year, "0331"), (now.year, "0630"),
+                       (now.year, "0930"), (now.year, "1231"),
+                       (now.year - 1, "1231")]
+            for yr, qe in quarters:
+                d = f"{yr}{qe}"
+                if d <= now.strftime("%Y%m%d"):
+                    date = d
+                    break
+        df = ak.stock_gdfx_free_top_10_em(symbol=sym, date=date)
+        if df is None or df.empty:
+            return {"ticker": ticker, "shareholders": [], "note": "无数据"}
+        holders = []
+        for _, row in df.iterrows():
+            holders.append({
+                "rank":       int(row.get("名次", 0) or 0),
+                "name":       str(row.get("股东名称", "")),
+                "type":       str(row.get("股东性质", "")),
+                "share_type": str(row.get("股份类型", "")),
+                "shares":     float(row.get("持股数", 0) or 0),
+                "pct_float":  float(row.get("占总流通股本持股比例", 0) or 0),
+            })
+        return {
+            "ticker":      ticker,
+            "source":      "eastmoney_shareholders",
+            "as_of_date":  date,
+            "shareholders": holders,
+        }
+    except Exception as e:
+        return {"ticker": ticker, "error": str(e), "shareholders": []}
+
+
+def get_restricted_release(ticker: str) -> dict:
+    """
+    A股限售解禁时间表（近期+未来解禁计划）。
+    关键指标：解禁规模占流通市值比例——占比>5%是显著供给压力。
+    """
+    try:
+        import akshare as ak
+        from .market_data import _bare_cn_code
+        code = _bare_cn_code(ticker)
+        df = ak.stock_restricted_release_queue_em(symbol=code)
+        if df is None or df.empty:
+            return {"ticker": ticker, "schedule": [], "note": "无解禁计划"}
+        schedule = []
+        for _, row in df.head(5).iterrows():
+            pct_float = float(row.get("占流通市值比例", 0) or 0)
+            schedule.append({
+                "date":            str(row.get("解禁时间", "")),
+                "shares":          float(row.get("实际解禁数量", 0) or 0),
+                "mkt_value_cny":   float(row.get("实际解禁数量市值", 0) or 0),
+                "pct_float_mktcap": pct_float,
+                "share_type":      str(row.get("限售股类型", "")),
+                "pressure":        (
+                    "重大解禁压力" if pct_float > 0.05
+                    else "中等解禁压力" if pct_float > 0.02
+                    else "轻微解禁压力"
+                ),
+            })
+        return {"ticker": ticker, "source": "eastmoney_restricted", "schedule": schedule}
+    except Exception as e:
+        return {"ticker": ticker, "error": str(e), "schedule": []}
+
+
+def get_profit_forecast(ticker: str) -> dict:
+    """
+    同花顺分析师盈利预测（EPS共识预测）。
+    返回未来2-3年的最小值/均值/最大值，用于判断预期差。
+    """
+    try:
+        import akshare as ak
+        from .market_data import _bare_cn_code
+        code = _bare_cn_code(ticker)
+        df = ak.stock_profit_forecast_ths(symbol=code, indicator="预测年报每股收益")
+        if df is None or df.empty:
+            return {"ticker": ticker, "forecasts": [], "note": "无盈利预测数据"}
+        forecasts = []
+        for _, row in df.iterrows():
+            forecasts.append({
+                "year":        str(row.get("年度", "")),
+                "institutions": int(row.get("预测机构数", 0) or 0),
+                "eps_min":     _safe_float(row.get("最小值")),
+                "eps_mean":    _safe_float(row.get("均值")),
+                "eps_max":     _safe_float(row.get("最大值")),
+                "industry_avg": _safe_float(row.get("行业平均数")),
+            })
+        return {
+            "ticker":    ticker,
+            "source":    "tonghuashun_forecast",
+            "indicator": "EPS (元/股)",
+            "forecasts": forecasts,
+        }
+    except Exception as e:
+        return {"ticker": ticker, "error": str(e), "forecasts": []}
+
+
 # ── yfinance ── US/HK (and A-share fallback) ──────────────────────────────────
 
 def _safe_float(v) -> Optional[float]:

@@ -13,7 +13,10 @@ from pathlib import Path
 from typing import List
 
 from harness.agent import run_agent
-from tools.news import get_news_headlines, get_analyst_ratings, get_cn_stock_news, get_cn_macro_news
+from tools.news import (
+    get_news_headlines, get_analyst_ratings, get_cn_stock_news, get_cn_macro_news,
+    get_stock_sentiment_score, get_lhb_detail,
+)
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
 from . import user_context_block
 
@@ -81,14 +84,46 @@ TOOLS: List[dict] = [
             "required": ["ticker"],
         },
     },
+    {
+        "name": "get_stock_sentiment_score",
+        "description": (
+            "东方财富综合情绪评分（A股专用）。"
+            "返回：综合得分(0-100)、机构参与度、关注指数。"
+            "综合得分>80=热门；<50=冷门。比文本新闻更量化。"
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"ticker": {"type": "string", "description": "A股6位代码"}},
+            "required": ["ticker"],
+        },
+    },
+    {
+        "name": "get_lhb_detail",
+        "description": (
+            "A股龙虎榜记录（近期机构/主力资金买卖）。"
+            "机构连续上榜买入 = 强看多信号；连续卖出 = 警示。"
+            "仅适用于A股。"
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "ticker": {"type": "string"},
+                "start_date": {"type": "string", "description": "YYYYMMDD"},
+                "end_date":   {"type": "string", "description": "YYYYMMDD"},
+            },
+            "required": ["ticker"],
+        },
+    },
     SUBMIT_ANALYSIS_TOOL,
 ]
 
 TOOL_REGISTRY = {
-    "get_news_headlines":  get_news_headlines,
-    "get_cn_stock_news":   get_cn_stock_news,
-    "get_cn_macro_news":   get_cn_macro_news,
-    "get_analyst_ratings": get_analyst_ratings,
+    "get_news_headlines":        get_news_headlines,
+    "get_cn_stock_news":         get_cn_stock_news,
+    "get_cn_macro_news":         get_cn_macro_news,
+    "get_analyst_ratings":       get_analyst_ratings,
+    "get_stock_sentiment_score": get_stock_sentiment_score,
+    "get_lhb_detail":            get_lhb_detail,
 }
 
 
@@ -119,8 +154,10 @@ async def run_sentiment_analysis(ticker: str, date: str, user_context=None) -> A
     if is_cn:
         news_steps = (
             f"1. Call get_cn_stock_news(ticker='{ticker}') — 中文股票新闻（东方财富），优先级最高。\n"
-            "2. Call get_cn_macro_news with relevant sector keywords to find industry-level news.\n"
-            "3. Call get_analyst_ratings for recent upgrades/downgrades if available.\n"
+            f"2. Call get_stock_sentiment_score(ticker='{ticker}') — 东财量化情绪评分（综合得分/机构参与度/关注指数）。\n"
+            f"3. Call get_lhb_detail(ticker='{ticker}') — 龙虎榜机构买卖记录（近60日）。\n"
+            "4. Call get_cn_macro_news with relevant sector keywords to find industry-level news.\n"
+            "5. Call get_analyst_ratings for recent upgrades/downgrades if available.\n"
         )
     elif is_hk:
         hk_code = ticker.split(".")[0]

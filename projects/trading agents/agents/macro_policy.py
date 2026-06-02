@@ -19,6 +19,8 @@ from tools.macro import (
     get_energy_commodity_prices,
     get_china_macro_indicators,
     get_china_consumer_data,
+    get_cn_sector_flows,
+    get_limit_up_pool,
     get_hk_market_pulse,
     get_cn_market_pulse,
     get_us_market_pulse,
@@ -132,6 +134,34 @@ TOOLS: List[dict] = [
                 "days_back": {"type": "integer", "description": "Days to look back, default 5"},
             },
             "required": ["date"],
+        },
+    },
+    {
+        "name": "get_cn_sector_flows",
+        "description": (
+            "同花顺行业板块净流入排名（今日）。"
+            "比指数对比更直接：直接看哪些行业在吸资金、哪些在流出。"
+            "判断A股当前资金偏好（半导体？消费？能源？）。仅适用于A股。"
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "top_n": {"type": "integer", "description": "显示净流入前N个行业，默认10"},
+            },
+        },
+    },
+    {
+        "name": "get_limit_up_pool",
+        "description": (
+            "A股涨停池（当日涨停股及行业分布）。"
+            "涨停板集中的行业 = 当日市场最热叙事。"
+            "连板股数量 = 市场风险偏好指标。仅适用于A股。"
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "date": {"type": "string", "description": "YYYYMMDD，默认今日"},
+            },
         },
     },
     {
@@ -265,6 +295,8 @@ TOOL_REGISTRY = {
     "get_china_macro_indicators": get_china_macro_indicators,
     "get_china_consumer_data": get_china_consumer_data,
     "get_northbound_flow": get_northbound_flow,
+    "get_cn_sector_flows": get_cn_sector_flows,
+    "get_limit_up_pool":   get_limit_up_pool,
     "get_cn_market_pulse": get_cn_market_pulse,
     "get_us_market_pulse": get_us_market_pulse,
     "get_hk_market_pulse": get_hk_market_pulse,
@@ -375,11 +407,13 @@ async def run_macro_analysis(ticker: str, date: str, user_context=None) -> Analy
     flow_steps = ""
     if is_a:
         flow_steps = (
-            "5. Call get_cn_market_pulse() — 必须调用。"
-            "获取创业板/科创50 vs 沪深300相对表现，判断当前A股叙事主线（AI/成长？价值/大盘？高股息？）。"
-            "评估目标股票所在板块是否在当前叙事主线中。\n"
-            "6. Call get_northbound_flow to assess foreign capital flow into A-shares.\n"
-            "   注意：北向总量 ≠ 板块受益，结合 get_cn_market_pulse 的板块信号判断资金实际流向。\n"
+            "5. Call get_cn_market_pulse() — 必须调用。判断A股叙事主线（AI/成长 vs 价值/大盘）。\n"
+            "6. Call get_cn_sector_flows() — 必须调用。获取今日行业净流入排名，"
+            "判断资金具体流向哪些板块（比指数对比更精准）。\n"
+            "7. Call get_limit_up_pool() — 获取今日涨停板行业分布，"
+            "识别最热叙事（涨停集中行业 = 市场当日最强主题）。\n"
+            "8. Call get_northbound_flow to assess foreign capital total flow.\n"
+            "   注意：北向总量 + 行业净流入综合判断，目标股票所在行业是否在受益板块中。\n"
         )
     elif not is_hk:
         # US stocks

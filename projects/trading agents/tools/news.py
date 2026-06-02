@@ -144,6 +144,82 @@ def get_cn_macro_news(keywords: list | None = None, max_items: int = 15) -> dict
         return {"error": str(e), "articles": []}
 
 
+def get_stock_sentiment_score(ticker: str) -> dict:
+    """
+    东方财富综合情绪评分（覆盖A股5000+只）。
+    返回：综合得分、机构参与度、关注指数——比纯文本新闻更量化。
+    综合得分 > 80 = 市场热度极高；< 50 = 冷门。
+    """
+    try:
+        import akshare as ak
+        from .market_data import _bare_cn_code
+        code = _bare_cn_code(ticker)
+        df = ak.stock_comment_em()
+        row = df[df["代码"] == code]
+        if row.empty:
+            return {"ticker": ticker, "note": "未找到东财情绪评分（可能为港股/美股）"}
+        r = row.iloc[0]
+        score       = float(r.get("综合得分", 0) or 0)
+        inst_rate   = float(r.get("机构参与度", 0) or 0)
+        attention   = float(r.get("关注指数", 0) or 0)
+        return {
+            "ticker":           ticker,
+            "source":           "eastmoney_comment",
+            "composite_score":  round(score, 2),
+            "inst_participation": round(inst_rate, 4),
+            "attention_index":  round(attention, 2),
+            "interpretation": (
+                "市场热度极高，多方关注" if score > 80
+                else "热度较高" if score > 65
+                else "热度中等" if score > 50
+                else "冷门/低关注度"
+            ),
+        }
+    except Exception as e:
+        return {"ticker": ticker, "error": str(e)}
+
+
+def get_lhb_detail(ticker: str, start_date: str = "", end_date: str = "") -> dict:
+    """
+    A股龙虎榜记录（近期机构/主力资金买卖行为）。
+    上榜标准：当日涨跌幅≥7% 或 成交量异常。
+    机构净买入上榜 = 强力看多信号；机构净卖出上榜 = 警示信号。
+    """
+    try:
+        import akshare as ak
+        from .market_data import _bare_cn_code
+        from datetime import datetime, timedelta
+        code = _bare_cn_code(ticker)
+        if not start_date:
+            start_date = (datetime.now() - timedelta(days=60)).strftime("%Y%m%d")
+        if not end_date:
+            end_date = datetime.now().strftime("%Y%m%d")
+        df = ak.stock_lhb_detail_em(start_date=start_date, end_date=end_date)
+        if df is None or df.empty:
+            return {"ticker": ticker, "records": [], "note": "期间无龙虎榜记录"}
+        # Filter to target stock
+        stock_df = df[df["代码"] == code]
+        if stock_df.empty:
+            return {"ticker": ticker, "records": [],
+                    "note": f"近期（{start_date}–{end_date}）未上龙虎榜"}
+        records = []
+        for _, row in stock_df.head(10).iterrows():
+            records.append({
+                "date":        str(row.get("上榜日", "")),
+                "reason":      str(row.get("解读", "")),
+                "close_price": float(row.get("收盘价", 0) or 0),
+            })
+        return {
+            "ticker":  ticker,
+            "source":  "eastmoney_lhb",
+            "count":   len(records),
+            "records": records,
+            "note": "有龙虎榜记录说明该股近期出现主力或机构明显买卖行为",
+        }
+    except Exception as e:
+        return {"ticker": ticker, "error": str(e), "records": []}
+
+
 def get_analyst_ratings(ticker: str) -> dict:
     """Fetch recent analyst price target changes and upgrade/downgrades."""
     yf_ticker, _ = _normalize_ticker(ticker)

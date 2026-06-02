@@ -443,41 +443,80 @@ def _narrative_from_spreads(spreads: dict, thresholds: tuple = (1.5, 0.5, -0.5))
         )
 
 
+def _ths_concept_return(symbol: str, end_date: str, days: int) -> float | None:
+    """Compute % return for a THS concept index over the last `days` calendar days."""
+    try:
+        import akshare as ak
+        df = ak.stock_board_concept_index_ths(symbol=symbol)
+        if df is None or df.empty:
+            return None
+        df["日期"] = df["日期"].astype(str)
+        start = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=days)).strftime("%Y-%m-%d")
+        window = df[(df["日期"] >= start) & (df["日期"] <= end_date)]
+        if len(window) < 2:
+            return None
+        prices = window["收盘价"].astype(float).tolist()
+        return round((prices[-1] / prices[0] - 1) * 100, 2)
+    except Exception:
+        return None
+
+
 def get_cn_market_pulse() -> dict:
     """
     A股市场叙事与风格轮动诊断（多时间窗口）。
-    基于创业板/科创50 vs 沪深300的1周/1月/3月超额持续性判断叙事方向。
-    单日或2-3日波动不代表叙事，需要多窗口一致才确立方向。
+
+    两层信号：
+    1. 成长叙事：创业板/科创50 vs 沪深300（广义成长 vs 大盘价值）
+    2. AI叙事精准：同花顺「人工智能」概念指数 vs 沪深300（直接AI主题）
+
+    单日或2-3日波动不代表叙事方向，需要多个时间窗口方向一致才确立。
     """
     result: dict = {"narrative_indices": {}, "narrative_signal": "", "note": ""}
     try:
         import akshare as ak
+        today = datetime.now().strftime("%Y-%m-%d")
         windows = [("1周", 7), ("1月", 30), ("3月", 90)]
 
-        # 创业板 vs 沪深300
+        # ── 层1：成长 vs 大盘（创业板+科创50 vs 沪深300）────────────────────
         gem_spreads  = _multi_window_spread(ak.stock_zh_index_daily,
                                              "sz399006", "sh000300", windows)
-        # 科创50 vs 沪深300
         star_spreads = _multi_window_spread(ak.stock_zh_index_daily,
                                              "sh000688", "sh000300", windows)
+        combined_growth = {}
+        for label, _ in windows:
+            vals = [v for v in [gem_spreads.get(label), star_spreads.get(label)] if v is not None]
+            combined_growth[label] = round(max(vals), 2) if vals else None
+
+        # ── 层2：AI概念精准信号（同花顺人工智能概念指数 vs 沪深300）─────────
+        ai_spreads = {}
+        for label, days in windows:
+            ai_ret  = _ths_concept_return("人工智能", today, days)
+            base_df = ak.stock_zh_index_daily(symbol="sh000300")
+            base_df["date"] = base_df["date"].astype(str)
+            start = (datetime.strptime(today, "%Y-%m-%d") - timedelta(days=days)).strftime("%Y-%m-%d")
+            w = base_df[base_df["date"] >= start]["close"].astype(float)
+            base_ret = round((w.iloc[-1] / w.iloc[0] - 1) * 100, 2) if len(w) >= 2 else None
+            if ai_ret is not None and base_ret is not None:
+                ai_spreads[label] = round(ai_ret - base_ret, 2)
+            else:
+                ai_spreads[label] = None
 
         result["narrative_indices"] = {
-            "创业板 vs 沪深300": gem_spreads,
-            "科创50 vs 沪深300": star_spreads,
+            "成长指数 vs 沪深300（创业板+科创50）": combined_growth,
+            "AI概念指数 vs 沪深300（人工智能）":    ai_spreads,
         }
 
-        # 取两者中超额较大的作为成长叙事强度信号
-        combined = {}
-        for label, _ in windows:
-            g = gem_spreads.get(label)
-            s = star_spreads.get(label)
-            vals = [v for v in [g, s] if v is not None]
-            combined[label] = round(max(vals), 2) if vals else None
+        # 优先用 AI 概念指数判断，回退到成长指数
+        primary = ai_spreads if any(v is not None for v in ai_spreads.values()) else combined_growth
+        signal, note = _narrative_from_spreads(primary, thresholds=(2.0, 0.8, -0.8))
 
-        result["narrative_indices"]["综合成长超额"] = combined
-        signal, note = _narrative_from_spreads(combined)
+        # 补充成长指数作为参考
+        growth_signal, _ = _narrative_from_spreads(combined_growth)
         result["narrative_signal"] = signal
-        result["note"] = note
+        result["note"] = (
+            f"[AI概念指数] {note}\n"
+            f"[成长指数参考] {growth_signal}"
+        )
     except Exception as e:
         result["error"] = str(e)
     return result
@@ -605,6 +644,70 @@ def get_hk_market_pulse() -> dict:
         result["note"] = "指数历史数据获取失败，请参考热门股名单判断叙事方向。"
 
     return result
+
+
+def get_cn_sector_flows(top_n: int = 10) -> dict:
+    """
+    同花顺行业板块净流入排名（今日）。
+    比指数对比法更直接：直接看哪些行业在吸资金、哪些在流出。
+    用于判断A股当前资金偏好（半导体？消费？能源？）。
+    """
+    try:
+        import akshare as ak
+        df = ak.stock_board_industry_summary_ths()
+        if df is None or df.empty:
+            return {"error": "无行业数据"}
+        # Sort by 净流入
+        df["净流入"] = df["净流入"].astype(float)
+        df["涨跌幅"] = df["涨跌幅"].astype(float)
+        inflow  = df.nlargest(top_n, "净流入")[["板块", "涨跌幅", "净流入", "上涨家数", "下跌家数", "领涨股"]]
+        outflow = df.nsmallest(3, "净流入")[["板块", "涨跌幅", "净流入"]]
+        return {
+            "source":       "tonghuashun_industry",
+            "top_inflow":   inflow.to_dict("records"),
+            "top_outflow":  outflow.to_dict("records"),
+            "note":         "净流入>50亿=强资金入场；持续多日同一行业净流入=叙事确立信号",
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def get_limit_up_pool(date: str = "") -> dict:
+    """
+    A股涨停池（当日涨停股统计）。
+    涨停板集中的行业 = 当日市场最热叙事（实时）。
+    连板股数量 = 市场风险偏好指标。
+    """
+    try:
+        import akshare as ak
+        from datetime import datetime
+        if not date:
+            date = datetime.now().strftime("%Y%m%d")
+        df = ak.stock_zt_pool_em(date=date)
+        if df is None or df.empty:
+            return {"date": date, "total": 0, "sectors": {}, "note": "当日无涨停数据"}
+        total = len(df)
+        # Industry distribution
+        sectors: dict = {}
+        if "所属行业" in df.columns:
+            for ind, cnt in df["所属行业"].value_counts().head(8).items():
+                sectors[str(ind)] = int(cnt)
+        # Consecutive limit-up count
+        multi_board = df[df["连板数"] >= 2]["连板数"].value_counts().to_dict() if "连板数" in df.columns else {}
+        return {
+            "date":           date,
+            "source":         "eastmoney_zt",
+            "total_zt":       total,
+            "sector_dist":    sectors,
+            "multi_board":    {f"{k}连板": int(v) for k, v in multi_board.items()},
+            "sentiment_note": (
+                f"今日{total}只涨停。"
+                + (f"热点集中在：{list(sectors.keys())[:3]}" if sectors else "")
+                + ("，市场情绪偏激进（多连板股）" if sum(multi_board.values()) > 5 else "")
+            ),
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 
 def get_northbound_flow(date: str, days_back: int = 5) -> dict:
