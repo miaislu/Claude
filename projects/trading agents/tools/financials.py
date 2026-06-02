@@ -417,58 +417,81 @@ def get_restricted_release(ticker: str) -> dict:
         return {"ticker": ticker, "error": str(e), "schedule": []}
 
 
-def get_broker_research(ticker: str, limit: int = 8) -> dict:
+def get_broker_research(ticker: str, limit: int = 8, months: int = 3) -> dict:
     """
     东方财富研报库 — A股个股券商研究报告（A.4 来源）。
 
-    返回：评级共识、各期EPS预测分布、最近N份研报标题+机构+评级+链接。
-    对比分析师分歧（最高vs最低EPS预测）可识别预期差。
+    返回：评级共识、EPS预测分布（仅近N个月）、最近研报标题+机构+评级+链接。
 
+    months=3：只统计近3个月的研报，避免旧预测拉大 EPS spread 造成误判。
     覆盖来源：国内主流券商（华泰/中信/国泰君安/招商/国信等）。
     """
     try:
         import akshare as ak
+        import pandas as pd
+        from datetime import datetime, timedelta
         from .market_data import _bare_cn_code
         code = _bare_cn_code(ticker)
         df = ak.stock_research_report_em(symbol=code)
         if df is None or df.empty:
             return {"ticker": ticker, "reports": [], "note": "无研报数据"}
 
+        total_all = len(df)
+
+        # ── 只保留近 months 个月的研报（避免旧预测污染EPS统计）─────────────
+        cutoff = (datetime.now() - timedelta(days=months * 30)).strftime("%Y-%m-%d")
+        df["日期"] = pd.to_datetime(df["日期"], errors="coerce").dt.strftime("%Y-%m-%d")
+        df_recent = df[df["日期"] >= cutoff].copy()
+
+        if df_recent.empty:
+            # fallback：若近期无研报，取全量但注明
+            df_recent = df
+            period_note = f"近{months}个月无研报，显示全部历史数据（共{total_all}份）"
+        else:
+            period_note = f"近{months}个月：{len(df_recent)}份（共{total_all}份）"
+
+        # ── 最近 N 份报告摘要 ────────────────────────────────────────────────
         reports = []
-        for _, row in df.head(limit).iterrows():
+        for _, row in df_recent.head(limit).iterrows():
             reports.append({
-                "date":       str(row.get("日期", "")),
-                "title":      str(row.get("报告名称", "")),
-                "institution":str(row.get("机构", "")),
-                "rating":     str(row.get("东财评级", "")),
-                "eps_2026":   _safe_float(row.get("2026-盈利预测-收益")),
-                "pe_2026":    _safe_float(row.get("2026-盈利预测-市盈率")),
-                "eps_2027":   _safe_float(row.get("2027-盈利预测-收益")),
-                "pdf_url":    str(row.get("报告PDF链接", "")),
+                "date":        str(row.get("日期", "")),
+                "title":       str(row.get("报告名称", "")),
+                "institution": str(row.get("机构", "")),
+                "rating":      str(row.get("东财评级", "")),
+                "eps_2026":    _safe_float(row.get("2026-盈利预测-收益")),
+                "pe_2026":     _safe_float(row.get("2026-盈利预测-市盈率")),
+                "eps_2027":    _safe_float(row.get("2027-盈利预测-收益")),
+                "pdf_url":     str(row.get("报告PDF链接", "")),
             })
 
-        # 评级共识统计
-        ratings = df["东财评级"].value_counts().to_dict()
-        # EPS分布
+        # ── 评级共识（近期研报）────────────────────────────────────────────────
+        ratings = df_recent["东财评级"].value_counts().to_dict()
+
+        # ── EPS分布（仅近期研报，避免历史旧预测拉偏）──────────────────────────
         eps_col = "2026-盈利预测-收益"
-        eps_vals = df[eps_col].dropna().astype(float)
+        eps_vals = df_recent[eps_col].dropna().astype(float)
         eps_dist = {}
         if not eps_vals.empty:
+            spread = round(float(eps_vals.max() - eps_vals.min()), 3)
             eps_dist = {
                 "mean":   round(float(eps_vals.mean()), 3),
                 "max":    round(float(eps_vals.max()), 3),
                 "min":    round(float(eps_vals.min()), 3),
-                "spread": round(float(eps_vals.max() - eps_vals.min()), 3),
-                "note": "spread大 = 分析师分歧大 = 预期差机会" if eps_vals.max() - eps_vals.min() > 0.3 else "分析师共识较一致",
+                "spread": spread,
+                "count":  len(eps_vals),
+                "note": (
+                    "分析师分歧明显，存在预期差机会" if spread > 0.3
+                    else "近期研报共识较一致"
+                ),
             }
 
         return {
-            "ticker":        ticker,
-            "source":        "eastmoney_research",
-            "total_reports": len(df),
+            "ticker":           ticker,
+            "source":           "eastmoney_research",
+            "period":           period_note,
             "rating_consensus": ratings,
-            "eps_2026_dist": eps_dist,
-            "latest_reports": reports,
+            "eps_2026_dist":    eps_dist,
+            "latest_reports":   reports,
         }
     except Exception as e:
         return {"ticker": ticker, "error": str(e), "reports": []}
