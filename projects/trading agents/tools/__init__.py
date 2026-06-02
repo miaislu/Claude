@@ -9,6 +9,7 @@ from .macro import (
     get_energy_commodity_prices,
     get_china_macro_indicators,
     get_china_consumer_data,
+    get_hk_market_pulse,
 )
 
 __all__ = [

@@ -379,6 +379,91 @@ def _hsgt_flow(direction: str, days_back: int) -> dict:
         return {"error": str(e), "records": []}
 
 
+def get_hk_market_pulse() -> dict:
+    """
+    港股市场叙事与风格轮动诊断工具。
+
+    返回：
+    1. HSTECH vs HSI 相对表现 → 判断 AI/科技叙事强弱
+    2. 市场热门股排行（前15）→ 识别当前资金聚焦的板块
+    3. 综合叙事信号
+
+    使用方法：
+    - 若 HSTECH 相对 HSI 显著跑赢（差距 > 1.5%）→ AI/科技叙事主导
+    - 结合热门股名单判断主线（半导体/AI软件/互联网AI/机器人）
+    - 评估目标股票是否在叙事主线中
+    """
+    result: dict = {
+        "narrative_indices": {},
+        "hot_stocks": [],
+        "narrative_signal": "",
+        "note": "",
+    }
+
+    # ── HSTECH vs HSI 相对表现 ──────────────────────────────────────────────────
+    try:
+        import akshare as ak
+        spot = ak.stock_hk_index_spot_sina()
+        indices = {row["代码"]: row for _, row in spot.iterrows()}
+
+        hstech = indices.get("HSTECH", {})
+        hsi    = indices.get("HSI", {})
+
+        hstech_chg = float(hstech.get("涨跌幅", 0) or 0)
+        hsi_chg    = float(hsi.get("涨跌幅", 0) or 0)
+        spread     = round(hstech_chg - hsi_chg, 2)
+
+        result["narrative_indices"] = {
+            "HSI":    {"price": float(hsi.get("最新价", 0) or 0),    "change_pct": hsi_chg},
+            "HSTECH": {"price": float(hstech.get("最新价", 0) or 0), "change_pct": hstech_chg},
+            "hstech_vs_hsi_spread": spread,
+            "interpretation": (
+                "HSTECH 显著跑赢 → AI/科技叙事主导，资金向科技板块集中" if spread > 1.5
+                else "HSTECH 小幅跑赢 → 科技叙事有一定溢价" if spread > 0.5
+                else "HSTECH 基本持平/跑输 → 风格偏防御/价值，科技溢价消退" if spread > -0.5
+                else "HSTECH 明显跑输 → 资金从科技撤出，风格切换至防御"
+            ),
+        }
+    except Exception as e:
+        result["narrative_indices"]["error"] = str(e)
+
+    # ── 热门股排行（前15）→ 识别当前叙事主线 ──────────────────────────────────
+    try:
+        import akshare as ak
+        hot = ak.stock_hk_hot_rank_em()
+        if hot is not None and not hot.empty:
+            for _, row in hot.head(15).iterrows():
+                result["hot_stocks"].append({
+                    "rank":       int(row.get("当前排名", 0)),
+                    "code":       str(row.get("代码", "")),
+                    "name":       str(row.get("股票名称", "")),
+                    "price":      float(row.get("最新价", 0) or 0),
+                    "change_pct": float(row.get("涨跌幅", 0) or 0),
+                })
+    except Exception as e:
+        result["hot_stocks_error"] = str(e)
+
+    # ── 综合叙事信号 ────────────────────────────────────────────────────────────
+    spread = result.get("narrative_indices", {}).get("hstech_vs_hsi_spread", 0)
+    if spread > 1.5:
+        result["narrative_signal"] = "AI/科技叙事主导"
+        result["note"] = (
+            "当前港股资金明显向 AI/科技板块集中（HSTECH 跑赢 HSI）。"
+            "对没有清晰 AI 叙事的股票（如纯消费/能源/地产），即使基本面改善，"
+            "也面临叙事折价风险——机构资金会优先配置 AI 叙事标的，"
+            "非AI板块的 PE/PB 扩张空间受压。"
+            "热门股名单可以辅助判断主线具体集中在哪个细分（半导体/AI软件/机器人等）。"
+        )
+    elif spread < -0.5:
+        result["narrative_signal"] = "防御/价值叙事主导"
+        result["note"] = "科技叙事退潮，资金转向高股息/防御板块。消费/能源等传统板块可能相对受益。"
+    else:
+        result["narrative_signal"] = "叙事分散/震荡"
+        result["note"] = "暂无明显主线，个股分化。基本面驱动型机会需精选。"
+
+    return result
+
+
 def get_northbound_flow(date: str, days_back: int = 5) -> dict:
     """Northbound capital flow into A-shares (外资/北向资金)."""
     return _hsgt_flow("北向", days_back)

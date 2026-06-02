@@ -19,6 +19,7 @@ from tools.macro import (
     get_energy_commodity_prices,
     get_china_macro_indicators,
     get_china_consumer_data,
+    get_hk_market_pulse,
 )
 from tools.news import get_news_headlines, get_cn_stock_news, get_cn_macro_news
 from .schemas import AnalystReport, SUBMIT_ANALYSIS_TOOL
@@ -132,6 +133,21 @@ TOOLS: List[dict] = [
         },
     },
     {
+        "name": "get_hk_market_pulse",
+        "description": (
+            "港股市场叙事与风格轮动诊断。返回：\n"
+            "1. HSTECH vs HSI 相对表现 → 判断 AI/科技叙事强弱\n"
+            "2. 市场热门股排行前15 → 识别当前资金聚焦板块（半导体/AI软件/机器人等）\n"
+            "3. 综合叙事信号\n"
+            "必须为所有港股（.HK）调用此工具。"
+            "用于判断目标股票是否在当前市场叙事主线中。"
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+        },
+    },
+    {
         "name": "get_southbound_flow",
         "description": (
             "Get southbound capital flow into HK stocks (港股通/南向资金) net buy/sell. "
@@ -228,6 +244,7 @@ TOOL_REGISTRY = {
     "get_china_macro_indicators": get_china_macro_indicators,
     "get_china_consumer_data": get_china_consumer_data,
     "get_northbound_flow": get_northbound_flow,
+    "get_hk_market_pulse": get_hk_market_pulse,
     "get_southbound_flow": get_southbound_flow,
     "get_news_headlines": get_news_headlines,
     "get_cn_stock_news": get_cn_stock_news,
@@ -336,7 +353,14 @@ async def run_macro_analysis(ticker: str, date: str, user_context=None) -> Analy
     if is_a:
         flow_steps = "5. Call get_northbound_flow to assess foreign capital sentiment toward A-shares.\n"
     elif is_hk:
-        flow_steps = "5. Call get_southbound_flow to assess mainland capital sentiment toward HK stocks.\n"
+        flow_steps = (
+            "5. Call get_hk_market_pulse() — 必须调用。"
+            "获取 HSTECH vs HSI 表现差、热门股排行，判断当前港股叙事主线（AI/科技？高股息？消费复苏？）。"
+            "评估目标股票是否在当前叙事主线中，以及叙事缺位对估值倍数和资金流向的影响。\n"
+            "6. Call get_southbound_flow to assess total mainland capital flow into HK.\n"
+            "   注意：南向总资金规模 ≠ 目标股票的资金，要结合 get_hk_market_pulse 的板块分布判断"
+            "资金实际流向了哪些板块，目标股票是否在受益板块中。\n"
+        )
 
     query = user_context_block(user_context) + f"""Perform macro and policy analysis for {ticker} as of {date}.
 
