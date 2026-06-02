@@ -215,7 +215,18 @@ async def run_sentiment_analysis(ticker: str, date: str, user_context=None) -> A
     )
 
     if isinstance(result, dict):
-        return AnalystReport(agent="sentiment", data_snapshot=snapshot, **result)
+        try:
+            return AnalystReport(agent="sentiment", data_snapshot=snapshot, **result)
+        except Exception:
+            return AnalystReport(
+                agent="sentiment",
+                signal=result.get("signal", "neutral"),
+                confidence=result.get("confidence", 0.3),
+                key_factors=result.get("key_factors", []),
+                risks=result.get("risks", ["工具调用不完整：submit_analysis 缺少必要字段"]),
+                summary=result.get("summary", "分析不完整，部分字段缺失。"),
+                data_snapshot=snapshot,
+            )
 
     return AnalystReport(
         agent="sentiment",

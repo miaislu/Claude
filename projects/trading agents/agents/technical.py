@@ -133,9 +133,19 @@ async def run_technical_analysis(ticker: str, date: str, user_context=None) -> A
     )
 
     if isinstance(result, dict):
-        return AnalystReport(agent="technical", data_snapshot=snapshot, **result)
+        try:
+            return AnalystReport(agent="technical", data_snapshot=snapshot, **result)
+        except Exception:
+            return AnalystReport(
+                agent="technical",
+                signal=result.get("signal", "neutral"),
+                confidence=result.get("confidence", 0.3),
+                key_factors=result.get("key_factors", []),
+                risks=result.get("risks", ["工具调用不完整：submit_analysis 缺少必要字段"]),
+                summary=result.get("summary", "分析不完整，部分字段缺失。"),
+                data_snapshot=snapshot,
+            )
 
-    # Fallback if agent didn't use submit_analysis
     return AnalystReport(
         agent="technical",
         signal="neutral",
