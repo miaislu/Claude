@@ -99,18 +99,41 @@ for i in "${!AGENTS[@]}"; do
     fi
 done
 
+# ── 部署报告生成脚本 ──────────────────────────────────────────────────────────
+info "部署报告生成脚本..."
+mkdir -p "$CLAUDE_DIR/scripts"
+if [[ -f "$SCRIPT_DIR/scripts/generate_docx.py" ]]; then
+    cp "$SCRIPT_DIR/scripts/generate_docx.py" "$CLAUDE_DIR/scripts/generate_docx.py"
+    success "  ✓ generate_docx.py（Word 报告生成）"
+fi
+if [[ -f "$SCRIPT_DIR/scripts/generate_pdf.py" ]]; then
+    cp "$SCRIPT_DIR/scripts/generate_pdf.py" "$CLAUDE_DIR/scripts/generate_pdf.py"
+    success "  ✓ generate_pdf.py（PDF 报告生成）"
+fi
+
+# ── 创建报告存放目录 ───────────────────────────────────────────────────────────
+REPORTS_DIR="$SCRIPT_DIR/reports"
+mkdir -p "$REPORTS_DIR"
+success "  ✓ reports/ 目录就绪：$REPORTS_DIR"
+
 # ── 检查 Python 依赖 ──────────────────────────────────────────────────────────
 echo ""
-info "检查 Python 依赖（PDF 生成功能）..."
+info "检查 Python 依赖..."
 if command -v python3 &>/dev/null; then
-    if python3 -c "import reportlab" &>/dev/null 2>&1; then
-        success "  ✓ reportlab 已安装"
+    if python3 -c "import docx" &>/dev/null 2>&1; then
+        success "  ✓ python-docx 已安装（Word 报告生成）"
     else
-        warn "  ✗ reportlab 未安装。运行以下命令安装："
+        warn "  ✗ python-docx 未安装（Word 报告功能不可用）"
+        echo "      pip3 install python-docx"
+    fi
+    if python3 -c "import reportlab" &>/dev/null 2>&1; then
+        success "  ✓ reportlab 已安装（PDF 报告生成）"
+    else
+        warn "  ✗ reportlab 未安装（PDF 报告功能不可用）"
         echo "      pip3 install reportlab"
     fi
 else
-    warn "  未检测到 python3，PDF 生成功能将不可用。"
+    warn "  未检测到 python3，报告生成功能将不可用。"
 fi
 
 # ── 安装完成 ──────────────────────────────────────────────────────────────────

@@ -153,6 +153,53 @@
 
 ---
 
+### ◆ Step 5：保存 Word 报告
+
+**完成报告输出后，必须自动执行以下步骤将报告保存为 Word 文档：**
+
+#### 5-A：提取项目名称
+
+从合同名称中提取简洁的项目标识，规则：
+- 优先使用公司简称（如"广州大枣" → "大枣"，"HH-MEDIC INC." → "和缓医疗"）
+- 去掉"有限公司"、"股份有限公司"、"INC."等后缀
+- 如合同名称已包含项目名，直接使用（如"飞鹅项目"）
+- 最长不超过 10 个字符
+
+#### 5-B：将报告写入临时文件
+
+使用 Bash 工具将完整的 Markdown 报告写入临时文件：
+
+```bash
+cat << 'REPORT_EOF' > /tmp/falv_report_temp.md
+（完整报告内容）
+REPORT_EOF
+```
+
+#### 5-C：调用 Word 生成脚本
+
+```bash
+python3 ~/.claude/scripts/generate_docx.py \
+  --input /tmp/falv_report_temp.md \
+  --name "【项目名称】" \
+  --output ~/Documents/Claude/projects/falv-agent/reports/
+```
+
+#### 5-D：向用户确认
+
+脚本执行成功后，在报告末尾追加：
+
+```
+---
+📄 **报告已保存**：`~/Documents/Claude/projects/falv-agent/reports/【项目名称】_审查报告_YYYYMMDD_HHMM.docx`
+```
+
+若脚本执行失败（如 python-docx 未安装），提示：
+```
+⚠️ Word 报告生成失败。请运行：pip3 install python-docx，然后重新执行 /falv shencha
+```
+
+---
+
 ## 输出格式
 
 ```markdown
