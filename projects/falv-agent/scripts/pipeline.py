@@ -97,14 +97,6 @@ ROUTING_FALLBACK = {
     "parties": ["甲方", "乙方", "平衡分析"],
 }
 
-AGENT_NAMES = [
-    "tiao-kuan-fen-xi",
-    "feng-xian-ping-gu",
-    "he-gui-jian-cha",
-    "yi-wu-jie-xi",
-    "jian-yi-yin-qing",
-]
-
 AGENT_WEIGHTS = {
     "tiao-kuan-fen-xi": 0.20,
     "feng-xian-ping-gu": 0.25,
@@ -112,6 +104,42 @@ AGENT_WEIGHTS = {
     "yi-wu-jie-xi":      0.15,
     "jian-yi-yin-qing":  0.20,
 }
+
+# ── Agent 依赖 DAG（决定执行顺序和上下文传递）─────────────────────────────
+#
+#  Phase 1: tiao-kuan-fen-xi（条款分析师）
+#    └─ 独立运行，输出条款分类 JSON
+#    └─ 依据：是其他 Agent 的输入基础
+#
+#  Phase 2: feng-xian-ping-gu | he-gui-jian-cha | yi-wu-jie-xi （真并发）
+#    └─ 全部接收 Phase 1 输出作为额外上下文
+#    └─ feng 明确声明依赖（"基于条款分析师的分类结果"）
+#    └─ he / yi 不强依赖但受益于条款分类（clause_id 交叉引用）
+#
+#  Phase 3: jian-yi-yin-qing（修改建议引擎）
+#    └─ 明确依赖 feng（高危条款列表）和 he（合规缺失项）
+#    └─ 依据 agent 文件："读取风险评估师和合规检查员的结果"
+#
+AGENT_PHASES = [
+    {
+        "phase": 1,
+        "label": "条款识别",
+        "agents": ["tiao-kuan-fen-xi"],
+        "upstream": [],                                  # 无依赖
+    },
+    {
+        "phase": 2,
+        "label": "并发分析",
+        "agents": ["feng-xian-ping-gu", "he-gui-jian-cha", "yi-wu-jie-xi"],
+        "upstream": ["tiao-kuan-fen-xi"],                # 接收 Phase 1 输出
+    },
+    {
+        "phase": 3,
+        "label": "修改建议",
+        "agents": ["jian-yi-yin-qing"],
+        "upstream": ["feng-xian-ping-gu", "he-gui-jian-cha"],  # 接收 Phase 2 核心输出
+    },
+]
 
 DEFAULT_AGENTS_DIR = Path("~/.claude/agents").expanduser()
 DEFAULT_MODEL       = "claude-opus-4-5"
@@ -206,6 +234,36 @@ def load_file(path: Path, label: str = "") -> str:
         return ""
 
 
+def build_upstream_context(
+    completed: dict,           # {agent_name: AgentResult} 已完成的结果
+    dependencies: list,        # 需要注入的上游 agent 名称列表
+) -> str:
+    """
+    将上游 Agent 的输出格式化为下游 Agent 的上下文片段。
+    只注入成功的结果；失败的 Agent 跳过并附加说明。
+    """
+    if not dependencies:
+        return ""
+
+    sections = []
+    for dep in dependencies:
+        result = completed.get(dep)
+        if result is None:
+            sections.append(f"### {dep}\n[未执行，跳过]")
+        elif not result.success:
+            sections.append(f"### {dep}\n[执行失败：{result.error}，跳过]")
+        else:
+            # 优先使用 parsed JSON（更紧凑），fallback 到原始文本
+            content = (
+                json.dumps(result.parsed, ensure_ascii=False, indent=2)
+                if result.parsed
+                else result.content
+            )
+            sections.append(f"### {dep} 的分析输出\n```json\n{content}\n```")
+
+    return "## 上游 Agent 输出\n\n" + "\n\n".join(sections)
+
+
 async def call_agent(
     client: AsyncAnthropic,
     agent_name: str,
@@ -214,9 +272,18 @@ async def call_agent(
     session_ctx: dict,
     context_content: str,
     guidelines: str,
+    upstream_results: Optional[dict] = None,   # {agent_name: AgentResult}
+    upstream_deps: Optional[list]   = None,    # 需要注入的依赖名称
 ) -> AgentResult:
     """
     每个 Agent 是一次独立的 API 调用，有独立的系统提示和上下文。
+
+    上下文注入顺序（系统提示）：
+      公共指南 → 专项 context → Agent 自身 prompt
+
+    用户消息：
+      session_context → 上游 Agent 输出（如有）→ 合同全文
+
     失败时返回 AgentResult(success=False)，不抛出异常（Factor 9）。
     """
     agent_file = agents_dir / f"{agent_name}.md"
@@ -227,17 +294,25 @@ async def call_agent(
             elapsed_seconds=0, error=f"Agent 文件不存在：{agent_file}"
         )
 
+    # 系统提示：公共规范 + 领域知识 + Agent 专属指令
     system = "\n\n---\n\n".join(filter(None, [
         guidelines,
         context_content,
         agent_prompt,
     ]))
 
-    user_msg = (
-        f"## 分析上下文\n```json\n{json.dumps(session_ctx, ensure_ascii=False, indent=2)}\n```\n\n"
-        f"## 合同全文\n{contract_text}\n\n"
-        f"请严格按照你的输出格式（JSON schema）返回结果。"
-    )
+    # 构建上游输出注入（如有依赖）
+    upstream_section = ""
+    if upstream_results and upstream_deps:
+        upstream_section = build_upstream_context(upstream_results, upstream_deps)
+
+    # 用户消息：分析上下文 + 上游输出 + 合同全文
+    user_msg = "\n\n".join(filter(None, [
+        f"## 分析上下文\n```json\n{json.dumps(session_ctx, ensure_ascii=False, indent=2)}\n```",
+        upstream_section,
+        f"## 合同全文\n{contract_text}",
+        "请严格按照你的输出格式（JSON schema）返回结果。",
+    ]))
 
     t0 = time.time()
     try:
@@ -358,31 +433,65 @@ async def _run_analyze(args):
         },
     }
 
-    # ── 并发调用五个 Agent ────────────────────────────────────────────────
-    client = AsyncAnthropic()  # 从 ANTHROPIC_API_KEY 环境变量读取
-    t0     = time.time()
+    # ── 按 DAG 分阶段执行 ─────────────────────────────────────────────────────
+    #
+    #  Phase 1 (单独): tiao-kuan-fen-xi
+    #  Phase 2 (并发): feng-xian-ping-gu | he-gui-jian-cha | yi-wu-jie-xi
+    #                  ← 均接收 Phase 1 输出
+    #  Phase 3 (单独): jian-yi-yin-qing
+    #                  ← 接收 Phase 2 的 feng + he 输出
+    #
+    client    = AsyncAnthropic()
+    t0        = time.time()
+    completed = {}   # {agent_name: AgentResult}，跨 Phase 累积
 
     print(f"🔍 开始分析：{args.type}（{args.party}）", file=sys.stderr)
-    print(f"📋 并发调用 {len(AGENT_NAMES)} 个 Agent...", file=sys.stderr)
 
-    tasks = [
-        call_agent(client, name, agents_dir, contract_text, session_ctx,
-                   context_content, guidelines)
-        for name in AGENT_NAMES
-    ]
-    results: list[AgentResult] = await asyncio.gather(*tasks)
+    for phase_cfg in AGENT_PHASES:
+        phase_num   = phase_cfg["phase"]
+        phase_label = phase_cfg["label"]
+        agents      = phase_cfg["agents"]
+        deps        = phase_cfg["upstream"]
 
+        # 上游有失败时给出警告，但继续执行（Factor 9）
+        failed_deps = [d for d in deps if d in completed and not completed[d].success]
+        if failed_deps:
+            print(f"  ⚠️  Phase {phase_num} 的上游 {failed_deps} 失败，将缺少依赖上下文",
+                  file=sys.stderr)
+
+        print(f"\n  ▶ Phase {phase_num}：{phase_label}（{len(agents)} 个）", file=sys.stderr)
+        phase_t0 = time.time()
+
+        tasks = [
+            call_agent(
+                client, name, agents_dir,
+                contract_text, session_ctx, context_content, guidelines,
+                upstream_results = completed if deps else None,
+                upstream_deps    = deps      if deps else None,
+            )
+            for name in agents
+        ]
+        # Phase 内真并发，Phase 间有序（保证依赖）
+        phase_results = await asyncio.gather(*tasks)
+
+        for r in phase_results:
+            completed[r.agent_name] = r
+            status   = "✓" if r.success else "✗"
+            dep_note = f"<- [{', '.join(deps)}]" if deps else ""
+            print(f"    {status} {r.agent_name} {dep_note} ({r.elapsed_seconds}s)", file=sys.stderr)
+
+        phase_elapsed = round(time.time() - phase_t0, 2)
+        print(f"    Phase {phase_num} 完成（{phase_elapsed}s）", file=sys.stderr)
+
+    results = list(completed.values())
     elapsed = round(time.time() - t0, 2)
 
-    # ── 汇总结果 ──────────────────────────────────────────────────────────
+    # ── 汇总结果 ───────────────────────────────────────────────────────────────
     passed  = [r for r in results if r.success]
     skipped = [r.agent_name for r in results if not r.success]
 
     if skipped:
-        print(f"⚠️  {len(skipped)} 个 Agent 未返回结果：{skipped}", file=sys.stderr)
-    for r in results:
-        status = "✓" if r.success else "✗"
-        print(f"  {status} {r.agent_name} ({r.elapsed_seconds}s)", file=sys.stderr)
+        print(f"\n⚠️  跳过的 Agent：{skipped}", file=sys.stderr)
 
     overall_score = extract_risk_score(results)
 
