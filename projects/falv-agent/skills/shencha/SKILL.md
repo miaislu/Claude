@@ -55,9 +55,14 @@
 | 电商平台技术服务协议 / 入驻协议 | 平台、入驻、店铺、保证金、佣金、技术服务费 | `agents/context/ecommerce-service.md` | 商家（入驻方）/ 平台方 / 平衡 |
 | 广告协议 / 媒体合作 / KOL 协议 | 广告、投放、媒体、代言、KOL、MCN、CPM、CPC | `agents/context/advertising.md` | 广告主 / 媒体（代理商）/ 平衡 |
 | 采购合同 / 供应协议 / 框架采购 | 采购、供货、供应商、货物、原材料、MOQ | `agents/context/procurement.md` | 采购方（甲方）/ 供应商（乙方）/ 平衡 |
+| 商业租赁合同 | 租赁、租用、出租、租金、押金、免租期 | `agents/context/lease.md` | 租客（承租方）/ 房东（出租方）/ 平衡 |
+| 技术开发 / 软件定制合同 | 技术开发、软件开发、定制开发、IT、系统集成 | `agents/context/tech-dev.md` | 委托方（甲方）/ 开发方（乙方）/ 平衡 |
+| 借款 / 民间借贷合同 | 借款、借贷、贷款、利息、还款 | `agents/context/loan.md` | 借款人 / 出借人 / 平衡 |
+| 知识产权许可合同 | 许可、授权、商标、专利、版权、著作权、Royalty | `agents/context/ip-license.md` | 被许可方 / 许可方 / 平衡 |
+| 分销 / 代理合同 | 经销、代理、分销、独家、渠道、佣金 | `agents/context/distribution.md` | 经销商（代理商）/ 品牌方 / 平衡 |
+| SaaS / 云服务协议 | SaaS、云服务、订阅、API、平台服务 | `agents/context/saas.md` | 企业用户 / 服务商 / 平衡 |
 | 买卖合同（非采购框架） | 买卖、购销 | `agents/context/general.md` | 买方 / 卖方 / 平衡 |
-| 服务合同 / 技术合同 | 服务、委托、承揽、技术开发 | `agents/context/general.md` | 委托方 / 服务方 / 平衡 |
-| 租赁合同 | 租赁、租用、出租 | `agents/context/general.md` | 承租方 / 出租方 / 平衡 |
+| 服务合同 | 服务、委托、承揽 | `agents/context/general.md` | 委托方 / 服务方 / 平衡 |
 | 其他 / 无法识别 | — | `agents/context/general.md` | 甲方 / 乙方 / 平衡 |
 
 #### 0-B：代表立场询问
