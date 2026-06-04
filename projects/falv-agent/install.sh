@@ -99,17 +99,15 @@ for i in "${!AGENTS[@]}"; do
     fi
 done
 
-# ── 部署报告生成脚本 ──────────────────────────────────────────────────────────
-info "部署报告生成脚本..."
+# ── 部署脚本 ──────────────────────────────────────────────────────────────────
+info "部署脚本..."
 mkdir -p "$CLAUDE_DIR/scripts"
-if [[ -f "$SCRIPT_DIR/scripts/generate_docx.py" ]]; then
-    cp "$SCRIPT_DIR/scripts/generate_docx.py" "$CLAUDE_DIR/scripts/generate_docx.py"
-    success "  ✓ generate_docx.py（Word 报告生成）"
-fi
-if [[ -f "$SCRIPT_DIR/scripts/generate_pdf.py" ]]; then
-    cp "$SCRIPT_DIR/scripts/generate_pdf.py" "$CLAUDE_DIR/scripts/generate_pdf.py"
-    success "  ✓ generate_pdf.py（PDF 报告生成）"
-fi
+for script in pipeline.py generate_docx.py generate_pdf.py checkpoint.py; do
+    if [[ -f "$SCRIPT_DIR/scripts/$script" ]]; then
+        cp "$SCRIPT_DIR/scripts/$script" "$CLAUDE_DIR/scripts/$script"
+        success "  ✓ $script"
+    fi
+done
 
 # ── 创建报告存放目录 ───────────────────────────────────────────────────────────
 REPORTS_DIR="$SCRIPT_DIR/reports"
@@ -120,6 +118,12 @@ success "  ✓ reports/ 目录就绪：$REPORTS_DIR"
 echo ""
 info "检查 Python 依赖..."
 if command -v python3 &>/dev/null; then
+    if python3 -c "import anthropic" &>/dev/null 2>&1; then
+        success "  ✓ anthropic 已安装（核心分析管道）"
+    else
+        warn "  ✗ anthropic 未安装（分析功能不可用，必装）"
+        echo "      pip3 install anthropic"
+    fi
     if python3 -c "import docx" &>/dev/null 2>&1; then
         success "  ✓ python-docx 已安装（Word 报告生成）"
     else

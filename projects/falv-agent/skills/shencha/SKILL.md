@@ -2,340 +2,241 @@
 
 ## 功能描述
 
-旗舰审查命令。先完成交互式初始化和上下文加载，再调用五个专项 Agent 并发分析合同，输出结构化报告和**合同安全评分（0–100）**。
+旗舰审查命令。UI 层负责交互确认，分析由 `pipeline.py` 的 Python 控制流驱动（真并发、真错误处理），最终由 Claude 负责格式化报告和保存 Word。
 
 ## 用法
 
 ```
-/falv shencha <文件路径或粘贴内容>
+/falv shencha <文件路径>
 /falv shencha 合同.pdf
 /falv shencha 合同.txt --type 投资协议 --party 投资方
-/falv shencha --brief    # 只输出摘要和评分
+/falv shencha --resume 和缓医疗_审查报告_20260604_2142.checkpoint.json
+/falv shencha --brief
 ```
 
 ## 参数
 
 | 参数 | 说明 |
 |---|---|
-| `--type <合同类型>` | 声明合同类型，跳过自动检测 |
-| `--party <立场>` | 声明代表哪方，跳过询问步骤 |
-| `--brief` | 仅输出评分 + 高危风险摘要 |
-| `--save <文件名>` | 将完整报告保存为 Markdown |
-| `--resume <检查点文件>` | 从上次中断处继续（加载 reports/ 下的 .checkpoint.json 文件）|
+| `--type <合同类型>` | 跳过自动检测，直接指定类型 |
+| `--party <立场>` | 跳过询问，直接指定立场 |
+| `--brief` | 只输出评分 + 高危摘要 |
+| `--resume <检查点文件>` | 从 reports/ 下的检查点恢复，见文末 |
 
 ---
 
 ## 执行流程
 
-> 所有 Agent 必须遵守 `agents/_guidelines.md`（法条引用规范、禁止行为、免责声明）。
+> 所有 Agent 须遵守 `agents/_guidelines.md`（法条引用规范、禁止行为）。
 
 ---
 
-### ◆ Step 0：初始化
+### ◆ Step 0：提取合同文本
 
-> **--resume 模式**：如果用户传入了 `--resume <文件>` 参数，跳过 Step 0–3，直接执行 **Step 0-R（恢复流程）**，见文末。
+将合同文件转换为纯文本，写入临时文件：
 
-#### 0-A：合同类型检测（显式决策树）
+```bash
+# PDF / DOCX → TXT（Python 解析，见已有脚本逻辑）
+python3 -c "
+import sys, zipfile, xml.etree.ElementTree as ET
+path = sys.argv[1]
+if path.endswith('.docx'):
+    with zipfile.ZipFile(path) as z:
+        xml = z.read('word/document.xml')
+    tree = ET.fromstring(xml)
+    ns = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+    paras = []
+    for p in tree.iter(ns+'p'):
+        t = ''.join(r.text for r in p.iter(ns+'t') if r.text).strip()
+        if t: paras.append(t)
+    print('\n'.join(paras))
+elif path.endswith('.txt') or path.endswith('.md'):
+    print(open(path).read())
+else:
+    print(open(path).read())
+" "<文件路径>" > /tmp/falv_contract.txt
+```
+
+**文件读取错误处理：**
+```
+IF 文件不存在        → 提示路径错误，等待用户重新输入
+IF 解密/密码 PDF     → 提示导出未加密版本或粘贴文本
+IF 扫描件 PDF（无文字层）→ 提示使用 OCR 或手动粘贴
+IF 文本 > 30,000 字  → 告知用户合同较长，继续执行（各 Agent 优先核心章节）
+```
+
+---
+
+### ◆ Step 1：类型检测（Python 代码，非 LLM 判断）
+
+```bash
+python3 ~/.claude/scripts/pipeline.py detect \
+  --contract /tmp/falv_contract.txt
+```
+
+输出 JSON：
+```json
+{
+  "contract_type":     "投资协议",
+  "confidence":        "HIGH",
+  "matched_keywords":  ["股东协议", "回购", "估值"],
+  "available_parties": ["投资方", "创始人（被投方）", "平衡分析"],
+  "context_file":      "investment.md",
+  "message":           "已识别为【投资协议】（依据：股东协议, 回购, 估值）"
+}
+```
+
+**根据 confidence 决定下一步（显式分支，不依赖 LLM 判断）：**
 
 ```
 IF --type 参数已传入:
-  → 直接使用，跳至 0-B
+  → 跳过检测，直接用参数值
 
-ELSE:
-  扫描合同标题行 + 前200字 + 定义条款，按以下顺序匹配：
+ELIF confidence = "HIGH":
+  → 直接告知用户："{message}"
+  → 无需用户确认，继续
 
-  STEP 1: 精确匹配（标题含完整类型名）
-    IF 标题含 "股东协议" / "投资协议" / "认购协议" / "Term Sheet":
-      → contract_type = "投资协议"，置信度 = HIGH
-    ELIF 标题含 "劳动合同" / "劳务合同":
-      → contract_type = "劳动合同"，置信度 = HIGH
-    ELIF 标题含 "技术开发" / "软件开发" / "定制开发":
-      → contract_type = "技术开发合同"，置信度 = HIGH
-    ELIF 标题含 "租赁" / "租用" / "出租":
-      → contract_type = "商业租赁合同"，置信度 = HIGH
-    ELIF 标题含 "借款" / "借贷" / "贷款":
-      → contract_type = "借款合同"，置信度 = HIGH
-    ELIF 标题含 "许可" / "授权" / "License":
-      → contract_type = "知识产权许可合同"，置信度 = HIGH
-    ... （参照路由表其他类型）
+ELIF confidence = "MEDIUM":
+  → 告知用户推断结果 + 命中关键词
+  → 询问："是否正确？如需更改请告知。"
+  → 等待确认后继续
 
-  STEP 2: 关键词匹配（标题未命中，扫描正文关键词）
-    统计路由表中每种类型的关键词命中数：
-    命中最多的类型且命中数 ≥ 3 → 置信度 = MEDIUM
-    命中最多的类型且命中数 1-2  → 置信度 = LOW
-
-  STEP 3: 根据置信度决定下一步
-    IF 置信度 = HIGH:
-      → 直接告知用户："已识别为【类型】，启用专项清单。"
-      → 不需要用户确认，继续执行
-    IF 置信度 = MEDIUM:
-      → 告知用户推断结果，简短确认：
-        "检测到这是一份【X类合同】（依据：[命中的关键词]），是否正确？"
-        用户回复 Y/确认 → 继续；回复不同类型 → 更新
-    IF 置信度 = LOW 或 无匹配:
-      → 不猜测，直接问：
-        "未能确定合同类型，请从以下选项中选择：[列出路由表类型]"
+ELIF confidence = "LOW":
+  → 不猜测，显示选项列表：
+    "未能自动识别类型，请选择：投资协议 / 劳动合同 / 技术开发 / ..."
+  → 等待用户选择
 ```
 
-支持的专项类型与对应上下文文件：
+---
 
-| 合同类型 | 关键词识别 | 上下文文件 | 立场选项 |
-|---|---|---|---|
-| 投资协议 / VC / PE / Term Sheet | 投资、认购、优先股、对赌、估值 | `agents/context/investment.md` | 投资方 / 创始人（被投方）/ 平衡 |
-| 股权转让协议 / 并购 | 股权转让、收购、并购 | `agents/context/investment.md` | 受让方（买方）/ 转让方（卖方）/ 平衡 |
-| 劳动合同 / 劳务合同 | 劳动合同、劳务、雇佣、试用期 | `agents/context/labor.md` | 用人单位 / 劳动者 / 平衡 |
-| 数据处理协议 / DPA | 个人信息、数据处理、数据共享、PIPL | `agents/context/data.md` | 委托方（数据控制者）/ 受托方（处理者）/ 平衡 |
-| 电商平台技术服务协议 / 入驻协议 | 平台、入驻、店铺、保证金、佣金、技术服务费 | `agents/context/ecommerce-service.md` | 商家（入驻方）/ 平台方 / 平衡 |
-| 广告协议 / 媒体合作 / KOL 协议 | 广告、投放、媒体、代言、KOL、MCN、CPM、CPC | `agents/context/advertising.md` | 广告主 / 媒体（代理商）/ 平衡 |
-| 采购合同 / 供应协议 / 框架采购 | 采购、供货、供应商、货物、原材料、MOQ | `agents/context/procurement.md` | 采购方（甲方）/ 供应商（乙方）/ 平衡 |
-| 商业租赁合同 | 租赁、租用、出租、租金、押金、免租期 | `agents/context/lease.md` | 租客（承租方）/ 房东（出租方）/ 平衡 |
-| 技术开发 / 软件定制合同 | 技术开发、软件开发、定制开发、IT、系统集成 | `agents/context/tech-dev.md` | 委托方（甲方）/ 开发方（乙方）/ 平衡 |
-| 借款 / 民间借贷合同 | 借款、借贷、贷款、利息、还款 | `agents/context/loan.md` | 借款人 / 出借人 / 平衡 |
-| 知识产权许可合同 | 许可、授权、商标、专利、版权、著作权、Royalty | `agents/context/ip-license.md` | 被许可方 / 许可方 / 平衡 |
-| 分销 / 代理合同 | 经销、代理、分销、独家、渠道、佣金 | `agents/context/distribution.md` | 经销商（代理商）/ 品牌方 / 平衡 |
-| SaaS / 云服务协议 | SaaS、云服务、订阅、API、平台服务 | `agents/context/saas.md` | 企业用户 / 服务商 / 平衡 |
-| 买卖合同（非采购框架） | 买卖、购销 | `agents/context/general.md` | 买方 / 卖方 / 平衡 |
-| 服务合同 | 服务、委托、承揽 | `agents/context/general.md` | 委托方 / 服务方 / 平衡 |
-| 其他 / 无法识别 | — | `agents/context/general.md` | 甲方 / 乙方 / 平衡 |
-
-#### 0-B：代表立场确认（显式决策树）
+### ◆ Step 2：立场确认（UI 层，交互式）
 
 ```
 IF --party 参数已传入:
-  → 直接使用，跳至 Step 1
-
-ELIF --balanced 参数已传入:
-  → review_mode = "平衡分析"，跳至 Step 1
+  → 直接使用
 
 ELSE:
-  → 必须询问，不得跳过，不得猜测：
-
-  显示基于合同类型动态生成的立场选项：
-    投资协议   → "A. 投资方  B. 创始人/被投方  C. 平衡分析"
-    劳动合同   → "A. 用人单位  B. 劳动者  C. 平衡分析"
-    技术开发   → "A. 委托方（甲方）  B. 开发方（乙方）  C. 平衡分析"
-    商业租赁   → "A. 租客  B. 房东  C. 平衡分析"
-    ...（其他类型参照路由表）
-
-  等待用户明确回复后，再继续。
-  用户未回复时，不得自动选择"平衡分析"兜底——必须等待。
+  → 展示基于合同类型的动态选项（来自 pipeline detect 返回的 available_parties）：
+    "请选择您代表哪方：
+      A. {parties[0]} — 从您的权益出发，重点识别对您不利的条款
+      B. {parties[1]} — 同上
+      C. 平衡分析    — 中立视角"
+  → 等待用户明确回复，不自动兜底
 ```
 
 ---
 
-### ◆ Step 1：上下文加载
+### ◆ Step 3：运行分析管道（Python 驱动，真并发）
 
-收集到类型和立场后，构建本次分析的 **session_context**，传递给所有后续 Agent：
+```bash
+python3 ~/.claude/scripts/pipeline.py analyze \
+  --contract      /tmp/falv_contract.txt \
+  --type          "<合同类型>" \
+  --party         "<立场>" \
+  --context-file  "<来自 detect 的 context_file>" \
+  --agents-dir    ~/.claude/agents \
+  --output        /tmp/falv_results.json
+```
 
+**此步骤全部由 Python 完成（Claude 等待结果，不参与控制流）：**
+- 真正并发调用 5 个 Agent（asyncio.gather）
+- 每个 Agent 失败时自动跳过，不中断整体（Factor 9）
+- 结果写入 `/tmp/falv_results.json`
+
+pipeline 执行完后向 stdout 输出摘要：
 ```json
 {
-  "contract_type": "<识别到的合同类型>",
-  "party_stance": "<用户选择的立场>",
-  "review_mode": "单方委托" | "平衡分析",
-  "context_file": "<对应的 agents/context/*.md 路径>",
-  "priority_clauses": ["<该类型+立场下最需关注的条款类别列表>"],
-  "strictness": {
-    "for_client_party": "严格",
-    "for_counterparty": "一般"
-  }
+  "status":        "ok",
+  "overall_score": 68,
+  "passed":        5,
+  "skipped":       [],
+  "output_file":   "/tmp/falv_results.json",
+  "elapsed":       12.4
 }
 ```
 
-**严格程度说明：**
-- `单方委托`：对委托方不利的条款 → **严格标注**（宁可误报，不可漏报）；对对方不利的条款 → 一般说明即可
-- `平衡分析`：双方条款用同等严格程度审查
-
----
-
-### ◆ Step 2：读取合同内容
-
-- 接受 PDF、TXT、Markdown 格式，或直接粘贴文本
-- 提取合同基本信息：合同名称、双方主体、签署日期、合同金额
-
-**文件读取错误处理（Factor 9）：**
-
+**pipeline 错误处理（Claude 读取 status 字段决定后续）：**
 ```
-IF 文件路径不存在:
-  → 输出："找不到文件 [路径]，请检查路径或直接粘贴合同文本。"
-  → 停止，等待用户重新输入
+IF status = "ok", skipped 不为空:
+  → 在报告中对应节加 "[⚠️ Agent 未返回结果，本节已跳过]"
+  → 评分按剩余 Agent 权重重新计算
 
-IF 文件为加密/密码保护 PDF:
-  → 输出："该 PDF 受密码保护，无法提取文字。请：
-    (1) 输入密码后重新导出为未加密 PDF，或
-    (2) 直接将关键条款文字粘贴到对话框中。"
-  → 停止，等待用户
-
-IF 文件为扫描件（图像型 PDF，无文字层）:
-  → 输出："该 PDF 为扫描件，无法直接提取文字。
-    建议使用 OCR 工具（如系统自带的「即时查看」或 Adobe Acrobat）
-    转换后重新上传。如急需，可将核心条款手动粘贴。"
-  → 停止，等待用户
-
-IF 合同文字超过 30,000 字:
-  → 不中断，但告知用户："合同篇幅较长（约 X 万字），
-    各 Agent 将重点分析核心条款，如需完整覆盖建议分段审查。"
-  → 继续执行，各 Agent 优先处理标题、定义、权利义务、违约、争议解决等核心章节
+IF status = "error":
+  → 展示错误信息，询问用户是否重试或粘贴合同文本
 ```
 
 ---
 
-### ◆ Step 3：并发调用五个专项 Agent
+### ◆ Step 4：Claude 读取结果，格式化报告
 
-将 **session_context** + 合同全文同时传递给以下五个 Agent：
-
-1. **`tiao-kuan-fen-xi`（条款分析师）** — 识别并分类条款；加载专项条款类别
-2. **`feng-xian-ping-gu`（风险评估师）** — 按 `session_context` 的立场和严格程度评分
-3. **`he-gui-jian-cha`（合规检查员）** — 加载类型专项合规清单
-4. **`yi-wu-jie-xi`（权利义务解析）** — 梳理双方义务；从委托方视角高亮不对等项
-5. **`jian-yi-yin-qing`（修改建议引擎）** — 生成修改建议；优先处理对委托方不利的条款
-
-**Agent 执行错误处理（Factor 9）：**
-
+```bash
+# 读取分析结果
+cat /tmp/falv_results.json
 ```
-对每个 Agent，执行结果按以下规则处理：
 
-IF Agent 返回空/null/超时:
-  → 跳过该 Agent，在对应报告节加注：
-    "[⚠️ 条款分析师未返回结果，本节分析已跳过，建议手动核查]"
-  → 该 Agent 权重从总分中移除，其余权重等比放大后重新计算评分
-  → 继续执行其他 Agent，不中断整体流程
+Claude 读取 JSON，将各 Agent 的输出整合为标准报告格式（见下方"输出格式"节）。
 
-IF Agent 输出的法条被自我审查标记为"不确定":
-  → 保留分析结论，但将法条引用替换为：
-    "[引用存疑，律师请核实]"
-  → 不因法条不确定而删除整条分析结论
-
-IF 修改建议引擎未能为某条高危条款生成替换文本:
-  → 输出问题描述，替换文本部分显示：
-    "[需律师结合具体情况起草替换文本]"
-  → 不遗漏该条款的问题描述
-```
+**渲染规则：**
+- `overall_score` 直接用 pipeline 计算的值
+- 有 `skipped_agents` 的节 → 加 ⚠️ 标注
+- 修改建议按 🏢 商业条款 / ⚖️ 律师修改 两轨分组
+- 单方委托模式 → 对委托方不利的条款加 ⚡
 
 ---
 
-### ◆ Step 4：汇总报告
-
-按以下权重计算**合同安全评分**：
-
-| Agent | 权重 |
-|---|---|
-| 条款分析师 | 20% |
-| 风险评估师 | 25% |
-| 合规检查员 | 20% |
-| 权利义务解析 | 15% |
-| 修改建议引擎 | 20% |
-
-**注意**：评分反映的是从**委托方立场**出发的风险程度。平衡分析模式下反映双方综合风险。
-
-**修改建议渲染规则（将 `jian-yi-yin-qing` 的输出转换为报告第六节）：**
-- **先按类型分组**：🏢 商业条款 在前，⚖️ 律师修改 在后
-- **每组内按优先级排序**：🔴 → 🟡 → 🟢
-- 单方委托模式：用 ⚡ 标记直接影响委托方的条款
-- 商业条款格式：现状 + 行业参照 + 方案 A/B 对比，不提供替换文本（因为还没有决策）
-- 律师修改格式：问题 + 原文引用（blockquote）+ 替换文本（code block）+ 理由
-- 两种类型都不出现时显示 `✅ 未发现需要修改的条款`
-
----
-
-### ◆ Step 4.5：保存检查点（Factor 6 — 可中断恢复）
-
-**报告生成完成后、Word 导出前**，执行以下操作将当前状态持久化：
+### ◆ Step 4.5：保存检查点
 
 ```bash
 python3 ~/.claude/scripts/checkpoint.py save \
-  --project   "【项目名称】" \
-  --context   '【session_context JSON】' \
+  --project   "<项目名称>" \
+  --context   "<session_context JSON>" \
   --report    /tmp/falv_report_temp.md \
   --output    ~/Documents/Claude/projects/falv-agent/reports/
 ```
-
-该命令将在 `reports/` 目录下生成：
-- `【项目名称】_审查报告_YYYYMMDD_HHMM.checkpoint.json` — 可恢复的状态文件
-
-**检查点文件结构：**
-```json
-{
-  "checkpoint_version": "1.0",
-  "project_name": "和缓医疗",
-  "created_at": "ISO时间戳",
-  "status": "report_generated",
-  "session_context": { ... },
-  "report_markdown": "完整报告 Markdown",
-  "skipped_agents": [],
-  "docx_path": null
-}
-```
-
-若检查点保存失败（磁盘权限等原因），不影响后续 Word 导出，静默跳过并在日志中记录原因。
 
 ---
 
 ### ◆ Step 5：保存 Word 报告
 
-**完成报告输出后，必须自动执行以下步骤将报告保存为 Word 文档：**
-
 #### 5-A：提取项目名称
+从合同名称提取简洁标识（去掉"有限公司"等后缀），最长 10 字。
 
-从合同名称中提取简洁的项目标识，规则：
-- 优先使用公司简称（如"广州大枣" → "大枣"，"HH-MEDIC INC." → "和缓医疗"）
-- 去掉"有限公司"、"股份有限公司"、"INC."等后缀
-- 如合同名称已包含项目名，直接使用（如"飞鹅项目"）
-- 最长不超过 10 个字符
-
-#### 5-B：将报告写入临时文件
-
-使用 Bash 工具将完整的 Markdown 报告写入临时文件：
-
+#### 5-B：写入临时 Markdown 文件
 ```bash
 cat << 'REPORT_EOF' > /tmp/falv_report_temp.md
 （完整报告内容）
 REPORT_EOF
 ```
 
-#### 5-C：调用 Word 生成脚本
-
+#### 5-C：生成 Word
 ```bash
 python3 ~/.claude/scripts/generate_docx.py \
-  --input /tmp/falv_report_temp.md \
-  --name "【项目名称】" \
+  --input  /tmp/falv_report_temp.md \
+  --name   "<项目名称>" \
   --output ~/Documents/Claude/projects/falv-agent/reports/
 ```
 
-#### 5-D：向用户确认并更新检查点
-
-**Word 导出成功后：**
-
-1. 更新检查点状态：
+#### 5-D：更新检查点 + 确认
 ```bash
 python3 ~/.claude/scripts/checkpoint.py update \
-  --project "【项目名称】" \
+  --project "<项目名称>" \
   --status  "completed" \
-  --docx    "【docx文件路径】" \
+  --docx    "<docx文件路径>" \
   --dir     ~/Documents/Claude/projects/falv-agent/reports/
 ```
 
-2. 在报告末尾输出：
+输出：
 ```
----
-📄 **报告已保存**：`~/Documents/Claude/projects/falv-agent/reports/【项目名称】_审查报告_YYYYMMDD_HHMM.docx`
-💾 **检查点已保存**，如需补充分析可运行：
-   /falv shencha --resume 【项目名称】_审查报告_YYYYMMDD_HHMM.checkpoint.json
+📄 报告已保存：reports/<项目名称>_审查报告_YYYYMMDD_HHMM.docx
+💾 检查点：reports/<项目名称>_审查报告_YYYYMMDD_HHMM.checkpoint.json
+   如需补充：/falv shencha --resume <检查点文件名>
 ```
 
-**Word 导出失败时的降级处理（Factor 9）：**
-
+**Word 导出失败降级：**
 ```
-IF python-docx 未安装:
-  → 提示："pip3 install python-docx 后重新运行 /falv shencha --resume [检查点文件]"
-  → 检查点已保存，不需要重新分析，只需重新导出
-
-IF 写入权限错误（reports/ 目录不可写）:
-  → 尝试写入 /tmp/ 目录
-  → 告知用户实际保存路径
-
-IF 其他未知错误:
-  → 报告内容已完整显示在对话中，用户可手动复制
-  → 检查点已保存（Step 4.5），不影响后续恢复
+IF python-docx 未安装  → 提示安装命令，检查点已保存可 --resume 后重试导出
+IF 写权限错误          → 尝试写 /tmp/，告知实际路径
+IF 其他错误            → 报告内容已在对话中显示，可手动保存
 ```
 
 ---
@@ -349,107 +250,41 @@ IF 其他未知错误:
 **审查日期**：YYYY-MM-DD
 **合同类型**：投资协议
 **审查立场**：🔵 投资方视角
-**合同安全评分**：🟡 72 / 100（投资方视角）
+**合同安全评分**：🟡 68 / 100（投资方视角）
 
-> 评分解读：存在中等风险，建议修改对赌条款和回购触发条件后签署。
+> 评分解读：...
 
 ---
 
 ### 一、合同基本信息
-- 投资方：/ 被投方：
-- 投资金额：/ 投后估值：
-- 交割条件：
+...
 
 ### 二、高风险条款（需立即关注）
-
 | # | 条款位置 | 风险描述 | 影响方 | 相关法条 |
 |---|---|---|---|---|
-| 1 | 第X条 | 🔴 ... | ⚡ 委托方 | 《XXX法》第X条 |
 
 ### 三、中等风险条款
-
-| # | 条款位置 | 风险描述 | 影响方 | 相关法条 |
-|---|---|---|---|---|
-| 1 | 第X条 | 🟡 ... | 双方 | 《XXX法》第X条 |
+...
 
 ### 四、合规检查结果
 - ✅ 已具备：...
-- ❌ 缺失/不合规：...（依据：《XXX法》第X条）
+- ❌ 缺失/不合规：...
 
 ### 五、权利义务摘要
-**你的核心权利**：...
-**你的主要义务**：...
-**需重点履行的时限**：...
+...
 
 ### 六、修改建议
 
-> **阅读指引**：建议分为两类，处理路径不同。
-> - 🏢 **商业条款**：这是利益博弈的核心，需你做出决策后再指示律师推进
-> - ⚖️ **律师修改**：这是起草技术问题，可直接指示律师按建议修改，无需业务决策
->
-> 每类内部再按优先级排序：🔴 必须处理 → 🟡 强烈建议 → 🟢 可选优化
+> 🏢 商业条款需你决策；⚖️ 律师修改可直接交律师
+
+#### 🏢 商业条款 — 需你拍板
+...
+
+#### ⚖️ 律师修改 — 交律师处理
+...
 
 ---
-
-#### 🏢 商业条款 — 需你拍板（X项）
-
-> 这些条款反映双方的核心利益博弈，涉及回报率、风险分配、控制权边界等。  
-> 建议提交 [投资委员会 / CEO / 业务负责人] 决策后，再指示律师按决策结果修改合同。
-
----
-
-**【商业决策 1】** 🔴 · 第X条（条款名称）
-
-**现状**：（当前合同的约定是什么）
-
-**行业参照**：（市场上同类交易通常怎么做）
-
-**你需要决定**：
-- **方案 A（对你更有利）**：[具体内容] — 意味着...
-- **方案 B（更平衡）**：[具体内容] — 意味着...
-
----
-
-**【商业决策 2】** 🟡 · 第X条（条款名称）
-
-（同上格式）
-
----
-
-#### ⚖️ 律师修改 — 交律师处理（X项）
-
-> 这些是起草技术问题，有客观正确的修改方向。  
-> 可直接将建议文本发给律师，要求按此修改，无需进一步业务决策。
-
----
-
-**【律师修改 1】** 🔴 · 第X条（条款名称）
-
-**问题**：一句话说明起草瑕疵及风险后果。
-
-**原文**：
-> （引用原合同条款原文）
-
-**建议修改为**：
-```
-（完整替换文本，可直接发给律师使用，变量用[方括号]标注）
-```
-
-**修改理由**：法条依据 + 修改后对委托方的保护效果。
-
----
-
-**【律师修改 2】** 🟡 · 第X条（条款名称）
-
-（同上格式）
-
----
-
-（如无任何需要修改的条款，此节显示 `✅ 未发现需要修改的条款`）
-
----
-> ⚠️ **免责声明**：本分析由 AI 辅助生成，仅供参考，不构成正式法律意见。
-> 如涉及重大商业决策、诉讼或合同谈判，请咨询具有相应执业资质的律师。
+> ⚠️ 本分析由 AI 辅助生成，仅供参考，不构成正式法律意见。
 ```
 
 ## 评分说明
@@ -465,33 +300,20 @@ IF 其他未知错误:
 
 ## ◆ Step 0-R：恢复流程（--resume 模式）
 
-当用户传入 `--resume <检查点文件>` 时，执行此流程。
+```bash
+python3 ~/.claude/scripts/checkpoint.py load \
+  --file ~/Documents/Claude/projects/falv-agent/reports/<检查点文件名>
+```
 
 ```
-1. 加载检查点文件：
-   python3 ~/.claude/scripts/checkpoint.py load \
-     --file ~/Documents/Claude/projects/falv-agent/reports/【文件名】
+IF status = "report_generated":
+  → 展示已有报告，询问"导出 Word？还是补充分析？"
+  IF 导出 → 执行 Step 5
+  IF 补充 → 针对性更新后重新执行 Step 4.5
 
-2. 读取检查点状态：
-   IF status = "report_generated":
-     → 显示："已恢复上次分析（项目：X，完成于 XX时XX分）"
-     → 显示完整报告
-     → 询问："是否直接导出 Word？还是需要补充分析？"
-     IF 用户选择"导出":   → 跳至 Step 5
-     IF 用户选择"补充":   → 询问具体补充内容，针对性更新报告后重新执行 Step 4.5
+IF status = "completed":
+  → 展示已有报告和 Word 文件路径，询问是否重新分析
 
-   IF status = "completed":
-     → 显示："该报告已完成，Word 文件：[docx_path]"
-     → 询问："是否需要重新分析或修改？"
-
-   IF status = "in_progress"（Agent 未全部完成）:
-     → 显示：已完成的 Agent 列表和结果
-     → 对未完成的 Agent 重新执行
-     → 合并结果后执行 Step 4
-
-3. 错误处理：
-   IF 检查点文件不存在:
-     → "找不到检查点文件 [路径]，请确认文件名或重新运行 /falv shencha"
-   IF 检查点格式不兼容（版本不匹配）:
-     → "检查点格式与当前版本不兼容，建议重新运行完整审查"
+IF 文件不存在 / 版本不兼容:
+  → 提示错误，建议重新运行完整审查
 ```
