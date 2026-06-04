@@ -1,6 +1,8 @@
+
 # 生成的报告文件（不提交，保留目录结构）
 reports/*.docx
 reports/*.pdf
+reports/*.checkpoint.json
 
 # Python
 __pycache__/
