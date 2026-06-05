@@ -39,6 +39,32 @@ evals/
 - 报告渲染必须保持严格法律 issue list 格式。
 - 法条引用警告必须出现在报告中。
 
+## 结构化法条知识库
+
+本项目保留自己的结构化法条知识库，并把国家法律法规数据库、北大法宝作为上游来源。
+
+```text
+legal_knowledge/
+├── citations.json
+├── deprecated_map.json
+└── sources.json
+```
+
+校验法条引用：
+
+```bash
+python3 scripts/legal_citation_check.py --input /tmp/falv_results.json
+```
+
+人工刷新法条校验日期和来源：
+
+```bash
+python3 scripts/update_legal_citations.py \
+  --id civil_code_585 \
+  --verified-at 2026-06-05 \
+  --source-url "https://flk.npc.gov.cn/"
+```
+
 ## 保密预检与脱敏
 
 审查前可本地扫描敏感信息：

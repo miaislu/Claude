@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "sources": {
+    "国家法律法规数据库": {
+      "url": "https://flk.npc.gov.cn/",
+      "authority_level": "official",
+      "role": "final_authoritative_source",
+      "default_verification_cycle_days": 90,
+      "notes": "全国人大常委会办公厅主办，作为法律法规现行有效文本的权威核验来源。"
+    },
+    "北大法宝": {
+      "url": "https://mcp.pkulaw.com/",
+      "authority_level": "commercial",
+      "role": "upstream_structured_retrieval",
+      "default_verification_cycle_days": 90,
+      "notes": "优先评估 MCP/API 接入，用于法规、案例和修订沿革的结构化查询。"
+    }
+  }
+}

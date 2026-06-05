@@ -42,6 +42,10 @@ scripts/
 evals/
 ├── cases/                     # 合同类型识别、当事方抽取等黄金样本
 └── fixtures/                  # 报告渲染 fixture 与断言
+legal_knowledge/
+├── citations.json             # 高频法条结构化知识库
+├── deprecated_map.json        # 废止法/旧法映射
+└── sources.json               # 国家法律法规数据库/北大法宝等上游配置
 install.sh                     # 一键安装所有技能和 Agent
 uninstall.sh                   # 一键卸载
 ```
@@ -87,6 +91,7 @@ python3 scripts/eval_runner.py --case barley_sha_founder_j
 - `available_parties` 是否给出可用于立场确认的具体选项
 - `validate-party` 是否拒绝泛称立场并接受具体当事方
 - 固定 Markdown 报告是否保留 issue list 结构和法条警告
+- 结构化法条校验是否识别废止法和未收录条文
 
 新增测试样本时，在 `evals/cases/<case_name>/` 下放置 `contract.txt` 和 `case.json`。
 
@@ -105,6 +110,34 @@ python3 scripts/eval_runner.py --case barley_sha_founder_j
 脱敏由 `redact_contract.py` 完成，输出脱敏文本和本地映射表。映射表属于敏感文件，不进入报告正文，也不应提交 Git。
 
 `pipeline.py analyze` 会再次执行立场校验；如果已识别到具体当事方，`甲方`、`乙方`、`投资方`、`委托方`等泛称会被拒绝。
+
+---
+
+## 结构化法条知识库
+
+法条引用不直接依赖模型训练知识。`legal_knowledge/citations.json` 保存高频法条的结构化缓存，每条包含：
+
+- 法律名称和条号
+- 主题、关键词、适用场景
+- 效力状态
+- `last_verified_at`
+- `verification_cycle_days`
+- 上游来源：国家法律法规数据库 / 北大法宝
+
+校验入口：
+
+```bash
+python3 scripts/legal_citation_check.py --input /tmp/falv_results.json
+```
+
+人工刷新入口：
+
+```bash
+python3 scripts/update_legal_citations.py \
+  --id company_law_84 \
+  --verified-at 2026-06-05 \
+  --source-url "https://flk.npc.gov.cn/"
+```
 
 ---
 

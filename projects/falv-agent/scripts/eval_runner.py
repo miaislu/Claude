@@ -27,6 +27,7 @@ FIXTURES_DIR = ROOT / "evals" / "fixtures"
 PIPELINE = ROOT / "scripts" / "pipeline.py"
 RENDER_REPORT = ROOT / "scripts" / "render_report.py"
 SECURITY_PREFLIGHT = ROOT / "scripts" / "security_preflight.py"
+LEGAL_CITATION_CHECK = ROOT / "scripts" / "legal_citation_check.py"
 
 
 @dataclass
@@ -184,6 +185,21 @@ def eval_render_fixture() -> CaseResult:
     return CaseResult(name="render_report fixture", passed=all(c.passed for c in checks), checks=checks)
 
 
+def eval_citation_fixture() -> CaseResult:
+    expectations = json.loads((FIXTURES_DIR / "citation_expectations.json").read_text(encoding="utf-8"))
+    input_path = FIXTURES_DIR / expectations["input"]
+    checks: list[CheckResult] = []
+    result = run_json([sys.executable, str(LEGAL_CITATION_CHECK), "--input", str(input_path)])
+    statuses = [item.get("status") for item in result.get("findings", [])]
+    citations = [item.get("citation") for item in result.get("findings", [])]
+
+    ok, details = contains_all(statuses, expectations.get("must_have_status", []))
+    add_check(checks, "citation_statuses", ok, details)
+    ok, details = contains_all(citations, expectations.get("must_include", []))
+    add_check(checks, "citation_mentions", ok, details)
+    return CaseResult(name="legal citation fixture", passed=all(c.passed for c in checks), checks=checks)
+
+
 def discover_cases(case_filter: Optional[str]) -> list[Path]:
     case_dirs = sorted(path for path in CASES_DIR.iterdir() if (path / "case.json").exists())
     if case_filter:
@@ -211,6 +227,7 @@ def main():
         results.append(eval_detect_case(case_dir))
     if not args.case:
         results.append(eval_render_fixture())
+        results.append(eval_citation_fixture())
 
     if args.json:
         payload = {

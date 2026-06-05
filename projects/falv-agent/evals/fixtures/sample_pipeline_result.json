@@ -8,7 +8,15 @@
   "citation_warnings": [
     {
       "agent": "feng-xian-ping-gu",
-      "warning": "引用已废止或已被民法典整合的法律：合同法"
+      "warning": {
+        "citation": "《合同法》第六十条",
+        "law": "合同法",
+        "article": "第六十条",
+        "status": "deprecated",
+        "level": "error",
+        "message": "《合同法》已被《民法典》整合废止，2021年1月1日后一般不应引用。",
+        "replaced_by": "民法典合同编"
+      }
     }
   ],
   "security_preflight": {

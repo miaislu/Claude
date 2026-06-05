@@ -202,8 +202,27 @@ def render(data: dict) -> str:
     warnings = data.get("citation_warnings", [])
     if warnings:
         add_section(lines, "七、法条引用校验提示")
+        summary = summarize_citation_warnings(warnings)
+        lines.append(
+            "- 校验汇总："
+            + "；".join(f"{key}={value}" for key, value in summary.items() if value)
+        )
         for item in warnings:
-            lines.append(f"- {item.get('agent', '')}：{item.get('warning', '')}")
+            warning = item.get("warning", item)
+            if isinstance(warning, dict):
+                parts = [
+                    f"{item.get('agent', '')}",
+                    f"{warning.get('citation', '')}",
+                    f"状态：{warning.get('status', '')}",
+                    warning.get("message", ""),
+                ]
+                if warning.get("last_verified_at"):
+                    parts.append(f"最近校验：{warning.get('last_verified_at')}")
+                if warning.get("source_name"):
+                    parts.append(f"来源：{warning.get('source_name')}")
+                lines.append("- " + "；".join(part for part in parts if part))
+            else:
+                lines.append(f"- {item.get('agent', '')}：{warning}")
 
     add_section(lines, "八、审查说明")
     lines.extend([
@@ -211,6 +230,17 @@ def render(data: dict) -> str:
         "涉及交易价格、控制权安排、商业谈判底线或风险接受度的事项，应由业务方结合交易目标作出商业决策。",
     ])
     return "\n".join(lines).strip() + "\n"
+
+
+def summarize_citation_warnings(warnings: list) -> dict:
+    summary = {"deprecated": 0, "stale": 0, "unknown": 0, "topic_mismatch": 0}
+    for item in warnings:
+        warning = item.get("warning", item) if isinstance(item, dict) else {}
+        if isinstance(warning, dict):
+            status = warning.get("status")
+            if status in summary:
+                summary[status] += 1
+    return summary
 
 
 def build_clause_lookup(tiao: dict) -> dict:

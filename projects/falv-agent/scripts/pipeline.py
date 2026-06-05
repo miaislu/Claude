@@ -28,6 +28,11 @@ try:
 except ImportError:
     AsyncAnthropic = None
 
+try:
+    from legal_citation_check import check_text as check_legal_citations
+except ImportError:
+    check_legal_citations = None
+
 
 # ── 路由表（从 SKILL.md 迁移到 Python，这是唯一的权威来源）────────────────
 ROUTING: dict[str, dict] = {
@@ -522,6 +527,13 @@ def validate_party_stance(text: str, party: str) -> dict:
 
 
 def validate_citations(text: str) -> list:
+    if check_legal_citations is not None:
+        result = check_legal_citations(text)
+        return [
+            item for item in result.get("findings", [])
+            if item.get("status") in ["deprecated", "stale", "unknown", "topic_mismatch"]
+        ]
+
     warnings = []
     for law in DEPRECATED_LAWS:
         if f"《{law}》" in text:

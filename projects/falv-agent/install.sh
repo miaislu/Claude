@@ -102,12 +102,19 @@ done
 # ── 部署脚本 ──────────────────────────────────────────────────────────────────
 info "部署脚本..."
 mkdir -p "$CLAUDE_DIR/scripts"
-for script in pipeline.py security_preflight.py redact_contract.py render_report.py generate_docx.py generate_pdf.py checkpoint.py eval_runner.py; do
+for script in pipeline.py security_preflight.py redact_contract.py legal_citation_check.py update_legal_citations.py render_report.py generate_docx.py generate_pdf.py checkpoint.py eval_runner.py; do
     if [[ -f "$SCRIPT_DIR/scripts/$script" ]]; then
         cp "$SCRIPT_DIR/scripts/$script" "$CLAUDE_DIR/scripts/$script"
         success "  ✓ $script"
     fi
 done
+
+if [[ -d "$SCRIPT_DIR/legal_knowledge" ]]; then
+    mkdir -p "$CLAUDE_DIR/legal_knowledge"
+    cp "$SCRIPT_DIR/legal_knowledge/"*.json "$CLAUDE_DIR/legal_knowledge/" 2>/dev/null || true
+    cp "$SCRIPT_DIR/legal_knowledge/README.md" "$CLAUDE_DIR/legal_knowledge/README.md" 2>/dev/null || true
+    success "  ✓ legal_knowledge 结构化法条知识库"
+fi
 
 # ── 创建报告存放目录 ───────────────────────────────────────────────────────────
 REPORTS_DIR="$SCRIPT_DIR/reports"

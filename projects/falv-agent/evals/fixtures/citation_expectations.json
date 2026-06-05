@@ -1,0 +1,5 @@
+{
+  "input": "citation_check_input.txt",
+  "must_have_status": ["deprecated", "unknown"],
+  "must_include": ["《合同法》第六十条", "《民法典》第九百九十九条"]
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "deprecated_laws": {
+    "合同法": {
+      "status": "deprecated",
+      "effective_until": "2020-12-31",
+      "replaced_by": "民法典合同编",
+      "message": "《合同法》已被《民法典》整合废止，2021年1月1日后一般不应引用。"
+    },
+    "担保法": {
+      "status": "deprecated",
+      "effective_until": "2020-12-31",
+      "replaced_by": "民法典担保制度及相关司法解释",
+      "message": "《担保法》已被《民法典》及相关司法解释整合替代。"
+    },
+    "物权法": {
+      "status": "deprecated",
+      "effective_until": "2020-12-31",
+      "replaced_by": "民法典物权编",
+      "message": "《物权法》已被《民法典》物权编整合废止。"
+    },
+    "民法总则": {
+      "status": "deprecated",
+      "effective_until": "2020-12-31",
+      "replaced_by": "民法典总则编",
+      "message": "《民法总则》已被《民法典》总则编整合。"
+    },
+    "民法通则": {
+      "status": "deprecated",
+      "effective_until": "2020-12-31",
+      "replaced_by": "民法典总则编",
+      "message": "《民法通则》已被《民法典》整合替代。"
+    },
+    "侵权责任法": {
+      "status": "deprecated",
+      "effective_until": "2020-12-31",
+      "replaced_by": "民法典侵权责任编",
+      "message": "《侵权责任法》已被《民法典》侵权责任编整合。"
+    }
+  }
+}
