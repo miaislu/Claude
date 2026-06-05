@@ -5,6 +5,7 @@ falv-agent 本地回归评测 harness。
 当前版本只测试确定性环节，不调用 Anthropic API：
 - pipeline.py detect 的合同类型、当事方、多方协议识别
 - legal_coverage_check.py 的合同类型法条覆盖矩阵
+- usage_log.py 的去敏使用日志
 - render_report.py 的固定 issue list 输出
 
 用法：
@@ -31,6 +32,7 @@ RENDER_REPORT = ROOT / "scripts" / "render_report.py"
 SECURITY_PREFLIGHT = ROOT / "scripts" / "security_preflight.py"
 LEGAL_CITATION_CHECK = ROOT / "scripts" / "legal_citation_check.py"
 LEGAL_COVERAGE_CHECK = ROOT / "scripts" / "legal_coverage_check.py"
+USAGE_LOG = ROOT / "scripts" / "usage_log.py"
 
 
 @dataclass
@@ -264,6 +266,52 @@ def eval_coverage_fixture() -> CaseResult:
     return CaseResult(name="legal coverage fixture", passed=all(c.passed for c in checks), checks=checks)
 
 
+def eval_usage_log_fixture() -> CaseResult:
+    checks: list[CheckResult] = []
+    pipeline = load_pipeline_module()
+    source = json.loads((FIXTURES_DIR / "sample_pipeline_result.json").read_text(encoding="utf-8"))
+    source["legal_coverage"] = pipeline.load_legal_coverage(source.get("contract_type", "通用"))
+
+    with tempfile.TemporaryDirectory(prefix="falv-usage-eval-") as tmpdir:
+        tmpdir_path = Path(tmpdir)
+        analysis_path = tmpdir_path / "analysis.json"
+        contract_path = tmpdir_path / "contract.txt"
+        log_path = tmpdir_path / "usage_events.jsonl"
+        analysis_path.write_text(json.dumps(source, ensure_ascii=False), encoding="utf-8")
+        contract_path.write_text("本文件仅用于 eval hash，不应写入 usage log。", encoding="utf-8")
+
+        run_json([
+            sys.executable, str(USAGE_LOG), "record",
+            "--analysis", str(analysis_path),
+            "--contract", str(contract_path),
+            "--log", str(log_path),
+        ])
+        report = run_json([sys.executable, str(USAGE_LOG), "report", "--log", str(log_path)])
+        raw_log = log_path.read_text(encoding="utf-8")
+
+    add_check(checks, "usage_event_count", report.get("event_count") == 1, str(report))
+    add_check(
+        checks,
+        "usage_contract_type_count",
+        report.get("contract_type_counts", {}).get("投资协议") == 1,
+        str(report.get("contract_type_counts")),
+    )
+    add_check(
+        checks,
+        "usage_no_contract_text",
+        "本文件仅用于 eval hash" not in raw_log,
+        "usage log 不应包含合同正文",
+    )
+    add_check(
+        checks,
+        "usage_problematic_citation",
+        report.get("problematic_status_counts", {}).get("deprecated", 0) >= 1,
+        str(report.get("problematic_status_counts")),
+    )
+
+    return CaseResult(name="usage log fixture", passed=all(c.passed for c in checks), checks=checks)
+
+
 def discover_cases(case_filter: Optional[str]) -> list[Path]:
     case_dirs = sorted(path for path in CASES_DIR.iterdir() if (path / "case.json").exists())
     if case_filter:
@@ -293,6 +341,7 @@ def main():
         results.append(eval_render_fixture())
         results.append(eval_citation_fixture())
         results.append(eval_coverage_fixture())
+        results.append(eval_usage_log_fixture())
 
     if args.json:
         payload = {

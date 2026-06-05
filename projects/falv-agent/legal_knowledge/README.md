@@ -27,10 +27,12 @@
 1. `coverage_matrix.json`：合同类型基线，先保证投资、劳动、数据、电商、广告、采购等类型有最低法条覆盖。
 2. `citations.json`：本地结构化法条缓存，负责法条标题、主题、来源、最近校验日期和有效性状态。
 3. 上游数据库：国家法律法规数据库、北大法宝等用于定期或人工刷新本地缓存。
+4. `logs/usage_events.jsonl`：去敏使用日志，只用于观察实际引用和覆盖缺口，不保存合同全文。
 
 校验入口：
 
 ```bash
 python3 scripts/legal_coverage_check.py
 python3 scripts/legal_coverage_check.py --type 投资协议 --as-markdown
+python3 scripts/usage_log.py report
 ```

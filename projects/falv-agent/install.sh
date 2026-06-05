@@ -102,7 +102,7 @@ done
 # ── 部署脚本 ──────────────────────────────────────────────────────────────────
 info "部署脚本..."
 mkdir -p "$CLAUDE_DIR/scripts"
-for script in pipeline.py security_preflight.py redact_contract.py legal_citation_check.py legal_coverage_check.py update_legal_citations.py render_report.py generate_docx.py generate_pdf.py checkpoint.py eval_runner.py; do
+for script in pipeline.py security_preflight.py redact_contract.py legal_citation_check.py legal_coverage_check.py usage_log.py update_legal_citations.py render_report.py generate_docx.py generate_pdf.py checkpoint.py eval_runner.py; do
     if [[ -f "$SCRIPT_DIR/scripts/$script" ]]; then
         cp "$SCRIPT_DIR/scripts/$script" "$CLAUDE_DIR/scripts/$script"
         success "  ✓ $script"

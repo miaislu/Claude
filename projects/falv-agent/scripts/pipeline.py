@@ -33,6 +33,15 @@ try:
 except ImportError:
     check_legal_citations = None
 
+try:
+    from usage_log import append_event as append_usage_event
+    from usage_log import build_event as build_usage_event
+    from usage_log import DEFAULT_LOG as DEFAULT_USAGE_LOG
+except ImportError:
+    append_usage_event = None
+    build_usage_event = None
+    DEFAULT_USAGE_LOG = None
+
 
 # ── 路由表（从 SKILL.md 迁移到 Python，这是唯一的权威来源）────────────────
 ROUTING: dict[str, dict] = {
@@ -226,6 +235,7 @@ class AnalysisResults:
     citation_warnings: list   # 法条引用警告
     legal_coverage: dict      # 合同类型法条覆盖矩阵
     security_preflight: dict  # 审查前本地保密预检结果
+    usage_log: dict           # 使用日志写入结果
     guidelines: str           # _guidelines.md 内容（提供给 Claude 格式化用）
     context_content: str      # 专项 context 文件内容
     elapsed_total: float
@@ -1009,6 +1019,8 @@ async def _run_analyze(args):
             except json.JSONDecodeError:
                 security_preflight = {"error": f"无法解析预检结果：{preflight_path}"}
 
+    usage_log_result = {"status": "disabled"}
+
     # 提取项目名称（供报告命名用）
     project_name = re.sub(
         r'(有限公司|股份有限公司|INC\.|LLC|LTD\.?)', '',
@@ -1026,10 +1038,26 @@ async def _run_analyze(args):
         citation_warnings = citation_warnings,
         legal_coverage  = legal_coverage,
         security_preflight = security_preflight,
+        usage_log       = usage_log_result,
         guidelines      = guidelines,
         context_content = context_content,
         elapsed_total   = elapsed,
     )
+
+    if append_usage_event is not None and build_usage_event is not None:
+        try:
+            event = build_usage_event(asdict(analysis), contract_text)
+            log_path = DEFAULT_USAGE_LOG or (KNOWLEDGE_DIR.parent / "logs" / "usage_events.jsonl")
+            append_usage_event(event, Path(log_path))
+            usage_log_result = {
+                "status": "recorded",
+                "event_id": event.get("event_id", ""),
+                "log_path": str(log_path),
+            }
+            analysis.usage_log = usage_log_result
+        except Exception as exc:
+            usage_log_result = {"status": "error", "message": str(exc)}
+            analysis.usage_log = usage_log_result
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:

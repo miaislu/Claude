@@ -7,6 +7,7 @@ reports/*redaction_map*.json
 reports/*_map_*.json
 reports/*redacted*.txt
 reports/*_redacted_*.txt
+logs/*.jsonl
 
 # Python
 __pycache__/

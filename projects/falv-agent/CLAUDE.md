@@ -36,6 +36,7 @@ scripts/
 ├── redact_contract.py         # 本地脱敏与映射表生成
 ├── render_report.py           # 固定法律 issue list Markdown 渲染
 ├── legal_coverage_check.py    # 合同类型法条覆盖矩阵校验
+├── usage_log.py               # 去敏使用日志与覆盖缺口汇总
 ├── eval_runner.py             # 本地回归评测：detect / render 确定性环节
 ├── generate_docx.py           # Word 报告生成
 ├── generate_pdf.py            # ReportLab PDF 报告生成
@@ -95,6 +96,7 @@ python3 scripts/eval_runner.py --case barley_sha_founder_j
 - 固定 Markdown 报告是否保留 issue list 结构和法条警告
 - 结构化法条校验是否识别废止法和未收录条文
 - 合同类型法条覆盖矩阵是否只引用已收录法条 ID
+- 去敏使用日志是否不保存合同正文
 
 新增测试样本时，在 `evals/cases/<case_name>/` 下放置 `contract.txt` 和 `case.json`。
 
@@ -140,6 +142,14 @@ python3 scripts/legal_coverage_check.py --type 投资协议 --as-markdown
 ```
 
 `coverage_matrix.json` 用于定义每类合同的基础法条覆盖包和条件议题。它是“合同类型 × 法律依据”的第一层基线；使用日志和人工标注后续只用于发现盲区，不作为早期覆盖的唯一依据。
+
+`pipeline.py analyze` 会在审查完成后写入去敏使用日志 `logs/usage_events.jsonl`。日志只保存合同类型、审查模式、法条命中、异常引用和覆盖缺口，不保存合同全文、文件路径或具体当事方名称。汇总入口：
+
+```bash
+python3 scripts/usage_log.py report
+```
+
+北大法宝当前只作为上游候选来源记录在 `sources.json`，尚未注册为本项目可调用的 MCP server。接入后需先验证 MCP 工具可发现、可调用，再将返回结果写入本地结构化库。
 
 人工刷新入口：
 

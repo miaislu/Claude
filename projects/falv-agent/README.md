@@ -43,6 +43,8 @@ evals/
 
 本项目保留自己的结构化法条知识库，并把国家法律法规数据库、北大法宝作为上游来源。
 
+当前状态：国家法律法规数据库和北大法宝只作为上游来源配置；本项目尚未注册北大法宝 MCP server。接入后应先通过 MCP 工具列表确认可调用，再把查询结果写入本地结构化库。
+
 ```text
 legal_knowledge/
 ├── citations.json
@@ -61,6 +63,18 @@ python3 scripts/legal_citation_check.py --input /tmp/falv_results.json
 
 ```bash
 python3 scripts/legal_coverage_check.py --type 投资协议 --as-markdown
+```
+
+审查完成后，`pipeline.py analyze` 会自动写入去敏使用日志：
+
+```text
+logs/usage_events.jsonl
+```
+
+该日志不保存合同全文、文件路径或具体当事方名称，只保存合同类型、审查模式、法条命中、异常引用和覆盖矩阵缺口。汇总入口：
+
+```bash
+python3 scripts/usage_log.py report
 ```
 
 人工刷新法条校验日期和来源：
