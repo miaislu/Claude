@@ -97,6 +97,34 @@ ROUTING_FALLBACK = {
     "parties": ["甲方", "乙方", "平衡分析"],
 }
 
+TITLE_HINTS = {
+    "投资协议": ["股东协议", "投资协议", "增资协议", "认购协议", "股权收购协议", "融资协议", "投资框架协议", "SHA"],
+    "劳动合同": ["劳动合同", "劳务合同", "聘用协议", "竞业限制协议"],
+    "数据处理协议": ["数据处理协议", "个人信息处理协议", "数据共享协议", "隐私协议"],
+    "电商平台服务协议": ["平台服务协议", "入驻协议", "技术服务协议", "商家服务协议"],
+    "广告协议": ["广告协议", "广告投放协议", "营销服务协议", "推广服务协议"],
+    "采购合同": ["采购合同", "供货合同", "采购协议", "供应协议"],
+    "商业租赁合同": ["租赁合同", "房屋租赁合同", "商铺租赁合同"],
+    "技术开发合同": ["技术开发合同", "软件开发合同", "定制开发协议", "系统集成协议"],
+    "借款合同": ["借款合同", "贷款合同", "借款协议"],
+    "知识产权许可合同": ["知识产权许可协议", "商标许可协议", "专利许可协议", "著作权许可协议"],
+    "分销代理合同": ["分销协议", "经销协议", "代理协议", "渠道合作协议"],
+    "SaaS云服务协议": ["SaaS服务协议", "云服务协议", "订阅服务协议"],
+}
+
+DEPRECATED_LAWS = [
+    "合同法", "担保法", "物权法", "民法总则", "民法通则", "侵权责任法",
+    "婚姻法", "继承法", "收养法",
+]
+
+AGENT_SCHEMAS = {
+    "tiao-kuan-fen-xi": ["basic_info", "clauses"],
+    "feng-xian-ping-gu": ["risk_assessment", "overall_risk_score"],
+    "he-gui-jian-cha": ["compliance_check"],
+    "yi-wu-jie-xi": ["timeline", "party_a_obligations", "party_b_obligations"],
+    "jian-yi-yin-qing": ["recommendations"],
+}
+
 AGENT_WEIGHTS = {
     "tiao-kuan-fen-xi": 0.20,
     "feng-xian-ping-gu": 0.25,
@@ -153,6 +181,9 @@ class DetectResult:
     matched_keywords: list
     available_parties: list
     context_file: str
+    identified_parties: list = field(default_factory=list)
+    is_multipartite: bool = False
+    title_hint: str = ""
 
 
 @dataclass
@@ -163,6 +194,8 @@ class AgentResult:
     parsed: Optional[dict]    # 尝试 JSON 解析后的结果
     elapsed_seconds: float
     error: Optional[str] = None
+    validation_errors: list = field(default_factory=list)
+    citation_warnings: list = field(default_factory=list)
 
 
 @dataclass
@@ -174,6 +207,7 @@ class AnalysisResults:
     overall_score: Optional[int]
     agent_results: list       # List[AgentResult as dict]
     skipped_agents: list      # 失败的 Agent 名称
+    citation_warnings: list   # 法条引用警告
     guidelines: str           # _guidelines.md 内容（提供给 Claude 格式化用）
     context_content: str      # 专项 context 文件内容
     elapsed_total: float
@@ -181,26 +215,129 @@ class AnalysisResults:
 
 # ── 核心函数 ──────────────────────────────────────────────────────────────
 
+def normalize_space(value: str) -> str:
+    return re.sub(r"\s+", " ", value or "").strip(" ，,；;。.\n\t")
+
+
+def extract_title_hint(text: str) -> str:
+    for line in text.splitlines()[:20]:
+        clean = normalize_space(line)
+        if not clean:
+            continue
+        if len(clean) <= 80 and any(token in clean for token in ["协议", "合同", "契约", "条款", "Terms", "SHA"]):
+            return clean
+    return normalize_space(text[:80])
+
+
+def extract_party_block(text: str) -> str:
+    sample = text[:6000]
+    starters = [
+        "由以下各方", "由下列各方", "本协议由以下各方", "本协议由下列各方", "本协议各方", "本合同由以下各方",
+        "甲方", "签署方", "各方如下",
+    ]
+    start_positions = [sample.find(s) for s in starters if sample.find(s) >= 0]
+    start = min(start_positions) if start_positions else 0
+    block = sample[start:start + 3000]
+    end_markers = ["鉴于", "第一条", "第1条", "一、", "定义", "WHEREAS"]
+    end_positions = [block.find(m) for m in end_markers if block.find(m) > 80]
+    if end_positions:
+        block = block[:min(end_positions)]
+    return block
+
+
+def add_party(parties: list, name: str, role: str = ""):
+    name = normalize_space(name)
+    role = normalize_space(role)
+    if not name or len(name) > 90:
+        return
+    if name in ["甲方", "乙方", "丙方", "丁方", "各方", "一方", "另一方", "本协议"]:
+        return
+    label = f"{name}（{role}）" if role and role not in name else name
+    if label not in parties:
+        parties.append(label)
+
+
+def extract_parties(text: str) -> tuple[list, bool]:
+    """
+    从合同开头的签署方/定义区提取具体当事方。
+    目标不是做实体识别全覆盖，而是避免多方协议只返回“甲方/乙方”的流程风险。
+    """
+    block = extract_party_block(text)
+    parties: list[str] = []
+
+    labeled_patterns = [
+        r"(甲方|乙方|丙方|丁方|戊方)[：:]\s*([^\n，,；;。]{1,80})",
+        r"(投资人股东|投资方|创始人股东|创始人|公司|目标公司|购买方|出售方|转让方|受让方)[：:]\s*([^\n，,；;。]{1,80})",
+        r"\(([A-Z])\)\s*([^\n，,；;。]{1,80})",
+        r"^([A-Z])\s*$\n([^\n，,；;。]{1,80})",
+    ]
+    for pattern in labeled_patterns:
+        for m in re.finditer(pattern, block, re.M):
+            role, name = m.group(1), m.group(2)
+            add_party(parties, name, role)
+
+    alias_patterns = [
+        r"([A-Za-z][A-Za-z0-9 ._-]{0,30}|[\u4e00-\u9fa5A-Za-z0-9（）()·.\-]{2,60})[，,]?\s*[（(]?以下简称[“\"]([^”\"]{1,30})[”\"][）)]?",
+        r"([A-Za-z][A-Za-z0-9 ._-]{0,30}|[\u4e00-\u9fa5A-Za-z0-9（）()·.\-]{2,60})[（(][“\"]([^”\"]{1,30})[”\"](?:方)?[）)]",
+    ]
+    for pattern in alias_patterns:
+        for m in re.finditer(pattern, block):
+            raw, alias = m.group(1), m.group(2)
+            raw = normalize_space(raw)
+            if any(skip in raw for skip in ["协议", "合同", "以下简称", "鉴于", "身份证号", "统一社会信用代码"]):
+                continue
+            add_party(parties, raw, alias)
+
+    # 对 SHA/投资协议常见的自然人创始人缩写做兜底。
+    for m in re.finditer(r"(创始人|Founder|创始股东)[^\n。；;]{0,40}?([A-Z])(?:[，,；;\s]|$)", block, re.I):
+        add_party(parties, m.group(2), "创始人")
+    for m in re.finditer(r"(上海[\u4e00-\u9fa5]{2,30}(?:企业管理|投资|合伙企业)[^\n，,；;。]{0,30})", block):
+        add_party(parties, m.group(1), "投资方")
+
+    # 去重：同一名称带不同角色时保留较长标签；避免把条款标题误认为主体。
+    filtered = []
+    seen_core = set()
+    for p in parties:
+        core = re.sub(r"（.*?）", "", p)
+        if core in seen_core:
+            continue
+        if any(bad in core for bad in ["陈述", "保证", "条款", "定义", "目录"]):
+            continue
+        seen_core.add(core)
+        filtered.append(p)
+
+    is_multipartite = len(filtered) > 2 or any(token in block for token in ["丙方", "丁方", "各方", "创始人股东", "投资人股东"])
+    if filtered:
+        filtered.append("平衡分析")
+    return filtered, is_multipartite
+
+
 def detect_type(text: str) -> DetectResult:
     """
     纯代码的合同类型识别。
     计算每种类型的关键词命中数，返回置信度分级结果。
     这是从 SKILL.md 迁移到 Python 的第一步（Factor 8）。
     """
-    text_sample = text[:5000]  # 只扫开头 5000 字，足够识别类型
+    title_hint = extract_title_hint(text)
+    text_sample = text[:8000]
+    title_sample = text[:800]
     scores = {}
     matched = {}
     for ctype, cfg in ROUTING.items():
         hits = [kw for kw in cfg["keywords"] if kw in text_sample]
-        scores[ctype] = len(hits)
+        title_hits = [kw for kw in TITLE_HINTS.get(ctype, []) if kw in title_hint or kw in title_sample]
+        scores[ctype] = len(hits) + len(title_hits) * 3
         matched[ctype] = hits
+        for kw in title_hits:
+            if kw not in matched[ctype]:
+                matched[ctype].insert(0, kw)
 
     best_type = max(scores, key=scores.get)
     best_score = scores[best_type]
 
-    if best_score >= 3:
+    if best_score >= 5:
         confidence = "HIGH"
-    elif best_score >= 1:
+    elif best_score >= 2:
         confidence = "MEDIUM"
     else:
         confidence = "LOW"
@@ -213,12 +350,19 @@ def detect_type(text: str) -> DetectResult:
         context_file = ROUTING[best_type]["context"]
         parties      = ROUTING[best_type]["parties"]
 
+    identified_parties, is_multipartite = extract_parties(text)
+    if identified_parties:
+        parties = identified_parties
+
     return DetectResult(
         contract_type     = best_type,
         confidence        = confidence,
         matched_keywords  = matched.get(best_type, []),
         available_parties = parties,
         context_file      = context_file,
+        identified_parties = identified_parties,
+        is_multipartite   = is_multipartite,
+        title_hint        = title_hint,
     )
 
 
@@ -232,6 +376,110 @@ def load_file(path: Path, label: str = "") -> str:
     except Exception as e:
         print(f"⚠️  读取失败：{path}（{e}）", file=sys.stderr)
         return ""
+
+
+def extract_json_object(content: str) -> Optional[dict]:
+    """从模型回复中提取第一个完整 JSON object，避免贪婪正则吞掉多余文本。"""
+    start = content.find("{")
+    if start < 0:
+        return None
+    depth = 0
+    in_string = False
+    escape = False
+    for i in range(start, len(content)):
+        ch = content[i]
+        if escape:
+            escape = False
+            continue
+        if ch == "\\":
+            escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(content[start:i + 1])
+                except json.JSONDecodeError:
+                    return None
+    return None
+
+
+def validate_agent_output(agent_name: str, parsed: Optional[dict]) -> list:
+    errors = []
+    if not isinstance(parsed, dict):
+        return ["未返回可解析的 JSON object"]
+    for key in AGENT_SCHEMAS.get(agent_name, []):
+        if key not in parsed:
+            errors.append(f"缺少顶层字段：{key}")
+    return errors
+
+
+def validate_citations(text: str) -> list:
+    warnings = []
+    for law in DEPRECATED_LAWS:
+        if f"《{law}》" in text:
+            warnings.append(f"引用已废止或已被民法典整合的法律：{law}")
+
+    citation_pattern = re.compile(r"《([^》]{2,30})》([^第\n。；;]{0,12})(?!第)")
+    for m in citation_pattern.finditer(text):
+        law = m.group(1)
+        tail = m.group(2)
+        if "法" in law and "第" not in tail:
+            warnings.append(f"疑似缺少具体条文号：{law}")
+    return sorted(set(warnings))
+
+
+def compact_agent_result(result: AgentResult) -> dict:
+    parsed = result.parsed or {}
+    if result.agent_name == "tiao-kuan-fen-xi":
+        clauses = parsed.get("clauses", [])
+        return {
+            "basic_info": parsed.get("basic_info", {}),
+            "total_clauses": parsed.get("total_clauses", len(clauses) if isinstance(clauses, list) else 0),
+            "clauses": clauses[:80] if isinstance(clauses, list) else [],
+        }
+    if result.agent_name == "feng-xian-ping-gu":
+        risks = parsed.get("risk_assessment", [])
+        if isinstance(risks, list):
+            risks = sorted(risks, key=lambda x: x.get("risk_score", 0) if isinstance(x, dict) else 0, reverse=True)[:20]
+        return {
+            "overall_risk_score": parsed.get("overall_risk_score"),
+            "high_risk_count": parsed.get("high_risk_count"),
+            "medium_risk_count": parsed.get("medium_risk_count"),
+            "top_risks": risks,
+        }
+    if result.agent_name == "he-gui-jian-cha":
+        check = parsed.get("compliance_check", {})
+        if isinstance(check, dict):
+            return {
+                "overall_status": check.get("overall_status"),
+                "applicable_laws": check.get("applicable_laws", []),
+                "failed": check.get("failed", []),
+                "invalid_clauses": check.get("invalid_clauses", []),
+            }
+    if result.agent_name == "yi-wu-jie-xi":
+        return {
+            "timeline": parsed.get("timeline", [])[:30] if isinstance(parsed.get("timeline"), list) else [],
+            "party_a_obligations": parsed.get("party_a_obligations", [])[:30] if isinstance(parsed.get("party_a_obligations"), list) else [],
+            "party_b_obligations": parsed.get("party_b_obligations", [])[:30] if isinstance(parsed.get("party_b_obligations"), list) else [],
+            "imbalance_flags": parsed.get("imbalance_flags", []),
+            "key_deadlines_summary": parsed.get("key_deadlines_summary", ""),
+        }
+    if result.agent_name == "jian-yi-yin-qing":
+        return {
+            "must_fix_count": parsed.get("must_fix_count"),
+            "strongly_recommended_count": parsed.get("strongly_recommended_count"),
+            "optional_count": parsed.get("optional_count"),
+            "recommendations": parsed.get("recommendations", [])[:30] if isinstance(parsed.get("recommendations"), list) else [],
+        }
+    return parsed
 
 
 def build_upstream_context(
@@ -253,12 +501,7 @@ def build_upstream_context(
         elif not result.success:
             sections.append(f"### {dep}\n[执行失败：{result.error}，跳过]")
         else:
-            # 优先使用 parsed JSON（更紧凑），fallback 到原始文本
-            content = (
-                json.dumps(result.parsed, ensure_ascii=False, indent=2)
-                if result.parsed
-                else result.content
-            )
+            content = json.dumps(compact_agent_result(result), ensure_ascii=False, indent=2)
             sections.append(f"### {dep} 的分析输出\n```json\n{content}\n```")
 
     return "## 上游 Agent 输出\n\n" + "\n\n".join(sections)
@@ -316,25 +559,47 @@ async def call_agent(
 
     t0 = time.time()
     try:
-        resp = await client.messages.create(
-            model=DEFAULT_MODEL,
-            max_tokens=4096,
-            system=system,
-            messages=[{"role": "user", "content": user_msg}],
-        )
-        content = resp.content[0].text
-        # 尝试解析 JSON（提取第一个 {...} 块）
+        messages = [{"role": "user", "content": user_msg}]
+        content = ""
         parsed = None
-        m = re.search(r'\{[\s\S]+\}', content)
-        if m:
-            try:
-                parsed = json.loads(m.group())
-            except json.JSONDecodeError:
-                pass  # 解析失败没关系，保留原始文本
+        validation_errors = []
 
+        for attempt in range(2):
+            resp = await client.messages.create(
+                model=DEFAULT_MODEL,
+                max_tokens=4096,
+                system=system,
+                messages=messages,
+            )
+            content = resp.content[0].text
+            parsed = extract_json_object(content)
+            validation_errors = validate_agent_output(agent_name, parsed)
+            if not validation_errors:
+                break
+            if attempt == 0:
+                messages.extend([
+                    {"role": "assistant", "content": content},
+                    {
+                        "role": "user",
+                        "content": (
+                            "你的上一次输出未通过结构校验："
+                            + "；".join(validation_errors)
+                            + "。请只返回一个合法 JSON object，并补齐指定顶层字段；不要输出解释文字。"
+                        ),
+                    },
+                ])
+
+        citation_warnings = validate_citations(content)
+        success = not validation_errors and parsed is not None
         return AgentResult(
-            agent_name=agent_name, success=True, content=content, parsed=parsed,
+            agent_name=agent_name,
+            success=success,
+            content=content,
+            parsed=parsed,
             elapsed_seconds=round(time.time() - t0, 2),
+            error=None if success else "；".join(validation_errors),
+            validation_errors=validation_errors,
+            citation_warnings=citation_warnings,
         )
     except Exception as e:
         return AgentResult(
@@ -343,18 +608,63 @@ async def call_agent(
         )
 
 
+def safe_len(value) -> int:
+    return len(value) if isinstance(value, list) else 0
+
+
+def score_agent_component(result: AgentResult) -> Optional[int]:
+    if not result.success or not result.parsed:
+        return None
+    p = result.parsed
+    if result.agent_name == "feng-xian-ping-gu":
+        raw = p.get("overall_risk_score")
+        if isinstance(raw, (int, float)):
+            return max(0, min(100, int(100 - raw * 10)))
+        high = p.get("high_risk_count", 0) or 0
+        medium = p.get("medium_risk_count", 0) or 0
+        return max(0, min(100, 90 - int(high) * 18 - int(medium) * 8))
+    if result.agent_name == "he-gui-jian-cha":
+        check = p.get("compliance_check", {})
+        if not isinstance(check, dict):
+            return 70
+        failed = safe_len(check.get("failed"))
+        invalid = safe_len(check.get("invalid_clauses"))
+        base = 92 if "不" not in str(check.get("overall_status", "")) else 76
+        return max(0, min(100, base - failed * 8 - invalid * 15))
+    if result.agent_name == "jian-yi-yin-qing":
+        must = p.get("must_fix_count", 0) or 0
+        strong = p.get("strongly_recommended_count", 0) or 0
+        optional = p.get("optional_count", 0) or 0
+        return max(0, min(100, 92 - int(must) * 12 - int(strong) * 6 - int(optional) * 2))
+    if result.agent_name == "tiao-kuan-fen-xi":
+        clauses = p.get("clauses", [])
+        return 90 if isinstance(clauses, list) and clauses else 72
+    if result.agent_name == "yi-wu-jie-xi":
+        imbalance = safe_len(p.get("imbalance_flags"))
+        return max(0, min(100, 88 - imbalance * 5))
+    return None
+
+
 def extract_risk_score(agent_results: list[AgentResult]) -> Optional[int]:
     """
-    从风险评估师的输出中提取 overall_risk_score，
-    换算为 0-100 的合同安全评分（风险越高，评分越低）。
+    综合五个 Agent 的分数，按 AGENT_WEIGHTS 加权。
+    失败 Agent 不参与权重归一，但每个失败 Agent 额外扣 3 分，避免“少分析反而高分”。
     """
+    weighted_total = 0.0
+    weight_sum = 0.0
+    failed = 0
     for r in agent_results:
-        if r.agent_name == "feng-xian-ping-gu" and r.parsed:
-            raw = r.parsed.get("overall_risk_score")
-            if isinstance(raw, (int, float)):
-                # risk_score 是 0-10（10=最高风险），转为 0-100 安全评分
-                return max(0, min(100, int(100 - raw * 10)))
-    return None
+        component = score_agent_component(r)
+        weight = AGENT_WEIGHTS.get(r.agent_name, 0)
+        if component is None:
+            failed += 1
+            continue
+        weighted_total += component * weight
+        weight_sum += weight
+    if weight_sum == 0:
+        return None
+    score = int(round(weighted_total / weight_sum)) - failed * 3
+    return max(0, min(100, score))
 
 
 # ── 子命令：detect ────────────────────────────────────────────────────────
@@ -378,6 +688,9 @@ def cmd_detect(args):
         "confidence":        det.confidence,
         "matched_keywords":  det.matched_keywords,
         "available_parties": det.available_parties,
+        "identified_parties": det.identified_parties,
+        "is_multipartite":   det.is_multipartite,
+        "title_hint":        det.title_hint,
         "context_file":      det.context_file,
         # 给 SKILL.md 用的展示消息
         "message": (
@@ -494,6 +807,10 @@ async def _run_analyze(args):
         print(f"\n⚠️  跳过的 Agent：{skipped}", file=sys.stderr)
 
     overall_score = extract_risk_score(results)
+    citation_warnings = []
+    for r in results:
+        for warning in r.citation_warnings:
+            citation_warnings.append({"agent": r.agent_name, "warning": warning})
 
     # 提取项目名称（供报告命名用）
     project_name = re.sub(
@@ -509,6 +826,7 @@ async def _run_analyze(args):
         overall_score   = overall_score,
         agent_results   = [asdict(r) for r in results],
         skipped_agents  = skipped,
+        citation_warnings = citation_warnings,
         guidelines      = guidelines,
         context_content = context_content,
         elapsed_total   = elapsed,

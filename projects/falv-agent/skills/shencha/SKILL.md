@@ -80,7 +80,10 @@ python3 ~/.claude/scripts/pipeline.py detect \
   "contract_type":     "投资协议",
   "confidence":        "HIGH",
   "matched_keywords":  ["股东协议", "回购", "估值"],
-  "available_parties": ["投资方", "创始人（被投方）", "平衡分析"],
+  "available_parties": ["创始人 J（创始人）", "上海云玡（投资方）", "公司", "平衡分析"],
+  "identified_parties": ["创始人 J（创始人）", "上海云玡（投资方）", "公司", "平衡分析"],
+  "is_multipartite": true,
+  "title_hint": "Barley 股东协议",
   "context_file":      "investment.md",
   "message":           "已识别为【投资协议】（依据：股东协议, 回购, 估值）"
 }
@@ -121,10 +124,10 @@ IF --party 参数已传入:
 
 ELIF 用户未传入 --party:
 
-  STEP 2-A: 判断合同是否为多方协议
+  STEP 2-A: 读取 pipeline detect 返回的 is_multipartite / identified_parties
   
-    IF 合同各方超过2方（如SHA含创始人/投资方/公司/持股平台）:
-      → 必须逐一列出合同中识别到的所有主要当事方，让用户选择
+    IF is_multipartite = true OR identified_parties 超过2项:
+      → 必须逐一列出 identified_parties 中的所有主要当事方，让用户选择
       → 不得只显示通用的"甲方/乙方/平衡"选项
       
       格式：
@@ -197,20 +200,28 @@ IF status = "error":
 
 ---
 
-### ◆ Step 4：Claude 读取结果，格式化报告
+### ◆ Step 4：固定结构渲染 Markdown 报告
 
 ```bash
-# 读取分析结果
-cat /tmp/falv_results.json
+python3 ~/.claude/scripts/render_report.py \
+  --input  /tmp/falv_results.json \
+  --output /tmp/falv_report_temp.md
 ```
 
-Claude 读取 JSON，将各 Agent 的输出整合为标准报告格式（见下方"输出格式"节）。
+Claude 只读取 `/tmp/falv_report_temp.md` 作有限润色，不得改变下列内容：
+- 问题顺序
+- 风险等级
+- 问题分类（商业决策 / 起草技术）
+- 综合评分
+- Agent 跳过或法条校验提示
+
+如需补充文字，只能补在同一问题的"问题分析"或"修改理由"下，不得新增未经 JSON 支持的重大风险。
 
 **渲染规则：**
 - `overall_score` 直接用 pipeline 计算的值
-- 有 `skipped_agents` 的节 → 加 ⚠️ 标注
-- 修改建议按 🏢 商业条款 / ⚖️ 律师修改 两轨分组
-- 单方委托模式 → 对委托方不利的条款加 ⚡
+- 有 `skipped_agents` 的节 → 在报告说明中列明
+- 修改建议按 [商业决策] / [起草技术] 两轨分组
+- 单方委托模式 → 风险只按委托方风险敞口判断，不得把对方风险误判为委托方重大风险
 
 ---
 
@@ -231,12 +242,8 @@ python3 ~/.claude/scripts/checkpoint.py save \
 #### 5-A：提取项目名称
 从合同名称提取简洁标识（去掉"有限公司"等后缀），最长 10 字。
 
-#### 5-B：写入临时 Markdown 文件
-```bash
-cat << 'REPORT_EOF' > /tmp/falv_report_temp.md
-（完整报告内容）
-REPORT_EOF
-```
+#### 5-B：确认 Markdown 文件
+Step 4 已生成 `/tmp/falv_report_temp.md`。如 Claude 做了有限润色，应覆盖该文件后再生成 Word。
 
 #### 5-C：生成 Word
 ```bash

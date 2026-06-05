@@ -31,9 +31,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │   ├── yi-wu-jie-xi.md        # 权利义务解析 Agent
 │   └── jian-yi-yin-qing.md    # 修改建议 Agent
 scripts/
-└── generate_pdf.py            # ReportLab PDF 报告生成
-templates/
-└── report_template.py         # 报告模板
+├── pipeline.py                # Python 控制流：类型识别、DAG 调度、校验、评分
+├── render_report.py           # 固定法律 issue list Markdown 渲染
+├── generate_docx.py           # Word 报告生成
+├── generate_pdf.py            # ReportLab PDF 报告生成
+└── checkpoint.py              # 检查点保存与恢复
 install.sh                     # 一键安装所有技能和 Agent
 uninstall.sh                   # 一键卸载
 ```
@@ -66,7 +68,15 @@ pip3 install reportlab
 
 ## Agent 架构
 
-`/falv shencha`（旗舰命令）采用**扇出 → 并行专项分析 → 汇总**模式，五个专项 Agent 并发运行：
+`/falv shencha`（旗舰命令）采用 **Claude Code UI + Python 显式控制流 + Agent 专项分析** 架构。
+
+执行顺序为三阶段 DAG：
+
+1. 条款分析师先运行，建立条款索引。
+2. 风险评估师、合规检查员、权利义务解析并行运行，并接收压缩后的条款索引。
+3. 修改建议引擎最后运行，并接收风险与合规结果。
+
+Python 控制层负责类型识别、当事方抽取、Agent schema 校验、失败重试、上游上下文压缩、综合评分和法条引用检查。Claude Code 主要负责交互确认和有限文字润色。
 
 | Agent | 职责 | 权重 |
 |---|---|---|
@@ -77,6 +87,8 @@ pip3 install reportlab
 | 修改建议引擎 | 生成具体的修改方案 | 20% |
 
 最终输出**合同安全评分**（0–100）和结构化报告。
+
+报告由 `render_report.py` 先渲染为固定 Markdown issue list，再由 `generate_docx.py` 保存为 Word 文件。
 
 ---
 
@@ -120,5 +132,6 @@ Agent 定义文件（`.claude/agents/*.md`）须包含：
 
 - **法条引用优先**：每个风险点或修改建议必须关联具体法条（如"《民法典》第五百零九条"），不做无依据的断言
 - **地域适用性**：默认适用中国大陆法律；涉港澳台或跨境情形时明确标注适用法域
-- **中立立场**：审查合同时平等分析甲乙双方条款，标注对哪方不利
+- **立场优先**：单方委托审查必须先确认具体代表方；多方协议不得接受"甲方/乙方"作为最终立场
+- **受益方判断**：先判断条款保护谁，再判断该条款是否构成委托方真实风险敞口，避免把对方风险误判为委托方重大风险
 - **边界声明**：每次输出末尾须注明"本分析仅供参考，不构成正式法律意见"
