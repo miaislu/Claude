@@ -5,7 +5,7 @@
 设计原则：
 
 - 本地库只作为可审计缓存，不宣称覆盖全部法律。
-- 上游来源优先为国家法律法规数据库；北大法宝作为后续 MCP/API 接入候选。
+- 上游来源优先为国家法律法规数据库；北大法宝 MCP 已注册到 Claude Code 用户级配置，需设置 `PKULAW_ACCESS_TOKEN` 后才能实际调用。
 - 每条法条必须记录 `last_verified_at`、`source_name`、`source_url` 和 `verification_cycle_days`。
 - 超过校验周期的条文标记为 `stale`，不能静默视为已确认现行有效。
 - 未收录条文标记为 `unknown`，提示人工复核。
