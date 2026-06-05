@@ -44,7 +44,7 @@ ROUTING: dict[str, dict] = {
     },
     "数据处理协议": {
         "keywords": ["个人信息", "数据处理", "数据共享", "PIPL", "数据安全", "隐私政策",
-                     "处理目的", "数据主体"],
+                     "处理目的", "数据主体", "跨境传输", "境外接收方", "标准合同"],
         "context":  "data.md",
         "parties":  ["委托方（数据控制者）", "受托方（处理者）", "平衡分析"],
     },
@@ -211,6 +211,7 @@ class AnalysisResults:
     agent_results: list       # List[AgentResult as dict]
     skipped_agents: list      # 失败的 Agent 名称
     citation_warnings: list   # 法条引用警告
+    security_preflight: dict  # 审查前本地保密预检结果
     guidelines: str           # _guidelines.md 内容（提供给 Claude 格式化用）
     context_content: str      # 专项 context 文件内容
     elapsed_total: float
@@ -818,6 +819,14 @@ async def _run_analyze(args):
     for r in results:
         for warning in r.citation_warnings:
             citation_warnings.append({"agent": r.agent_name, "warning": warning})
+    security_preflight = {}
+    if args.security_preflight:
+        preflight_path = Path(args.security_preflight).expanduser()
+        if preflight_path.exists():
+            try:
+                security_preflight = json.loads(preflight_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                security_preflight = {"error": f"无法解析预检结果：{preflight_path}"}
 
     # 提取项目名称（供报告命名用）
     project_name = re.sub(
@@ -834,6 +843,7 @@ async def _run_analyze(args):
         agent_results   = [asdict(r) for r in results],
         skipped_agents  = skipped,
         citation_warnings = citation_warnings,
+        security_preflight = security_preflight,
         guidelines      = guidelines,
         context_content = context_content,
         elapsed_total   = elapsed,
@@ -879,6 +889,8 @@ def main():
                        help="agents 目录路径")
     p_ana.add_argument("--output",       default="/tmp/falv_results.json",
                        help="分析结果 JSON 输出路径")
+    p_ana.add_argument("--security-preflight", default="",
+                       help="security_preflight.py 输出的 JSON 文件路径（可选）")
 
     args = parser.parse_args()
 

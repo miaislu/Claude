@@ -67,11 +67,66 @@ IF 文本 > 30,000 字  → 告知用户合同较长，继续执行（各 Agent 
 
 ---
 
+### ◆ Step 0.5：保密与敏感信息预检（本地执行，不调用 API）
+
+```bash
+python3 ~/.claude/scripts/security_preflight.py \
+  --contract /tmp/falv_contract.txt > /tmp/falv_security_preflight.json
+```
+
+输出 JSON 示例：
+
+```json
+{
+  "confidentiality_level": "HIGH",
+  "sensitive_items": [{"type": "身份证号", "count": 1}],
+  "keyword_hits": [{"category": "融资/股权", "keywords": ["股东协议", "估值"]}],
+  "requires_user_confirmation": true,
+  "recommended_mode": "redacted_review",
+  "message": "检测到HIGH级敏感信息..."
+}
+```
+
+**显式分支：**
+
+```
+IF confidentiality_level = "LOW":
+  → 设置 FALV_REVIEW_CONTRACT=/tmp/falv_contract.txt，继续
+
+IF confidentiality_level = "MEDIUM" or "HIGH":
+  → 必须提示用户：
+    "检测到本文件可能包含敏感信息：[列出 sensitive_items / keyword_hits]。
+     请选择：
+       A. 直接审查
+       B. 先脱敏再审查
+       C. 取消"
+  → 不得自行选择默认项
+
+  IF 用户选择 A:
+    → 设置 FALV_REVIEW_CONTRACT=/tmp/falv_contract.txt，继续
+
+  IF 用户选择 B:
+    → 执行本地脱敏：
+      python3 ~/.claude/scripts/redact_contract.py \
+        --contract /tmp/falv_contract.txt \
+        --output   /tmp/falv_contract_redacted.txt \
+        --map      ~/Documents/Claude/projects/falv-agent/reports/redaction_map_YYYYMMDD_HHMM.json
+    → 设置 FALV_REVIEW_CONTRACT=/tmp/falv_contract_redacted.txt，继续
+    → 告知用户：映射表为敏感文件，仅本地保存，不进入报告正文
+
+  IF 用户选择 C:
+    → 停止审查
+```
+
+后续 Step 1 / Step 3 均使用 `$FALV_REVIEW_CONTRACT`，不直接使用 `/tmp/falv_contract.txt`。
+
+---
+
 ### ◆ Step 1：类型检测（Python 代码，非 LLM 判断）
 
 ```bash
 python3 ~/.claude/scripts/pipeline.py detect \
-  --contract /tmp/falv_contract.txt
+  --contract "$FALV_REVIEW_CONTRACT"
 ```
 
 输出 JSON：
@@ -163,11 +218,12 @@ ELIF 用户未传入 --party:
 
 ```bash
 python3 ~/.claude/scripts/pipeline.py analyze \
-  --contract      /tmp/falv_contract.txt \
+  --contract      "$FALV_REVIEW_CONTRACT" \
   --type          "<合同类型>" \
   --party         "<立场>" \
   --context-file  "<来自 detect 的 context_file>" \
   --agents-dir    ~/.claude/agents \
+  --security-preflight /tmp/falv_security_preflight.json \
   --output        /tmp/falv_results.json
 ```
 

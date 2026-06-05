@@ -32,6 +32,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │   └── jian-yi-yin-qing.md    # 修改建议 Agent
 scripts/
 ├── pipeline.py                # Python 控制流：类型识别、DAG 调度、校验、评分
+├── security_preflight.py      # 审查前本地保密与敏感信息预检
+├── redact_contract.py         # 本地脱敏与映射表生成
 ├── render_report.py           # 固定法律 issue list Markdown 渲染
 ├── eval_runner.py             # 本地回归评测：detect / render 确定性环节
 ├── generate_docx.py           # Word 报告生成
@@ -86,6 +88,20 @@ python3 scripts/eval_runner.py --case barley_sha_founder_j
 - 固定 Markdown 报告是否保留 issue list 结构和法条警告
 
 新增测试样本时，在 `evals/cases/<case_name>/` 下放置 `contract.txt` 和 `case.json`。
+
+---
+
+## 保密与合规产品机制
+
+`/falv shencha` 在提取文本后、类型识别前运行 `security_preflight.py`。该脚本只在本地扫描敏感信息，不调用 API。
+
+当预检结果为 `MEDIUM` 或 `HIGH` 时，必须让用户选择：
+
+1. 直接审查
+2. 先脱敏再审查
+3. 取消
+
+脱敏由 `redact_contract.py` 完成，输出脱敏文本和本地映射表。映射表属于敏感文件，不进入报告正文，也不应提交 Git。
 
 ---
 

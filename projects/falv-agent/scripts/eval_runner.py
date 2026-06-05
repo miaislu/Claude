@@ -26,6 +26,7 @@ CASES_DIR = ROOT / "evals" / "cases"
 FIXTURES_DIR = ROOT / "evals" / "fixtures"
 PIPELINE = ROOT / "scripts" / "pipeline.py"
 RENDER_REPORT = ROOT / "scripts" / "render_report.py"
+SECURITY_PREFLIGHT = ROOT / "scripts" / "security_preflight.py"
 
 
 @dataclass
@@ -102,6 +103,25 @@ def eval_detect_case(case_dir: Path) -> CaseResult:
 
     ok, details = contains_all(detected.get("matched_keywords", []), case.get("must_match_keywords", []))
     add_check(checks, "matched_keywords", ok, details)
+
+    if case.get("expected_preflight_level"):
+        preflight = run_json([sys.executable, str(SECURITY_PREFLIGHT), "--contract", str(contract_path)])
+        add_check(
+            checks,
+            "preflight_level",
+            preflight.get("confidentiality_level") == case.get("expected_preflight_level"),
+            f"got={preflight.get('confidentiality_level')} expected={case.get('expected_preflight_level')}",
+        )
+        ok, details = contains_all(
+            [item.get("type") for item in preflight.get("sensitive_items", [])],
+            case.get("must_detect_sensitive_types", []),
+        )
+        add_check(checks, "preflight_sensitive_types", ok, details)
+        ok, details = contains_all(
+            [item.get("category") for item in preflight.get("keyword_hits", [])],
+            case.get("must_detect_keyword_categories", []),
+        )
+        add_check(checks, "preflight_keyword_categories", ok, details)
 
     return CaseResult(
         name=case.get("name", case_dir.name),

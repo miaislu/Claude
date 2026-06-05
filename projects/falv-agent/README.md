@@ -37,3 +37,22 @@ evals/
 - 合同类型和 context 路由必须稳定。
 - 报告渲染必须保持严格法律 issue list 格式。
 - 法条引用警告必须出现在报告中。
+
+## 保密预检与脱敏
+
+审查前可本地扫描敏感信息：
+
+```bash
+python3 scripts/security_preflight.py --contract /tmp/falv_contract.txt
+```
+
+如需先脱敏再审查：
+
+```bash
+python3 scripts/redact_contract.py \
+  --contract /tmp/falv_contract.txt \
+  --output /tmp/falv_contract_redacted.txt \
+  --map reports/redaction_map_YYYYMMDD_HHMM.json
+```
+
+脱敏映射表属于敏感文件，只应本地保存，不应进入报告正文或提交 Git。

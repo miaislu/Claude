@@ -1,0 +1,15 @@
+{
+  "name": "Data processing confidentiality",
+  "contract_path": "contract.txt",
+  "expected_contract_type": "数据处理协议",
+  "expected_context_file": "data.md",
+  "expected_confidence": "HIGH",
+  "expected_multipartite": false,
+  "must_identify_parties": ["北京客户科技有限公司", "上海数据服务有限公司"],
+  "must_offer_party_options": ["北京客户科技有限公司", "上海数据服务有限公司", "平衡分析"],
+  "must_match_keywords": ["个人信息", "数据处理", "跨境传输"],
+  "expected_preflight_level": "HIGH",
+  "must_detect_sensitive_types": [],
+  "must_detect_keyword_categories": ["商业秘密", "个人信息", "跨境数据"],
+  "description": "数据处理和保密协议应触发高敏预检，并路由至数据处理协议。"
+}

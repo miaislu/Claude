@@ -184,18 +184,67 @@ def render(data: dict) -> str:
             lines.append(str(item.get("suggested_text")))
             lines.append("```")
 
+    add_confidentiality_section(lines, data, hegui)
+
     warnings = data.get("citation_warnings", [])
     if warnings:
-        add_section(lines, "六、法条引用校验提示")
+        add_section(lines, "七、法条引用校验提示")
         for item in warnings:
             lines.append(f"- {item.get('agent', '')}：{item.get('warning', '')}")
 
-    add_section(lines, "七、审查说明")
+    add_section(lines, "八、审查说明")
     lines.extend([
         "本报告为基于所提供文本生成的法律审查意见要点草稿，仅用于内部讨论和律师复核。",
         "涉及交易价格、控制权安排、商业谈判底线或风险接受度的事项，应由业务方结合交易目标作出商业决策。",
     ])
     return "\n".join(lines).strip() + "\n"
+
+
+def add_confidentiality_section(lines: list, data: dict, hegui: dict):
+    preflight = data.get("security_preflight", {})
+    check = hegui.get("compliance_check", {}) if isinstance(hegui, dict) else {}
+    special = check.get("confidentiality_and_data_review", {}) if isinstance(check, dict) else {}
+
+    if not preflight and not special:
+        return
+
+    add_section(lines, "六、保密与数据合规专项提示")
+
+    if preflight:
+        lines.append("### （一）文件处理层面的敏感信息提示")
+        lines.append(f"- 敏感等级：{preflight.get('confidentiality_level', '')}")
+        if preflight.get("recommended_mode"):
+            lines.append(f"- 建议处理模式：{preflight.get('recommended_mode')}")
+        sensitive_items = preflight.get("sensitive_items", [])
+        if sensitive_items:
+            lines.append("- 识别到的敏感信息：")
+            for item in sensitive_items:
+                lines.append(f"  - {item.get('type', '')}：{item.get('count', 0)}处")
+        keyword_hits = preflight.get("keyword_hits", [])
+        if keyword_hits:
+            lines.append("- 敏感类别关键词：")
+            for item in keyword_hits:
+                lines.append(f"  - {item.get('category', '')}：{fmt_list_value(item.get('keywords', []))}")
+
+    if special:
+        lines.append("")
+        lines.append("### （二）合同条款层面的保密与数据合规提示")
+        for key, label in [
+            ("document_sensitivity", "文件敏感等级"),
+            ("confidentiality_clause_status", "保密条款状态"),
+            ("personal_information_involved", "是否涉及个人信息"),
+            ("cross_border_transfer_involved", "是否涉及跨境传输"),
+        ]:
+            if key in special:
+                lines.append(f"- {label}：{special.get(key)}")
+        issues = special.get("issues", [])
+        if isinstance(issues, list) and issues:
+            lines.append("- 专项问题：")
+            for issue in issues:
+                if isinstance(issue, dict):
+                    lines.append(f"  - {issue.get('item', '')}；依据：{issue.get('basis', '')}；建议：{issue.get('suggestion', '')}")
+                else:
+                    lines.append(f"  - {issue}")
 
 
 def main():
