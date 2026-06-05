@@ -1,5 +1,11 @@
 {
   "input": "citation_check_input.txt",
   "must_have_status": ["deprecated", "unknown"],
-  "must_include": ["《合同法》第六十条", "《民法典》第九百九十九条"]
+  "must_include": [
+    "《合同法》第六十条",
+    "《民法典》第九百九十九条",
+    "《个人信息保护法》第二十一条",
+    "《劳动合同法》第二十四条",
+    "《电子商务法》第三十五条"
+  ]
 }

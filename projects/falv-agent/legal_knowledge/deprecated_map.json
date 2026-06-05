@@ -36,6 +36,24 @@
       "effective_until": "2020-12-31",
       "replaced_by": "民法典侵权责任编",
       "message": "《侵权责任法》已被《民法典》侵权责任编整合。"
+    },
+    "婚姻法": {
+      "status": "deprecated",
+      "effective_until": "2020-12-31",
+      "replaced_by": "民法典婚姻家庭编",
+      "message": "《婚姻法》已被《民法典》婚姻家庭编整合。"
+    },
+    "继承法": {
+      "status": "deprecated",
+      "effective_until": "2020-12-31",
+      "replaced_by": "民法典继承编",
+      "message": "《继承法》已被《民法典》继承编整合。"
+    },
+    "收养法": {
+      "status": "deprecated",
+      "effective_until": "2020-12-31",
+      "replaced_by": "民法典婚姻家庭编",
+      "message": "《收养法》已被《民法典》婚姻家庭编整合。"
     }
   }
 }

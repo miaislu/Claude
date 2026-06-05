@@ -8,8 +8,18 @@
       "law": "民法典",
       "article": "第一百四十三条",
       "title": "民事法律行为有效条件",
-      "keywords": ["主体资格", "真实意思表示", "强制性规定", "公序良俗", "合同效力"],
-      "scenarios": ["合同效力", "主体资格", "意思表示"],
+      "keywords": [
+        "主体资格",
+        "真实意思表示",
+        "强制性规定",
+        "公序良俗",
+        "合同效力"
+      ],
+      "scenarios": [
+        "合同效力",
+        "主体资格",
+        "意思表示"
+      ],
       "status": "current",
       "effective_from": "2021-01-01",
       "last_verified_at": "2026-06-05",
@@ -22,8 +32,17 @@
       "law": "民法典",
       "article": "第一百五十三条",
       "title": "违反强制性规定及违背公序良俗的效力",
-      "keywords": ["强制性规定", "公序良俗", "无效", "合同无效"],
-      "scenarios": ["合同无效", "强制性规定", "公序良俗"],
+      "keywords": [
+        "强制性规定",
+        "公序良俗",
+        "无效",
+        "合同无效"
+      ],
+      "scenarios": [
+        "合同无效",
+        "强制性规定",
+        "公序良俗"
+      ],
       "status": "current",
       "effective_from": "2021-01-01",
       "last_verified_at": "2026-06-05",
@@ -36,8 +55,16 @@
       "law": "民法典",
       "article": "第四百九十六条",
       "title": "格式条款定义与提示说明义务",
-      "keywords": ["格式条款", "提示说明", "免除责任", "加重责任"],
-      "scenarios": ["格式条款", "提示说明义务"],
+      "keywords": [
+        "格式条款",
+        "提示说明",
+        "免除责任",
+        "加重责任"
+      ],
+      "scenarios": [
+        "格式条款",
+        "提示说明义务"
+      ],
       "status": "current",
       "effective_from": "2021-01-01",
       "last_verified_at": "2026-06-05",
@@ -50,8 +77,17 @@
       "law": "民法典",
       "article": "第四百九十七条",
       "title": "格式条款无效情形",
-      "keywords": ["格式条款", "无效", "免除责任", "加重对方责任", "排除主要权利"],
-      "scenarios": ["格式条款无效", "免责条款"],
+      "keywords": [
+        "格式条款",
+        "无效",
+        "免除责任",
+        "加重对方责任",
+        "排除主要权利"
+      ],
+      "scenarios": [
+        "格式条款无效",
+        "免责条款"
+      ],
       "status": "current",
       "effective_from": "2021-01-01",
       "last_verified_at": "2026-06-05",
@@ -64,8 +100,17 @@
       "law": "民法典",
       "article": "第五百零九条",
       "title": "合同履行原则",
-      "keywords": ["全面履行", "诚信原则", "合同履行", "协作义务"],
-      "scenarios": ["合同履行", "诚信原则", "附随义务"],
+      "keywords": [
+        "全面履行",
+        "诚信原则",
+        "合同履行",
+        "协作义务"
+      ],
+      "scenarios": [
+        "合同履行",
+        "诚信原则",
+        "附随义务"
+      ],
       "status": "current",
       "effective_from": "2021-01-01",
       "last_verified_at": "2026-06-05",
@@ -78,8 +123,18 @@
       "law": "民法典",
       "article": "第五百三十三条",
       "title": "情势变更",
-      "keywords": ["情势变更", "不可预见", "继续履行", "显失公平", "变更解除"],
-      "scenarios": ["情势变更", "合同变更", "合同解除"],
+      "keywords": [
+        "情势变更",
+        "不可预见",
+        "继续履行",
+        "显失公平",
+        "变更解除"
+      ],
+      "scenarios": [
+        "情势变更",
+        "合同变更",
+        "合同解除"
+      ],
       "status": "current",
       "effective_from": "2021-01-01",
       "last_verified_at": "2026-06-05",
@@ -92,23 +147,46 @@
       "law": "民法典",
       "article": "第五百八十五条",
       "title": "违约金约定与调整",
-      "keywords": ["违约金", "过高", "过低", "实际损失", "调整", "赔偿"],
-      "scenarios": ["违约金过高", "违约责任", "损失赔偿"],
+      "keywords": [
+        "违约金",
+        "过高",
+        "过低",
+        "实际损失",
+        "调整",
+        "赔偿"
+      ],
+      "scenarios": [
+        "违约金过高",
+        "违约责任",
+        "损失赔偿"
+      ],
       "status": "current",
       "effective_from": "2021-01-01",
       "last_verified_at": "2026-06-05",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
       "source_url": "https://flk.npc.gov.cn/",
-      "replaces": ["合同法第一百一十四条"]
+      "replaces": [
+        "合同法第一百一十四条"
+      ]
     },
     {
       "id": "labor_contract_law_17",
       "law": "劳动合同法",
       "article": "第十七条",
       "title": "劳动合同必备条款",
-      "keywords": ["劳动合同", "必备条款", "工作内容", "工作地点", "劳动报酬", "社会保险"],
-      "scenarios": ["劳动合同必备条款", "劳动合同审查"],
+      "keywords": [
+        "劳动合同",
+        "必备条款",
+        "工作内容",
+        "工作地点",
+        "劳动报酬",
+        "社会保险"
+      ],
+      "scenarios": [
+        "劳动合同必备条款",
+        "劳动合同审查"
+      ],
       "status": "current",
       "effective_from": "2008-01-01",
       "last_verified_at": "2026-06-05",
@@ -121,8 +199,21 @@
       "law": "个人信息保护法",
       "article": "第二十一条",
       "title": "委托处理个人信息",
-      "keywords": ["委托处理", "个人信息", "处理目的", "处理方式", "受托方", "转委托", "删除", "返还"],
-      "scenarios": ["数据处理协议", "委托处理个人信息", "DPA"],
+      "keywords": [
+        "委托处理",
+        "个人信息",
+        "处理目的",
+        "处理方式",
+        "受托方",
+        "转委托",
+        "删除",
+        "返还"
+      ],
+      "scenarios": [
+        "数据处理协议",
+        "委托处理个人信息",
+        "DPA"
+      ],
       "status": "current",
       "effective_from": "2021-11-01",
       "last_verified_at": "2026-06-05",
@@ -135,8 +226,19 @@
       "law": "个人信息保护法",
       "article": "第三十八条",
       "title": "个人信息跨境提供条件",
-      "keywords": ["跨境", "境外", "安全评估", "个人信息保护认证", "标准合同", "境外接收方"],
-      "scenarios": ["个人信息跨境传输", "数据出境", "标准合同"],
+      "keywords": [
+        "跨境",
+        "境外",
+        "安全评估",
+        "个人信息保护认证",
+        "标准合同",
+        "境外接收方"
+      ],
+      "scenarios": [
+        "个人信息跨境传输",
+        "数据出境",
+        "标准合同"
+      ],
       "status": "current",
       "effective_from": "2021-11-01",
       "last_verified_at": "2026-06-05",
@@ -149,10 +251,1553 @@
       "law": "公司法",
       "article": "第八十四条",
       "title": "有限责任公司股权转让",
-      "keywords": ["股权转让", "优先购买权", "股东", "转让"],
-      "scenarios": ["股权转让", "优先购买权", "投资协议"],
+      "keywords": [
+        "股权转让",
+        "优先购买权",
+        "股东",
+        "转让"
+      ],
+      "scenarios": [
+        "股权转让",
+        "优先购买权",
+        "投资协议"
+      ],
       "status": "current",
       "effective_from": "2024-07-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_146",
+      "law": "民法典",
+      "article": "第一百四十六条",
+      "title": "虚假意思表示",
+      "keywords": [
+        "虚假意思表示",
+        "通谋",
+        "虚假交易",
+        "无效"
+      ],
+      "scenarios": [
+        "虚假意思表示",
+        "合同无效",
+        "名义交易"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_147",
+      "law": "民法典",
+      "article": "第一百四十七条",
+      "title": "重大误解",
+      "keywords": [
+        "重大误解",
+        "可撤销",
+        "撤销"
+      ],
+      "scenarios": [
+        "重大误解",
+        "可撤销合同"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_148",
+      "law": "民法典",
+      "article": "第一百四十八条",
+      "title": "欺诈可撤销",
+      "keywords": [
+        "欺诈",
+        "可撤销",
+        "诱导"
+      ],
+      "scenarios": [
+        "欺诈",
+        "可撤销合同"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_151",
+      "law": "民法典",
+      "article": "第一百五十一条",
+      "title": "显失公平",
+      "keywords": [
+        "显失公平",
+        "危困",
+        "缺乏判断能力",
+        "可撤销"
+      ],
+      "scenarios": [
+        "显失公平",
+        "可撤销合同"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_188",
+      "law": "民法典",
+      "article": "第一百八十八条",
+      "title": "普通诉讼时效",
+      "keywords": [
+        "诉讼时效",
+        "三年",
+        "请求权"
+      ],
+      "scenarios": [
+        "诉讼时效",
+        "时效期间"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_465",
+      "law": "民法典",
+      "article": "第四百六十五条",
+      "title": "依法成立合同的效力",
+      "keywords": [
+        "依法成立",
+        "合同效力",
+        "受法律保护"
+      ],
+      "scenarios": [
+        "合同效力",
+        "合同约束力"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_470",
+      "law": "民法典",
+      "article": "第四百七十条",
+      "title": "合同主要条款",
+      "keywords": [
+        "合同内容",
+        "标的",
+        "数量",
+        "质量",
+        "价款",
+        "履行期限",
+        "违约责任"
+      ],
+      "scenarios": [
+        "合同条款",
+        "必备内容"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_472",
+      "law": "民法典",
+      "article": "第四百七十二条",
+      "title": "要约",
+      "keywords": [
+        "要约",
+        "内容具体确定",
+        "表明承诺"
+      ],
+      "scenarios": [
+        "要约",
+        "合同成立"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_483",
+      "law": "民法典",
+      "article": "第四百八十三条",
+      "title": "承诺生效与合同成立",
+      "keywords": [
+        "承诺生效",
+        "合同成立"
+      ],
+      "scenarios": [
+        "合同成立",
+        "承诺"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_510",
+      "law": "民法典",
+      "article": "第五百一十条",
+      "title": "合同约定不明的补充",
+      "keywords": [
+        "约定不明",
+        "补充协议",
+        "交易习惯"
+      ],
+      "scenarios": [
+        "条款缺失",
+        "约定不明"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_511",
+      "law": "民法典",
+      "article": "第五百一十一条",
+      "title": "约定不明的履行规则",
+      "keywords": [
+        "质量",
+        "价款",
+        "履行地点",
+        "履行期限",
+        "履行方式",
+        "费用"
+      ],
+      "scenarios": [
+        "约定不明",
+        "履行规则"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_525",
+      "law": "民法典",
+      "article": "第五百二十五条",
+      "title": "同时履行抗辩权",
+      "keywords": [
+        "同时履行",
+        "抗辩权",
+        "拒绝履行"
+      ],
+      "scenarios": [
+        "付款交付",
+        "同时履行"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_526",
+      "law": "民法典",
+      "article": "第五百二十六条",
+      "title": "先履行抗辩权",
+      "keywords": [
+        "先履行",
+        "后履行",
+        "抗辩权"
+      ],
+      "scenarios": [
+        "付款条件",
+        "先后履行"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_527",
+      "law": "民法典",
+      "article": "第五百二十七条",
+      "title": "不安抗辩权",
+      "keywords": [
+        "不安抗辩",
+        "经营状况恶化",
+        "转移财产",
+        "丧失信用"
+      ],
+      "scenarios": [
+        "履约能力",
+        "不安抗辩"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_543",
+      "law": "民法典",
+      "article": "第五百四十三条",
+      "title": "协议变更合同",
+      "keywords": [
+        "协商一致",
+        "变更合同"
+      ],
+      "scenarios": [
+        "合同变更",
+        "补充协议"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_562",
+      "law": "民法典",
+      "article": "第五百六十二条",
+      "title": "协议解除和约定解除",
+      "keywords": [
+        "合同解除",
+        "协商一致",
+        "解除权"
+      ],
+      "scenarios": [
+        "合同解除",
+        "约定解除"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_563",
+      "law": "民法典",
+      "article": "第五百六十三条",
+      "title": "法定解除",
+      "keywords": [
+        "法定解除",
+        "根本违约",
+        "迟延履行",
+        "不能实现合同目的"
+      ],
+      "scenarios": [
+        "合同解除",
+        "根本违约"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_566",
+      "law": "民法典",
+      "article": "第五百六十六条",
+      "title": "合同解除的效力",
+      "keywords": [
+        "解除",
+        "效力",
+        "恢复原状",
+        "赔偿损失"
+      ],
+      "scenarios": [
+        "解除后果",
+        "返还",
+        "赔偿"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_577",
+      "law": "民法典",
+      "article": "第五百七十七条",
+      "title": "违约责任",
+      "keywords": [
+        "不履行",
+        "履行不符合约定",
+        "违约责任"
+      ],
+      "scenarios": [
+        "违约责任",
+        "继续履行",
+        "赔偿"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_580",
+      "law": "民法典",
+      "article": "第五百八十条",
+      "title": "非金钱债务履行",
+      "keywords": [
+        "非金钱债务",
+        "继续履行",
+        "不能履行"
+      ],
+      "scenarios": [
+        "继续履行",
+        "替代履行"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_582",
+      "law": "民法典",
+      "article": "第五百八十二条",
+      "title": "瑕疵履行责任",
+      "keywords": [
+        "履行不符合约定",
+        "补救措施",
+        "赔偿损失"
+      ],
+      "scenarios": [
+        "质量不合格",
+        "验收",
+        "瑕疵履行"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_584",
+      "law": "民法典",
+      "article": "第五百八十四条",
+      "title": "损害赔偿范围",
+      "keywords": [
+        "损失赔偿",
+        "可得利益",
+        "预见规则"
+      ],
+      "scenarios": [
+        "损失赔偿",
+        "间接损失",
+        "可得利益"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_586",
+      "law": "民法典",
+      "article": "第五百八十六条",
+      "title": "定金",
+      "keywords": [
+        "定金",
+        "债权担保",
+        "实际交付"
+      ],
+      "scenarios": [
+        "定金",
+        "担保"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_587",
+      "law": "民法典",
+      "article": "第五百八十七条",
+      "title": "定金罚则",
+      "keywords": [
+        "定金罚则",
+        "不履行",
+        "债务"
+      ],
+      "scenarios": [
+        "定金罚则",
+        "违约"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_680",
+      "law": "民法典",
+      "article": "第六百八十条",
+      "title": "禁止高利放贷",
+      "keywords": [
+        "高利放贷",
+        "借款利率",
+        "利息"
+      ],
+      "scenarios": [
+        "借款",
+        "利率",
+        "利息上限"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_681",
+      "law": "民法典",
+      "article": "第六百八十一条",
+      "title": "保证合同定义",
+      "keywords": [
+        "保证合同",
+        "保证人",
+        "债务人",
+        "债权人"
+      ],
+      "scenarios": [
+        "保证",
+        "担保"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_686",
+      "law": "民法典",
+      "article": "第六百八十六条",
+      "title": "保证方式",
+      "keywords": [
+        "一般保证",
+        "连带责任保证",
+        "保证方式"
+      ],
+      "scenarios": [
+        "保证方式",
+        "连带保证"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_692",
+      "law": "民法典",
+      "article": "第六百九十二条",
+      "title": "保证期间",
+      "keywords": [
+        "保证期间",
+        "债权人",
+        "保证人"
+      ],
+      "scenarios": [
+        "保证期间",
+        "担保期限"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_1032",
+      "law": "民法典",
+      "article": "第一千零三十二条",
+      "title": "隐私权保护",
+      "keywords": [
+        "隐私",
+        "私生活安宁",
+        "私密信息"
+      ],
+      "scenarios": [
+        "隐私权",
+        "个人隐私"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "civil_code_1034",
+      "law": "民法典",
+      "article": "第一千零三十四条",
+      "title": "个人信息定义",
+      "keywords": [
+        "个人信息",
+        "姓名",
+        "出生日期",
+        "身份证",
+        "生物识别",
+        "住址",
+        "电话"
+      ],
+      "scenarios": [
+        "个人信息定义",
+        "隐私"
+      ],
+      "status": "current",
+      "effective_from": "2021-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "company_law_5",
+      "law": "公司法",
+      "article": "第五条",
+      "title": "公司章程约束力",
+      "keywords": [
+        "公司章程",
+        "公司",
+        "股东",
+        "董事",
+        "监事",
+        "高级管理人员",
+        "约束"
+      ],
+      "scenarios": [
+        "公司章程",
+        "章程冲突"
+      ],
+      "status": "current",
+      "effective_from": "2024-07-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "company_law_57",
+      "law": "公司法",
+      "article": "第五十七条",
+      "title": "股东会职权",
+      "keywords": [
+        "股东会",
+        "职权",
+        "决议",
+        "公司治理"
+      ],
+      "scenarios": [
+        "股东会",
+        "公司治理"
+      ],
+      "status": "current",
+      "effective_from": "2024-07-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "company_law_59",
+      "law": "公司法",
+      "article": "第五十九条",
+      "title": "股东会特别决议",
+      "keywords": [
+        "三分之二",
+        "表决权",
+        "修改章程",
+        "增减注册资本",
+        "合并",
+        "分立",
+        "解散"
+      ],
+      "scenarios": [
+        "特别决议",
+        "公司治理"
+      ],
+      "status": "current",
+      "effective_from": "2024-07-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "company_law_67",
+      "law": "公司法",
+      "article": "第六十七条",
+      "title": "董事会职权",
+      "keywords": [
+        "董事会",
+        "职权",
+        "经营计划",
+        "投资方案"
+      ],
+      "scenarios": [
+        "董事会",
+        "公司治理"
+      ],
+      "status": "current",
+      "effective_from": "2024-07-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "company_law_88",
+      "law": "公司法",
+      "article": "第八十八条",
+      "title": "股权转让后的出资责任",
+      "keywords": [
+        "股权转让",
+        "出资",
+        "未届期",
+        "未实缴"
+      ],
+      "scenarios": [
+        "股权转让",
+        "出资责任"
+      ],
+      "status": "current",
+      "effective_from": "2024-07-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "company_law_89",
+      "law": "公司法",
+      "article": "第八十九条",
+      "title": "异议股东股权收购请求权",
+      "keywords": [
+        "异议股东",
+        "股权收购",
+        "合并",
+        "分立",
+        "转让主要财产"
+      ],
+      "scenarios": [
+        "异议股东",
+        "回购"
+      ],
+      "status": "current",
+      "effective_from": "2024-07-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "company_law_152",
+      "law": "公司法",
+      "article": "第一百五十二条",
+      "title": "董事高管忠实勤勉义务",
+      "keywords": [
+        "忠实义务",
+        "勤勉义务",
+        "董事",
+        "高级管理人员"
+      ],
+      "scenarios": [
+        "董监高义务",
+        "公司治理"
+      ],
+      "status": "current",
+      "effective_from": "2024-07-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "company_law_180",
+      "law": "公司法",
+      "article": "第一百八十条",
+      "title": "控股股东实控人责任",
+      "keywords": [
+        "控股股东",
+        "实际控制人",
+        "指示",
+        "董事",
+        "高级管理人员"
+      ],
+      "scenarios": [
+        "实际控制人",
+        "控股股东责任"
+      ],
+      "status": "current",
+      "effective_from": "2024-07-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "labor_contract_law_19",
+      "law": "劳动合同法",
+      "article": "第十九条",
+      "title": "试用期上限",
+      "keywords": [
+        "试用期",
+        "劳动合同期限",
+        "上限"
+      ],
+      "scenarios": [
+        "试用期",
+        "劳动合同"
+      ],
+      "status": "current",
+      "effective_from": "2008-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "labor_contract_law_20",
+      "law": "劳动合同法",
+      "article": "第二十条",
+      "title": "试用期工资",
+      "keywords": [
+        "试用期工资",
+        "最低工资",
+        "百分之八十"
+      ],
+      "scenarios": [
+        "试用期工资",
+        "劳动报酬"
+      ],
+      "status": "current",
+      "effective_from": "2008-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "labor_contract_law_23",
+      "law": "劳动合同法",
+      "article": "第二十三条",
+      "title": "保密义务与竞业限制",
+      "keywords": [
+        "保密义务",
+        "竞业限制",
+        "补偿"
+      ],
+      "scenarios": [
+        "保密",
+        "竞业限制"
+      ],
+      "status": "current",
+      "effective_from": "2008-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "labor_contract_law_24",
+      "law": "劳动合同法",
+      "article": "第二十四条",
+      "title": "竞业限制人员范围和期限",
+      "keywords": [
+        "竞业限制",
+        "高级管理人员",
+        "高级技术人员",
+        "二年"
+      ],
+      "scenarios": [
+        "竞业限制期限",
+        "竞业人员"
+      ],
+      "status": "current",
+      "effective_from": "2008-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "labor_contract_law_39",
+      "law": "劳动合同法",
+      "article": "第三十九条",
+      "title": "用人单位即时解除",
+      "keywords": [
+        "严重违反",
+        "规章制度",
+        "失职",
+        "舞弊",
+        "解除"
+      ],
+      "scenarios": [
+        "用人单位解除",
+        "过失性解除"
+      ],
+      "status": "current",
+      "effective_from": "2008-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "labor_contract_law_40",
+      "law": "劳动合同法",
+      "article": "第四十条",
+      "title": "无过失性解除",
+      "keywords": [
+        "提前三十日",
+        "医疗期",
+        "不能胜任",
+        "客观情况"
+      ],
+      "scenarios": [
+        "无过失解除",
+        "经济补偿"
+      ],
+      "status": "current",
+      "effective_from": "2008-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "labor_contract_law_47",
+      "law": "劳动合同法",
+      "article": "第四十七条",
+      "title": "经济补偿计算",
+      "keywords": [
+        "经济补偿",
+        "工作年限",
+        "月工资"
+      ],
+      "scenarios": [
+        "经济补偿",
+        "N"
+      ],
+      "status": "current",
+      "effective_from": "2008-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "labor_contract_law_87",
+      "law": "劳动合同法",
+      "article": "第八十七条",
+      "title": "违法解除赔偿金",
+      "keywords": [
+        "违法解除",
+        "赔偿金",
+        "二倍",
+        "经济补偿"
+      ],
+      "scenarios": [
+        "违法解除",
+        "2N"
+      ],
+      "status": "current",
+      "effective_from": "2008-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "pipl_13",
+      "law": "个人信息保护法",
+      "article": "第十三条",
+      "title": "个人信息处理合法依据",
+      "keywords": [
+        "个人信息",
+        "处理",
+        "合法依据",
+        "同意",
+        "合同",
+        "法定义务"
+      ],
+      "scenarios": [
+        "个人信息",
+        "合法依据"
+      ],
+      "status": "current",
+      "effective_from": "2021-11-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "pipl_17",
+      "law": "个人信息保护法",
+      "article": "第十七条",
+      "title": "个人信息处理告知义务",
+      "keywords": [
+        "告知",
+        "处理目的",
+        "处理方式",
+        "个人信息种类",
+        "保存期限"
+      ],
+      "scenarios": [
+        "隐私政策",
+        "告知义务"
+      ],
+      "status": "current",
+      "effective_from": "2021-11-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "pipl_23",
+      "law": "个人信息保护法",
+      "article": "第二十三条",
+      "title": "向其他处理者提供个人信息",
+      "keywords": [
+        "提供",
+        "第三方",
+        "个人信息",
+        "单独同意"
+      ],
+      "scenarios": [
+        "第三方共享",
+        "数据共享"
+      ],
+      "status": "current",
+      "effective_from": "2021-11-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "pipl_28",
+      "law": "个人信息保护法",
+      "article": "第二十八条",
+      "title": "敏感个人信息定义",
+      "keywords": [
+        "敏感个人信息",
+        "生物识别",
+        "宗教",
+        "医疗",
+        "金融",
+        "轨迹",
+        "未成年人"
+      ],
+      "scenarios": [
+        "敏感个人信息"
+      ],
+      "status": "current",
+      "effective_from": "2021-11-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "pipl_29",
+      "law": "个人信息保护法",
+      "article": "第二十九条",
+      "title": "敏感个人信息单独同意",
+      "keywords": [
+        "敏感个人信息",
+        "单独同意",
+        "特定目的",
+        "必要性"
+      ],
+      "scenarios": [
+        "敏感个人信息",
+        "单独同意"
+      ],
+      "status": "current",
+      "effective_from": "2021-11-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "pipl_39",
+      "law": "个人信息保护法",
+      "article": "第三十九条",
+      "title": "向境外提供个人信息告知和同意",
+      "keywords": [
+        "境外提供",
+        "境外接收方",
+        "告知",
+        "单独同意"
+      ],
+      "scenarios": [
+        "跨境传输",
+        "单独同意"
+      ],
+      "status": "current",
+      "effective_from": "2021-11-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "pipl_47",
+      "law": "个人信息保护法",
+      "article": "第四十七条",
+      "title": "个人信息删除",
+      "keywords": [
+        "删除",
+        "保存期限",
+        "处理目的",
+        "撤回同意",
+        "终止服务"
+      ],
+      "scenarios": [
+        "数据删除",
+        "合同终止"
+      ],
+      "status": "current",
+      "effective_from": "2021-11-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "pipl_51",
+      "law": "个人信息保护法",
+      "article": "第五十一条",
+      "title": "个人信息安全保护措施",
+      "keywords": [
+        "安全措施",
+        "管理制度",
+        "加密",
+        "去标识化",
+        "权限管理",
+        "应急预案"
+      ],
+      "scenarios": [
+        "个人信息安全",
+        "安全措施"
+      ],
+      "status": "current",
+      "effective_from": "2021-11-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "data_security_law_27",
+      "law": "数据安全法",
+      "article": "第二十七条",
+      "title": "数据处理安全管理制度",
+      "keywords": [
+        "数据处理",
+        "安全管理制度",
+        "技术措施",
+        "风险监测"
+      ],
+      "scenarios": [
+        "数据安全",
+        "安全措施"
+      ],
+      "status": "current",
+      "effective_from": "2021-09-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "cybersecurity_law_37",
+      "law": "网络安全法",
+      "article": "第三十七条",
+      "title": "关键信息基础设施个人信息和重要数据本地化",
+      "keywords": [
+        "关键信息基础设施",
+        "个人信息",
+        "重要数据",
+        "境内存储",
+        "安全评估"
+      ],
+      "scenarios": [
+        "数据本地化",
+        "数据出境"
+      ],
+      "status": "current",
+      "effective_from": "2017-06-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "anti_unfair_competition_law_9",
+      "law": "反不正当竞争法",
+      "article": "第九条",
+      "title": "商业秘密保护",
+      "keywords": [
+        "商业秘密",
+        "技术信息",
+        "经营信息",
+        "保密措施",
+        "侵犯商业秘密"
+      ],
+      "scenarios": [
+        "商业秘密",
+        "保密条款"
+      ],
+      "status": "current",
+      "effective_from": "2018-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "anti_monopoly_law_18",
+      "law": "反垄断法",
+      "article": "第十八条",
+      "title": "纵向垄断协议",
+      "keywords": [
+        "固定转售价格",
+        "限定最低转售价格",
+        "纵向垄断协议"
+      ],
+      "scenarios": [
+        "分销",
+        "经销",
+        "转售价格"
+      ],
+      "status": "current",
+      "effective_from": "2022-08-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "anti_monopoly_law_22",
+      "law": "反垄断法",
+      "article": "第二十二条",
+      "title": "滥用市场支配地位",
+      "keywords": [
+        "市场支配地位",
+        "不公平高价",
+        "低价",
+        "拒绝交易",
+        "搭售",
+        "差别待遇"
+      ],
+      "scenarios": [
+        "平台经济",
+        "市场支配地位"
+      ],
+      "status": "current",
+      "effective_from": "2022-08-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "ecommerce_law_18",
+      "law": "电子商务法",
+      "article": "第十八条",
+      "title": "个性化推荐与非针对性选项",
+      "keywords": [
+        "个性化推荐",
+        "用户特征",
+        "非针对性选项"
+      ],
+      "scenarios": [
+        "大数据杀熟",
+        "个性化推荐"
+      ],
+      "status": "current",
+      "effective_from": "2019-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "ecommerce_law_35",
+      "law": "电子商务法",
+      "article": "第三十五条",
+      "title": "平台不得不合理限制商家",
+      "keywords": [
+        "平台经营者",
+        "不合理限制",
+        "附加不合理条件",
+        "商家"
+      ],
+      "scenarios": [
+        "平台服务协议",
+        "商家限制"
+      ],
+      "status": "current",
+      "effective_from": "2019-01-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "advertising_law_28",
+      "law": "广告法",
+      "article": "第二十八条",
+      "title": "虚假广告",
+      "keywords": [
+        "虚假广告",
+        "商品服务",
+        "不存在",
+        "不符",
+        "虚假宣传"
+      ],
+      "scenarios": [
+        "广告协议",
+        "虚假广告"
+      ],
+      "status": "current",
+      "effective_from": "2015-09-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "advertising_law_38",
+      "law": "广告法",
+      "article": "第三十八条",
+      "title": "广告代言",
+      "keywords": [
+        "广告代言",
+        "推荐",
+        "证明",
+        "未使用",
+        "未接受服务"
+      ],
+      "scenarios": [
+        "代言",
+        "KOL",
+        "广告"
+      ],
+      "status": "current",
+      "effective_from": "2015-09-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "copyright_law_10",
+      "law": "著作权法",
+      "article": "第十条",
+      "title": "著作权权利内容",
+      "keywords": [
+        "发表权",
+        "署名权",
+        "修改权",
+        "复制权",
+        "发行权",
+        "信息网络传播权"
+      ],
+      "scenarios": [
+        "著作权",
+        "权利内容"
+      ],
+      "status": "current",
+      "effective_from": "2021-06-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "copyright_law_17",
+      "law": "著作权法",
+      "article": "第十七条",
+      "title": "视听作品权利归属",
+      "keywords": [
+        "视听作品",
+        "制作者",
+        "作者",
+        "权利归属"
+      ],
+      "scenarios": [
+        "视频",
+        "广告",
+        "视听作品"
+      ],
+      "status": "current",
+      "effective_from": "2021-06-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "copyright_law_18",
+      "law": "著作权法",
+      "article": "第十八条",
+      "title": "职务作品",
+      "keywords": [
+        "职务作品",
+        "法人",
+        "组织",
+        "作者"
+      ],
+      "scenarios": [
+        "职务作品",
+        "员工创作"
+      ],
+      "status": "current",
+      "effective_from": "2021-06-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "copyright_law_25",
+      "law": "著作权法",
+      "article": "第二十五条",
+      "title": "著作权转让合同",
+      "keywords": [
+        "著作权转让",
+        "合同",
+        "权利种类",
+        "地域",
+        "价金"
+      ],
+      "scenarios": [
+        "著作权转让",
+        "IP合同"
+      ],
+      "status": "current",
+      "effective_from": "2021-06-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "trademark_law_43",
+      "law": "商标法",
+      "article": "第四十三条",
+      "title": "注册商标使用许可",
+      "keywords": [
+        "商标许可",
+        "许可人",
+        "被许可人",
+        "商品质量",
+        "备案"
+      ],
+      "scenarios": [
+        "商标许可",
+        "IP许可"
+      ],
+      "status": "current",
+      "effective_from": "2019-11-01",
+      "last_verified_at": "2026-06-05",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/"
+    },
+    {
+      "id": "patent_law_10",
+      "law": "专利法",
+      "article": "第十条",
+      "title": "专利申请权和专利权转让",
+      "keywords": [
+        "专利申请权",
+        "专利权",
+        "转让",
+        "书面合同",
+        "登记"
+      ],
+      "scenarios": [
+        "专利转让",
+        "IP合同"
+      ],
+      "status": "current",
+      "effective_from": "2021-06-01",
       "last_verified_at": "2026-06-05",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
