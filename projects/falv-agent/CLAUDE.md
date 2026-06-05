@@ -85,6 +85,7 @@ python3 scripts/eval_runner.py --case barley_sha_founder_j
 - 合同类型识别是否正确
 - 多方协议是否抽取具体当事方
 - `available_parties` 是否给出可用于立场确认的具体选项
+- `validate-party` 是否拒绝泛称立场并接受具体当事方
 - 固定 Markdown 报告是否保留 issue list 结构和法条警告
 
 新增测试样本时，在 `evals/cases/<case_name>/` 下放置 `contract.txt` 和 `case.json`。
@@ -102,6 +103,8 @@ python3 scripts/eval_runner.py --case barley_sha_founder_j
 3. 取消
 
 脱敏由 `redact_contract.py` 完成，输出脱敏文本和本地映射表。映射表属于敏感文件，不进入报告正文，也不应提交 Git。
+
+`pipeline.py analyze` 会再次执行立场校验；如果已识别到具体当事方，`甲方`、`乙方`、`投资方`、`委托方`等泛称会被拒绝。
 
 ---
 

@@ -58,6 +58,7 @@ def render(data: dict) -> str:
     hegui = parsed(agents.get("he-gui-jian-cha"))
     yiwu = parsed(agents.get("yi-wu-jie-xi"))
     jianyi = parsed(agents.get("jian-yi-yin-qing"))
+    clause_lookup = build_clause_lookup(tiao)
 
     lines = [
         "# 法律审查意见要点（草稿）",
@@ -109,11 +110,16 @@ def render(data: dict) -> str:
             f"- 风险等级：{degree}",
             f"- 问题类型：{source}",
             f"- 涉及条款：{item.get('clause_id', '')}",
+            f"- 条款位置：{item.get('location') or clause_lookup.get(item.get('clause_id'), {}).get('location', '')}",
             f"- 影响对象：{item.get('affected_party', '')}",
             f"- 法律依据：{item.get('legal_basis', '')}",
             f"- 风险敞口：{item.get('financial_exposure', '')}",
             f"- 触发概率：{item.get('trigger_probability', '')}",
         ])
+        excerpt = item.get("original_text_excerpt") or clause_lookup.get(item.get("clause_id"), {}).get("original_text_excerpt", "")
+        if excerpt:
+            lines.append("- 原文摘录：")
+            lines.append(f"> {excerpt}")
 
     add_section(lines, "三、合规核查")
     check = hegui.get("compliance_check", {})
@@ -177,6 +183,13 @@ def render(data: dict) -> str:
         if item.get("original_text"):
             lines.append("- 原文摘录：")
             lines.append(f"> {item.get('original_text')}")
+        else:
+            excerpt = clause_lookup.get(item.get("clause_id"), {}).get("original_text_excerpt", "")
+            if excerpt:
+                lines.append("- 原文摘录：")
+                lines.append(f"> {excerpt}")
+            elif item.get("no_text_reason"):
+                lines.append(f"- 原文定位说明：{item.get('no_text_reason')}")
         if item.get("suggested_text"):
             lines.append("- 建议修改：")
             lines.append("")
@@ -198,6 +211,17 @@ def render(data: dict) -> str:
         "涉及交易价格、控制权安排、商业谈判底线或风险接受度的事项，应由业务方结合交易目标作出商业决策。",
     ])
     return "\n".join(lines).strip() + "\n"
+
+
+def build_clause_lookup(tiao: dict) -> dict:
+    clauses = tiao.get("clauses", [])
+    if not isinstance(clauses, list):
+        return {}
+    lookup = {}
+    for item in clauses:
+        if isinstance(item, dict) and item.get("id"):
+            lookup[item["id"]] = item
+    return lookup
 
 
 def add_confidentiality_section(lines: list, data: dict, hegui: dict):

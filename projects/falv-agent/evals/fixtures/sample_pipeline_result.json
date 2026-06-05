@@ -35,7 +35,17 @@
           "party_a": "J",
           "party_b": "上海云玡"
         },
-        "clauses": [],
+        "clauses": [
+          {
+            "id": "C007",
+            "category": "创始股东股权兑现",
+            "location": "第7.6条",
+            "summary": "创始人股东离职时触发未兑现股权回购",
+            "original_text_excerpt": "若创始人股东离职，公司或投资人股东有权以人民币1元回购其未兑现股权。",
+            "is_standard_clause": false,
+            "is_format_clause": false
+          }
+        ],
         "total_clauses": 12
       },
       "elapsed_seconds": 0.1
@@ -50,6 +60,7 @@
             "clause_id": "C007",
             "risk_score": 8,
             "risk_description": "创始股东离职回购机制未区分 Good Leaver 和 Bad Leaver",
+            "location": "第7.6条",
             "legal_basis": "《民法典》第五百零九条",
             "financial_exposure": "已兑现股权和未兑现股权价值可能受损",
             "trigger_probability": "中",

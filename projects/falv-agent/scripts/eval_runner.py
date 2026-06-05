@@ -53,6 +53,15 @@ def run_json(cmd: list[str]) -> dict:
         raise RuntimeError(f"输出不是 JSON：{' '.join(cmd)}\n{proc.stdout}") from exc
 
 
+def run_json_with_status(cmd: list[str]) -> tuple[int, dict]:
+    proc = subprocess.run(cmd, text=True, capture_output=True)
+    try:
+        payload = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        payload = {"stdout": proc.stdout, "stderr": proc.stderr}
+    return proc.returncode, payload
+
+
 def contains_all(haystack_values, needles: list[str]) -> tuple[bool, str]:
     haystack = "\n".join(str(v) for v in haystack_values)
     missing = [needle for needle in needles if needle not in haystack]
@@ -103,6 +112,22 @@ def eval_detect_case(case_dir: Path) -> CaseResult:
 
     ok, details = contains_all(detected.get("matched_keywords", []), case.get("must_match_keywords", []))
     add_check(checks, "matched_keywords", ok, details)
+
+    for party in case.get("valid_party_examples", []):
+        code, payload = run_json_with_status([
+            sys.executable, str(PIPELINE), "validate-party",
+            "--contract", str(contract_path),
+            "--party", party,
+        ])
+        add_check(checks, f"valid_party:{party}", code == 0 and payload.get("valid") is True, str(payload))
+
+    for party in case.get("invalid_party_examples", []):
+        code, payload = run_json_with_status([
+            sys.executable, str(PIPELINE), "validate-party",
+            "--contract", str(contract_path),
+            "--party", party,
+        ])
+        add_check(checks, f"invalid_party:{party}", code != 0 and payload.get("valid") is False, str(payload))
 
     if case.get("expected_preflight_level"):
         preflight = run_json([sys.executable, str(SECURITY_PREFLIGHT), "--contract", str(contract_path)])

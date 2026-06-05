@@ -96,6 +96,7 @@
       "category": "价款与支付",
       "location": "第三条",
       "summary": "乙方应在验收合格后30日内支付全款",
+      "original_text_excerpt": "乙方应在验收合格后三十（30）日内向甲方支付合同价款。",
       "is_standard_clause": true,
       "is_format_clause": false
     }

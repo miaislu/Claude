@@ -116,9 +116,11 @@ review_mode    → "单方委托" 时，对委托方不利条款的评分上调 
   "risk_assessment": [
     {
       "clause_id": "C001",
+      "location": "第三条",
       "risk_score": 8,
       "risk_level": "高危",
       "risk_description": "付款条款缺乏验收标准，甲方可能以验收不合格为由拒付款项",
+      "original_text_excerpt": "乙方应在验收合格后30日内支付全款",
       "legal_basis": "《民法典》第五百八十二条",
       "financial_exposure": "合同全额 XXX 万元",
       "trigger_probability": "高",

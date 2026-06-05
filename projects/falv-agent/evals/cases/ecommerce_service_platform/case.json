@@ -8,5 +8,7 @@
   "must_identify_parties": ["北京某某网络科技有限公司", "上海某某商贸有限公司"],
   "must_offer_party_options": ["北京某某网络科技有限公司", "上海某某商贸有限公司", "平衡分析"],
   "must_match_keywords": ["平台", "店铺", "保证金", "技术服务费", "商家"],
+  "valid_party_examples": ["北京某某网络科技有限公司", "上海某某商贸有限公司"],
+  "invalid_party_examples": ["甲方", "乙方"],
   "description": "平台与商家技术服务协议应路由到电商平台服务协议，并保留双方具体名称。"
 }

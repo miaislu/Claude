@@ -128,6 +128,12 @@ AGENT_SCHEMAS = {
     "jian-yi-yin-qing": ["recommendations"],
 }
 
+GENERIC_PARTY_TERMS = {
+    "甲方", "乙方", "丙方", "丁方", "戊方", "对方", "我方", "贵方",
+    "投资方", "投资人", "创始人", "创始人（被投方）", "被投方", "公司", "目标公司",
+    "平台方", "商家", "委托方", "受托方", "平衡",
+}
+
 AGENT_WEIGHTS = {
     "tiao-kuan-fen-xi": 0.20,
     "feng-xian-ping-gu": 0.25,
@@ -288,7 +294,7 @@ def extract_parties(text: str) -> tuple[list, bool]:
         for m in re.finditer(pattern, block):
             raw, alias = m.group(1), m.group(2)
             raw = normalize_space(raw)
-            if any(skip in raw for skip in ["协议", "合同", "以下简称", "鉴于", "身份证号", "统一社会信用代码"]):
+            if any(skip in raw for skip in ["协议", "合同", "以下简称", "鉴于", "身份证号", "统一社会信用代码", "一家依照", "一名中国籍"]):
                 continue
             add_party(parties, raw, alias)
 
@@ -305,7 +311,7 @@ def extract_parties(text: str) -> tuple[list, bool]:
         core = re.sub(r"（.*?）", "", p)
         if core in seen_core:
             continue
-        if any(bad in core for bad in ["陈述", "保证", "条款", "定义", "目录"]):
+        if any(bad in core for bad in ["陈述", "保证", "条款", "定义", "目录", "一家依照", "一名中国籍"]):
             continue
         seen_core.add(core)
         filtered.append(p)
@@ -422,7 +428,97 @@ def validate_agent_output(agent_name: str, parsed: Optional[dict]) -> list:
     for key in AGENT_SCHEMAS.get(agent_name, []):
         if key not in parsed:
             errors.append(f"缺少顶层字段：{key}")
+    errors.extend(validate_agent_deep_schema(agent_name, parsed))
     return errors
+
+
+def validate_agent_deep_schema(agent_name: str, parsed: dict) -> list:
+    errors = []
+    if agent_name == "tiao-kuan-fen-xi":
+        clauses = parsed.get("clauses", [])
+        if not isinstance(clauses, list):
+            return ["clauses 必须为数组"]
+        for idx, item in enumerate(clauses[:80]):
+            if not isinstance(item, dict):
+                errors.append(f"clauses[{idx}] 必须为 object")
+                continue
+            for key in ["id", "category", "location", "summary"]:
+                if not item.get(key):
+                    errors.append(f"clauses[{idx}] 缺少字段：{key}")
+    elif agent_name == "feng-xian-ping-gu":
+        risks = parsed.get("risk_assessment", [])
+        if not isinstance(risks, list):
+            return ["risk_assessment 必须为数组"]
+        for idx, item in enumerate(risks[:50]):
+            if not isinstance(item, dict):
+                errors.append(f"risk_assessment[{idx}] 必须为 object")
+                continue
+            for key in ["clause_id", "risk_score", "risk_description", "legal_basis", "affected_party"]:
+                if item.get(key) in [None, ""]:
+                    errors.append(f"risk_assessment[{idx}] 缺少字段：{key}")
+            score = item.get("risk_score")
+            if not isinstance(score, (int, float)) or score < 0 or score > 10:
+                errors.append(f"risk_assessment[{idx}].risk_score 必须为 0-10 数字")
+    elif agent_name == "he-gui-jian-cha":
+        check = parsed.get("compliance_check", {})
+        if not isinstance(check, dict):
+            return ["compliance_check 必须为 object"]
+        for key in ["overall_status", "applicable_laws", "passed", "failed", "invalid_clauses"]:
+            if key not in check:
+                errors.append(f"compliance_check 缺少字段：{key}")
+    elif agent_name == "yi-wu-jie-xi":
+        for key in ["timeline", "party_a_obligations", "party_b_obligations"]:
+            if not isinstance(parsed.get(key), list):
+                errors.append(f"{key} 必须为数组")
+    elif agent_name == "jian-yi-yin-qing":
+        recs = parsed.get("recommendations", [])
+        if not isinstance(recs, list):
+            return ["recommendations 必须为数组"]
+        for idx, item in enumerate(recs[:50]):
+            if not isinstance(item, dict):
+                errors.append(f"recommendations[{idx}] 必须为 object")
+                continue
+            for key in ["priority", "clause_id", "problem", "legal_basis"]:
+                if item.get(key) in [None, ""]:
+                    errors.append(f"recommendations[{idx}] 缺少字段：{key}")
+            if not item.get("suggested_text") and not item.get("no_text_reason"):
+                errors.append(f"recommendations[{idx}] 需提供 suggested_text 或 no_text_reason")
+    return errors
+
+
+def party_core(label: str) -> str:
+    return re.sub(r"（.*?）|\(.*?\)|\[|\]|【|】|\s+", "", label or "")
+
+
+def validate_party_stance(text: str, party: str) -> dict:
+    det = detect_type(text)
+    party_clean = normalize_space(party)
+    if party_clean == "平衡分析":
+        return {"valid": True, "detected": asdict(det), "message": "平衡分析无需具体当事方。"}
+
+    identified = [p for p in det.identified_parties if p != "平衡分析"]
+    concrete_cores = [party_core(p) for p in identified]
+    party_norm = party_core(party_clean)
+
+    if identified and party_clean in GENERIC_PARTY_TERMS:
+        return {
+            "valid": False,
+            "detected": asdict(det),
+            "message": "已识别到具体当事方，不得使用泛称作为审查立场。",
+            "available_parties": det.available_parties,
+        }
+
+    if identified:
+        matched = any(party_norm and (party_norm in core or core in party_norm) for core in concrete_cores)
+        if not matched:
+            return {
+                "valid": False,
+                "detected": asdict(det),
+                "message": "审查立场未匹配到合同中的具体当事方。",
+                "available_parties": det.available_parties,
+            }
+
+    return {"valid": True, "detected": asdict(det), "message": "审查立场已通过校验。"}
 
 
 def validate_citations(text: str) -> list:
@@ -708,6 +804,17 @@ def cmd_detect(args):
     print(json.dumps(output, ensure_ascii=False, indent=2))
 
 
+def cmd_validate_party(args):
+    contract_path = Path(args.contract).expanduser()
+    if not contract_path.exists():
+        print(json.dumps({"valid": False, "error": f"文件不存在：{contract_path}"}, ensure_ascii=False))
+        sys.exit(1)
+    result = validate_party_stance(load_file(contract_path), args.party)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    if not result.get("valid"):
+        sys.exit(1)
+
+
 # ── 子命令：analyze ────────────────────────────────────────────────────────
 
 def cmd_analyze(args):
@@ -735,6 +842,15 @@ async def _run_analyze(args):
     contract_text = load_file(contract_path, label="合同文件")
     if not contract_text:
         print(json.dumps({"error": "合同文件为空或无法读取"}, ensure_ascii=False))
+        sys.exit(1)
+
+    party_validation = validate_party_stance(contract_text, args.party)
+    if not party_validation.get("valid"):
+        print(json.dumps({
+            "error": "审查立场未通过校验",
+            "message": party_validation.get("message"),
+            "available_parties": party_validation.get("available_parties", []),
+        }, ensure_ascii=False))
         sys.exit(1)
 
     # ── 加载公共资源 ──────────────────────────────────────────────────────
@@ -878,6 +994,11 @@ def main():
     p_det = sub.add_parser("detect", help="识别合同类型（无 LLM，纯代码）")
     p_det.add_argument("--contract", required=True, help="合同文件路径（TXT/MD）")
 
+    # validate-party
+    p_party = sub.add_parser("validate-party", help="校验审查立场是否为合同具体当事方（无 LLM）")
+    p_party.add_argument("--contract", required=True, help="合同文件路径（TXT/MD）")
+    p_party.add_argument("--party", required=True, help="审查立场")
+
     # analyze
     p_ana = sub.add_parser("analyze", help="并发调用 5 个 Agent 完成审查")
     p_ana.add_argument("--contract",     required=True, help="合同文件路径")
@@ -896,6 +1017,8 @@ def main():
 
     if args.command == "detect":
         cmd_detect(args)
+    elif args.command == "validate-party":
+        cmd_validate_party(args)
     elif args.command == "analyze":
         cmd_analyze(args)
     else:

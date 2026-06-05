@@ -216,6 +216,16 @@ ELIF 用户未传入 --party:
 
 ### ◆ Step 3：运行分析管道（Python 驱动，真并发）
 
+先由 Python 强制校验立场，避免 UI 层误传"甲方/乙方/投资方"等泛称：
+
+```bash
+python3 ~/.claude/scripts/pipeline.py validate-party \
+  --contract "$FALV_REVIEW_CONTRACT" \
+  --party    "<立场>"
+```
+
+若返回 `valid=false`，必须停止并要求用户从 `available_parties` 中选择具体当事方。
+
 ```bash
 python3 ~/.claude/scripts/pipeline.py analyze \
   --contract      "$FALV_REVIEW_CONTRACT" \

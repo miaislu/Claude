@@ -3,6 +3,10 @@
 reports/*.docx
 reports/*.pdf
 reports/*.checkpoint.json
+reports/*redaction_map*.json
+reports/*_map_*.json
+reports/*redacted*.txt
+reports/*_redacted_*.txt
 
 # Python
 __pycache__/

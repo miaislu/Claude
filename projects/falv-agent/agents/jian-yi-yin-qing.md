@@ -553,6 +553,7 @@ D. 附件类（影响合同配套执行）
       "legal_basis": "《民法典》第五百八十五条",
       "original_text": "...",
       "suggested_text": "...",
+      "no_text_reason": "",
       "impact_analysis": {
         "party_a": "降低违约金上限，减少潜在赔付风险",
         "party_b": "保障在对方违约时能获得合理赔偿"
