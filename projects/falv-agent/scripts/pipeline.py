@@ -23,7 +23,10 @@ from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from typing import Optional
 
-from anthropic import AsyncAnthropic
+try:
+    from anthropic import AsyncAnthropic
+except ImportError:
+    AsyncAnthropic = None
 
 
 # ── 路由表（从 SKILL.md 迁移到 Python，这是唯一的权威来源）────────────────
@@ -715,6 +718,10 @@ def cmd_analyze(args):
 
 
 async def _run_analyze(args):
+    if AsyncAnthropic is None:
+        print(json.dumps({"error": "未安装 anthropic，无法运行 analyze。请先执行：pip3 install anthropic"}, ensure_ascii=False))
+        sys.exit(1)
+
     agents_dir    = Path(args.agents_dir).expanduser()
     contract_path = Path(args.contract).expanduser()
     output_path   = Path(args.output).expanduser()

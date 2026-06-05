@@ -33,9 +33,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 scripts/
 ├── pipeline.py                # Python 控制流：类型识别、DAG 调度、校验、评分
 ├── render_report.py           # 固定法律 issue list Markdown 渲染
+├── eval_runner.py             # 本地回归评测：detect / render 确定性环节
 ├── generate_docx.py           # Word 报告生成
 ├── generate_pdf.py            # ReportLab PDF 报告生成
 └── checkpoint.py              # 检查点保存与恢复
+evals/
+├── cases/                     # 合同类型识别、当事方抽取等黄金样本
+└── fixtures/                  # 报告渲染 fixture 与断言
 install.sh                     # 一键安装所有技能和 Agent
 uninstall.sh                   # 一键卸载
 ```
@@ -63,6 +67,25 @@ pip3 install reportlab
 /falv hege --type pipl
 /falv qicao --type 劳动合同
 ```
+
+---
+
+## 本地评测
+
+不调用 API 的确定性回归测试：
+
+```bash
+python3 scripts/eval_runner.py
+python3 scripts/eval_runner.py --case barley_sha_founder_j
+```
+
+当前评测覆盖：
+- 合同类型识别是否正确
+- 多方协议是否抽取具体当事方
+- `available_parties` 是否给出可用于立场确认的具体选项
+- 固定 Markdown 报告是否保留 issue list 结构和法条警告
+
+新增测试样本时，在 `evals/cases/<case_name>/` 下放置 `contract.txt` 和 `case.json`。
 
 ---
 

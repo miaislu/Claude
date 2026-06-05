@@ -1,1 +1,39 @@
 # 中国法律 AI Agent
+
+基于 Claude Code 技能系统的中文法律 Agent，聚焦中国大陆法律下的合同审查、合规检查、文件起草和法律文本转写。
+
+## 快速安装
+
+```bash
+bash install.sh
+```
+
+安装后在 Claude Code 中使用：
+
+```text
+/falv shencha 合同.docx
+/falv qicao --type 投资协议
+```
+
+## 本地回归评测
+
+第 8 点质量控制通过 `scripts/eval_runner.py` 落地。该 harness 不调用 API，先固定检测和报告渲染这些确定性环节。
+
+```bash
+python3 scripts/eval_runner.py
+python3 scripts/eval_runner.py --case barley_sha_founder_j
+```
+
+评测样本位于：
+
+```text
+evals/
+├── cases/       # 合同文本 + case.json 断言
+└── fixtures/    # pipeline 结果 fixture + 渲染断言
+```
+
+当前重点防回归：
+- 多方协议必须识别具体当事方，不能只返回“甲方/乙方”或泛称。
+- 合同类型和 context 路由必须稳定。
+- 报告渲染必须保持严格法律 issue list 格式。
+- 法条引用警告必须出现在报告中。

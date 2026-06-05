@@ -1,0 +1,12 @@
+{
+  "name": "Ecommerce service - platform",
+  "contract_path": "contract.txt",
+  "expected_contract_type": "电商平台服务协议",
+  "expected_context_file": "ecommerce-service.md",
+  "expected_confidence": "HIGH",
+  "expected_multipartite": false,
+  "must_identify_parties": ["北京某某网络科技有限公司", "上海某某商贸有限公司"],
+  "must_offer_party_options": ["北京某某网络科技有限公司", "上海某某商贸有限公司", "平衡分析"],
+  "must_match_keywords": ["平台", "店铺", "保证金", "技术服务费", "商家"],
+  "description": "平台与商家技术服务协议应路由到电商平台服务协议，并保留双方具体名称。"
+}

@@ -1,0 +1,115 @@
+{
+  "project_name": "Barley SHA",
+  "contract_type": "投资协议",
+  "party_stance": "J",
+  "review_mode": "单方委托",
+  "overall_score": 72,
+  "skipped_agents": [],
+  "citation_warnings": [
+    {
+      "agent": "feng-xian-ping-gu",
+      "warning": "引用已废止或已被民法典整合的法律：合同法"
+    }
+  ],
+  "agent_results": [
+    {
+      "agent_name": "tiao-kuan-fen-xi",
+      "success": true,
+      "content": "",
+      "parsed": {
+        "basic_info": {
+          "contract_type": "股东协议",
+          "party_a": "J",
+          "party_b": "上海云玡"
+        },
+        "clauses": [],
+        "total_clauses": 12
+      },
+      "elapsed_seconds": 0.1
+    },
+    {
+      "agent_name": "feng-xian-ping-gu",
+      "success": true,
+      "content": "",
+      "parsed": {
+        "risk_assessment": [
+          {
+            "clause_id": "C007",
+            "risk_score": 8,
+            "risk_description": "创始股东离职回购机制未区分 Good Leaver 和 Bad Leaver",
+            "legal_basis": "《民法典》第五百零九条",
+            "financial_exposure": "已兑现股权和未兑现股权价值可能受损",
+            "trigger_probability": "中",
+            "affected_party": "J"
+          }
+        ],
+        "overall_risk_score": 6,
+        "high_risk_count": 1,
+        "medium_risk_count": 0,
+        "low_risk_count": 0
+      },
+      "elapsed_seconds": 0.1
+    },
+    {
+      "agent_name": "he-gui-jian-cha",
+      "success": true,
+      "content": "",
+      "parsed": {
+        "compliance_check": {
+          "overall_status": "基本合规",
+          "applicable_laws": ["民法典", "公司法"],
+          "passed": [],
+          "failed": [],
+          "invalid_clauses": []
+        }
+      },
+      "elapsed_seconds": 0.1
+    },
+    {
+      "agent_name": "yi-wu-jie-xi",
+      "success": true,
+      "content": "",
+      "parsed": {
+        "timeline": [],
+        "party_a_obligations": [
+          {
+            "type": "强制义务",
+            "description": "J 应持续服务并遵守股权兑现安排",
+            "deadline": "持续",
+            "consequence": "触发回购或违约责任"
+          }
+        ],
+        "party_b_obligations": [],
+        "party_a_rights": [],
+        "party_b_rights": [],
+        "imbalance_flags": [],
+        "key_deadlines_summary": "股权兑现期内持续履行"
+      },
+      "elapsed_seconds": 0.1
+    },
+    {
+      "agent_name": "jian-yi-yin-qing",
+      "success": true,
+      "content": "",
+      "parsed": {
+        "recommendations": [
+          {
+            "priority": "必须修改",
+            "clause_id": "C007",
+            "problem": "离职回购缺少 Good/Bad Leaver 区分",
+            "legal_basis": "《民法典》第五百零九条",
+            "original_text": "若创始人股东离职，公司或投资人股东有权以人民币1元回购其未兑现股权。",
+            "suggested_text": "建议区分善意离职与恶意离职，并明确已兑现股权不得以名义价格回购。"
+          }
+        ],
+        "must_fix_count": 1,
+        "strongly_recommended_count": 0,
+        "optional_count": 0
+      },
+      "elapsed_seconds": 0.1
+    }
+  ],
+  "guidelines": "",
+  "context_content": "",
+  "elapsed_total": 0.5
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Barley SHA - founder J",
+  "contract_path": "contract.txt",
+  "expected_contract_type": "投资协议",
+  "expected_context_file": "investment.md",
+  "expected_confidence": "HIGH",
+  "expected_multipartite": true,
+  "must_identify_parties": ["J", "上海云玡", "公司"],
+  "must_offer_party_options": ["J", "上海云玡", "平衡分析"],
+  "must_match_keywords": ["股东协议"],
+  "description": "多方股东协议应抽取具体当事方，避免只让用户选择投资方/创始人这类泛称。"
+}

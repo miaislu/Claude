@@ -1,0 +1,19 @@
+{
+  "input": "sample_pipeline_result.json",
+  "must_include": [
+    "法律审查意见要点（草稿）",
+    "审查立场：J",
+    "Good Leaver",
+    "Bad Leaver",
+    "问题类型：商业决策",
+    "法条引用校验提示",
+    "合同法"
+  ],
+  "must_not_include": [
+    "🏢",
+    "⚖️",
+    "🔴",
+    "🟡",
+    "🟢"
+  ]
+}
