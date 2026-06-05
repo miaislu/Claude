@@ -185,6 +185,8 @@ AGENT_PHASES = [
 
 DEFAULT_AGENTS_DIR = Path("~/.claude/agents").expanduser()
 DEFAULT_MODEL       = "claude-opus-4-5"
+PROJECT_ROOT        = Path(__file__).resolve().parents[1]
+KNOWLEDGE_DIR       = PROJECT_ROOT / "legal_knowledge"
 
 
 # ── 数据结构 ──────────────────────────────────────────────────────────────
@@ -222,6 +224,7 @@ class AnalysisResults:
     agent_results: list       # List[AgentResult as dict]
     skipped_agents: list      # 失败的 Agent 名称
     citation_warnings: list   # 法条引用警告
+    legal_coverage: dict      # 合同类型法条覆盖矩阵
     security_preflight: dict  # 审查前本地保密预检结果
     guidelines: str           # _guidelines.md 内容（提供给 Claude 格式化用）
     context_content: str      # 专项 context 文件内容
@@ -548,6 +551,54 @@ def validate_citations(text: str) -> list:
     return sorted(set(warnings))
 
 
+def load_legal_coverage(contract_type: str) -> dict:
+    """
+    读取合同类型法条覆盖矩阵，作为 Agent 分析前的法律依据基线。
+    失败时只返回 error，不阻断审查主流程。
+    """
+    matrix_path = KNOWLEDGE_DIR / "coverage_matrix.json"
+    citations_path = KNOWLEDGE_DIR / "citations.json"
+    try:
+        matrix = json.loads(matrix_path.read_text(encoding="utf-8"))
+        citations_data = json.loads(citations_path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        return {"status": "missing", "error": f"法条覆盖矩阵或法条库不存在：{exc}"}
+    except json.JSONDecodeError as exc:
+        return {"status": "invalid", "error": f"法条覆盖矩阵或法条库 JSON 无法解析：{exc}"}
+
+    contract_types = matrix.get("contract_types", {})
+    selected_type = contract_type if contract_type in contract_types else "通用"
+    entry = contract_types.get(selected_type)
+    if not entry:
+        return {"status": "missing", "error": "未找到通用法条覆盖基线。"}
+
+    citation_index = {item.get("id"): item for item in citations_data.get("citations", [])}
+    required_ids = entry.get("required_citation_ids", [])
+    missing_ids = [item_id for item_id in required_ids if item_id not in citation_index]
+    required_citations = []
+    for item_id in required_ids:
+        item = citation_index.get(item_id)
+        if not item:
+            continue
+        required_citations.append({
+            "id": item.get("id", ""),
+            "law": item.get("law", ""),
+            "article": item.get("article", ""),
+            "title": item.get("title", ""),
+        })
+
+    return {
+        "status": "matched" if selected_type == contract_type else "fallback",
+        "contract_type": selected_type,
+        "core_laws": entry.get("core_laws", []),
+        "required_citation_ids": required_ids,
+        "required_citations": required_citations,
+        "conditional_topics": entry.get("conditional_topics", {}),
+        "missing_required_ids": missing_ids,
+        "instruction": "审查该类型合同时，应优先检查基础法条覆盖；条件议题仅在合同文本或交易背景触发时适用。",
+    }
+
+
 def compact_agent_result(result: AgentResult) -> dict:
     parsed = result.parsed or {}
     if result.agent_name == "tiao-kuan-fen-xi":
@@ -871,11 +922,13 @@ async def _run_analyze(args):
 
     # ── 构建 session_context ─────────────────────────────────────────────
     review_mode = "平衡分析" if args.party == "平衡分析" else "单方委托"
+    legal_coverage = load_legal_coverage(args.type)
     session_ctx = {
         "contract_type":  args.type,
         "party_stance":   args.party,
         "review_mode":    review_mode,
         "context_file":   args.context_file,
+        "legal_coverage": legal_coverage,
         "strictness": {
             "for_client_party": "严格" if review_mode == "单方委托" else "一般",
             "for_counterparty": "一般",
@@ -971,6 +1024,7 @@ async def _run_analyze(args):
         agent_results   = [asdict(r) for r in results],
         skipped_agents  = skipped,
         citation_warnings = citation_warnings,
+        legal_coverage  = legal_coverage,
         security_preflight = security_preflight,
         guidelines      = guidelines,
         context_content = context_content,

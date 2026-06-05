@@ -1,0 +1,14 @@
+{
+  "min_contract_type_count": 13,
+  "must_include_contract_types": [
+    "投资协议",
+    "数据处理协议",
+    "SaaS云服务协议",
+    "电商平台服务协议"
+  ],
+  "must_have_full_required_coverage": [
+    "投资协议",
+    "数据处理协议",
+    "SaaS云服务协议"
+  ]
+}

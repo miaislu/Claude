@@ -46,6 +46,7 @@ evals/
 ```text
 legal_knowledge/
 ├── citations.json
+├── coverage_matrix.json
 ├── deprecated_map.json
 └── sources.json
 ```
@@ -54,6 +55,12 @@ legal_knowledge/
 
 ```bash
 python3 scripts/legal_citation_check.py --input /tmp/falv_results.json
+```
+
+检查某类合同的基础法条覆盖：
+
+```bash
+python3 scripts/legal_coverage_check.py --type 投资协议 --as-markdown
 ```
 
 人工刷新法条校验日期和来源：

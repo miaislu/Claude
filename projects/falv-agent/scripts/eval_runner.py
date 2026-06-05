@@ -4,6 +4,7 @@ falv-agent 本地回归评测 harness。
 
 当前版本只测试确定性环节，不调用 Anthropic API：
 - pipeline.py detect 的合同类型、当事方、多方协议识别
+- legal_coverage_check.py 的合同类型法条覆盖矩阵
 - render_report.py 的固定 issue list 输出
 
 用法：
@@ -12,6 +13,7 @@ falv-agent 本地回归评测 harness。
 """
 
 import argparse
+import importlib.util
 import json
 import subprocess
 import sys
@@ -28,6 +30,7 @@ PIPELINE = ROOT / "scripts" / "pipeline.py"
 RENDER_REPORT = ROOT / "scripts" / "render_report.py"
 SECURITY_PREFLIGHT = ROOT / "scripts" / "security_preflight.py"
 LEGAL_CITATION_CHECK = ROOT / "scripts" / "legal_citation_check.py"
+LEGAL_COVERAGE_CHECK = ROOT / "scripts" / "legal_coverage_check.py"
 
 
 @dataclass
@@ -61,6 +64,15 @@ def run_json_with_status(cmd: list[str]) -> tuple[int, dict]:
     except json.JSONDecodeError:
         payload = {"stdout": proc.stdout, "stderr": proc.stderr}
     return proc.returncode, payload
+
+
+def load_pipeline_module():
+    spec = importlib.util.spec_from_file_location("falv_pipeline_eval", PIPELINE)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"无法加载 pipeline.py：{PIPELINE}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def contains_all(haystack_values, needles: list[str]) -> tuple[bool, str]:
@@ -200,6 +212,58 @@ def eval_citation_fixture() -> CaseResult:
     return CaseResult(name="legal citation fixture", passed=all(c.passed for c in checks), checks=checks)
 
 
+def eval_coverage_fixture() -> CaseResult:
+    expectations = json.loads((FIXTURES_DIR / "coverage_expectations.json").read_text(encoding="utf-8"))
+    checks: list[CheckResult] = []
+    result = run_json([sys.executable, str(LEGAL_COVERAGE_CHECK)])
+    results_by_type = {item.get("contract_type"): item for item in result.get("results", [])}
+    pipeline = load_pipeline_module()
+    investment_coverage = pipeline.load_legal_coverage("投资协议")
+
+    add_check(
+        checks,
+        "coverage_matrix_ok",
+        result.get("ok") is True,
+        str(result),
+    )
+    add_check(
+        checks,
+        "coverage_contract_type_count",
+        result.get("checked_contract_types", 0) >= expectations.get("min_contract_type_count", 0),
+        f"got={result.get('checked_contract_types')} expected>={expectations.get('min_contract_type_count')}",
+    )
+
+    missing_types = [item for item in expectations.get("must_include_contract_types", []) if item not in results_by_type]
+    add_check(
+        checks,
+        "coverage_must_include_types",
+        not missing_types,
+        "缺少：" + "、".join(missing_types) if missing_types else "",
+    )
+
+    incomplete = []
+    for contract_type in expectations.get("must_have_full_required_coverage", []):
+        item = results_by_type.get(contract_type, {})
+        if item.get("coverage") != 1.0:
+            incomplete.append(f"{contract_type}:{item.get('coverage')}")
+    add_check(
+        checks,
+        "coverage_required_full",
+        not incomplete,
+        "未满覆盖：" + "、".join(incomplete) if incomplete else "",
+    )
+    add_check(
+        checks,
+        "pipeline_legal_coverage_context",
+        investment_coverage.get("status") == "matched"
+        and investment_coverage.get("contract_type") == "投资协议"
+        and "company_law_84" in investment_coverage.get("required_citation_ids", []),
+        str(investment_coverage),
+    )
+
+    return CaseResult(name="legal coverage fixture", passed=all(c.passed for c in checks), checks=checks)
+
+
 def discover_cases(case_filter: Optional[str]) -> list[Path]:
     case_dirs = sorted(path for path in CASES_DIR.iterdir() if (path / "case.json").exists())
     if case_filter:
@@ -228,6 +292,7 @@ def main():
     if not args.case:
         results.append(eval_render_fixture())
         results.append(eval_citation_fixture())
+        results.append(eval_coverage_fixture())
 
     if args.json:
         payload = {
