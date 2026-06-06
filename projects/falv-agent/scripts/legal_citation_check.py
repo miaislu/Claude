@@ -15,10 +15,22 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
+try:
+    from pkulaw_mcp_client import PkulawMcpError, get_law_item_content, summarize_law_item_response
+except ImportError:
+    PkulawMcpError = RuntimeError
+    get_law_item_content = None
+    summarize_law_item_response = None
+
 
 ROOT = Path(__file__).resolve().parents[1]
 KNOWLEDGE_DIR = ROOT / "legal_knowledge"
 CITATION_RE = re.compile(r"《([^》]+)》第([一二三四五六七八九十百千万零〇两]+)条")
+CHINESE_NUMERALS = {
+    "零": 0, "〇": 0, "一": 1, "二": 2, "两": 2, "三": 3, "四": 4,
+    "五": 5, "六": 6, "七": 7, "八": 8, "九": 9,
+}
+CHINESE_UNITS = {"十": 10, "百": 100, "千": 1000, "万": 10000}
 
 
 def load_json(path: Path) -> dict:
@@ -31,6 +43,27 @@ def normalize_law(name: str) -> str:
 
 def normalize_article(raw: str) -> str:
     return f"第{raw}条"
+
+
+def chinese_article_to_number(raw: str) -> Optional[int]:
+    total = 0
+    section = 0
+    number = 0
+    for char in raw:
+        if char in CHINESE_NUMERALS:
+            number = CHINESE_NUMERALS[char]
+        elif char in CHINESE_UNITS:
+            unit = CHINESE_UNITS[char]
+            if unit == 10000:
+                section = (section + number) * unit
+                total += section
+                section = 0
+            else:
+                section += (number or 1) * unit
+            number = 0
+        else:
+            return None
+    return total + section + number
 
 
 def load_knowledge() -> tuple[dict, dict]:
@@ -72,14 +105,36 @@ def topic_match(citation: dict, context: str) -> bool:
     return any(keyword and keyword in context for keyword in keywords)
 
 
-def check_text(text: str) -> dict:
+def pkulaw_verify_law_item(law: str, raw_article: str) -> dict:
+    if get_law_item_content is None:
+        return {"status": "unavailable", "message": "未加载 pkulaw_mcp_client。"}
+    article_number = chinese_article_to_number(raw_article)
+    if article_number is None:
+        return {"status": "unavailable", "message": f"无法解析中文条号：{raw_article}"}
+    try:
+        result = get_law_item_content(law, article_number)
+    except PkulawMcpError as exc:
+        return {"status": "error", "message": str(exc)}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+    return {
+        "status": "verified",
+        "source_name": "北大法宝 MCP",
+        "tool": "get_law_item_content",
+        "query": {"title": law, "tiao_num": article_number},
+        "summary": summarize_law_item_response(result) if summarize_law_item_response else {},
+    }
+
+
+def check_text(text: str, use_pkulaw: bool = False) -> dict:
     citation_index, deprecated = load_knowledge()
     findings = []
     seen = set()
 
     for match in CITATION_RE.finditer(text):
         law = normalize_law(match.group(1))
-        article = normalize_article(match.group(2))
+        raw_article = match.group(2)
+        article = normalize_article(raw_article)
         citation_text = match.group(0)
         dedupe_key = (law, article, match.start())
         if dedupe_key in seen:
@@ -101,14 +156,17 @@ def check_text(text: str) -> dict:
 
         item = citation_index.get((law, article))
         if not item:
-            findings.append({
+            finding = {
                 "citation": citation_text,
                 "law": law,
                 "article": article,
                 "status": "unknown",
                 "level": "warning",
                 "message": "本地结构化法条库未收录该条文，需人工复核；不视为已确认现行有效。",
-            })
+            }
+            if use_pkulaw:
+                finding["upstream_check"] = pkulaw_verify_law_item(law, raw_article)
+            findings.append(finding)
             continue
 
         age = days_since(item.get("last_verified_at"))
@@ -128,7 +186,7 @@ def check_text(text: str) -> dict:
             level = "warning"
             message = "条文已收录且未过期，但上下文关键词弱匹配，建议人工复核适用性。"
 
-        findings.append({
+        finding = {
             "citation": citation_text,
             "law": law,
             "article": article,
@@ -141,7 +199,10 @@ def check_text(text: str) -> dict:
             "verification_cycle_days": cycle,
             "source_name": item.get("source_name", ""),
             "source_url": item.get("source_url", ""),
-        })
+        }
+        if use_pkulaw and status in ["stale", "topic_mismatch"]:
+            finding["upstream_check"] = pkulaw_verify_law_item(law, raw_article)
+        findings.append(finding)
 
     summary = {"current": 0, "stale": 0, "unknown": 0, "deprecated": 0, "topic_mismatch": 0}
     for item in findings:
@@ -155,6 +216,7 @@ def check_text(text: str) -> dict:
             "path": str(KNOWLEDGE_DIR / "citations.json"),
             "checked_at": date.today().isoformat(),
             "upstreams": ["国家法律法规数据库", "北大法宝"],
+            "pkulaw_mcp_enabled": use_pkulaw,
         },
     }
 
@@ -163,6 +225,7 @@ def main():
     parser = argparse.ArgumentParser(description="检查文本或 JSON 中的法条引用")
     parser.add_argument("--input", required=True, help="待检查文件路径（txt/md/json）")
     parser.add_argument("--output", help="输出 JSON 路径；省略则打印到 stdout")
+    parser.add_argument("--use-pkulaw", action="store_true", help="对 unknown/stale/topic_mismatch 条文调用北大法宝 MCP 做上游核验")
     args = parser.parse_args()
 
     path = Path(args.input).expanduser()
@@ -171,7 +234,7 @@ def main():
         text = extract_text_from_json(json.loads(raw))
     else:
         text = raw
-    result = check_text(text)
+    result = check_text(text, use_pkulaw=args.use_pkulaw)
     payload = json.dumps(result, ensure_ascii=False, indent=2)
     if args.output:
         Path(args.output).expanduser().write_text(payload, encoding="utf-8")

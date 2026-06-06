@@ -78,6 +78,13 @@ legal_knowledge/
 python3 scripts/legal_citation_check.py --input /tmp/falv_results.json
 ```
 
+对本地库未收录、过期或弱匹配的条文，可显式调用北大法宝 MCP 做上游核验：
+
+```bash
+python3 scripts/legal_citation_check.py --input /tmp/falv_results.json --use-pkulaw
+python3 scripts/pkulaw_mcp_client.py law-item --title 民法典 --article 585
+```
+
 检查某类合同的基础法条覆盖：
 
 ```bash
@@ -103,6 +110,11 @@ python3 scripts/update_legal_citations.py \
   --id civil_code_585 \
   --verified-at 2026-06-05 \
   --source-url "https://flk.npc.gov.cn/"
+
+python3 scripts/update_legal_citations.py \
+  --id civil_code_585 \
+  --from-pkulaw \
+  --dry-run
 ```
 
 ## 保密预检与脱敏

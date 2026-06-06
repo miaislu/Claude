@@ -36,6 +36,7 @@ scripts/
 ├── redact_contract.py         # 本地脱敏与映射表生成
 ├── render_report.py           # 固定法律 issue list Markdown 渲染
 ├── legal_coverage_check.py    # 合同类型法条覆盖矩阵校验
+├── pkulaw_mcp_client.py       # 北大法宝 MCP 轻量客户端
 ├── usage_log.py               # 去敏使用日志与覆盖缺口汇总
 ├── eval_runner.py             # 本地回归评测：detect / render 确定性环节
 ├── generate_docx.py           # Word 报告生成
@@ -135,6 +136,13 @@ python3 scripts/eval_runner.py --case barley_sha_founder_j
 python3 scripts/legal_citation_check.py --input /tmp/falv_results.json
 ```
 
+显式调用北大法宝 MCP 做上游核验：
+
+```bash
+python3 scripts/legal_citation_check.py --input /tmp/falv_results.json --use-pkulaw
+python3 scripts/pkulaw_mcp_client.py law-item --title 民法典 --article 585
+```
+
 合同类型覆盖矩阵入口：
 
 ```bash
@@ -160,6 +168,11 @@ python3 scripts/update_legal_citations.py \
   --id company_law_84 \
   --verified-at 2026-06-05 \
   --source-url "https://flk.npc.gov.cn/"
+
+python3 scripts/update_legal_citations.py \
+  --id civil_code_585 \
+  --from-pkulaw \
+  --dry-run
 ```
 
 ---
