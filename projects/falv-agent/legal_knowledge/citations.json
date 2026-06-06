@@ -2346,6 +2346,77 @@
       }
     },
     {
+      "id": "anti_monopoly_law_25",
+      "law": "反垄断法",
+      "article": "第二十五条",
+      "title": "经营者集中定义",
+      "keywords": [
+        "经营者集中",
+        "经营者合并",
+        "取得控制权",
+        "决定性影响"
+      ],
+      "scenarios": [
+        "投资并购",
+        "股权收购",
+        "控制权变更",
+        "战略投资"
+      ],
+      "status": "current",
+      "effective_from": "2022-08-01",
+      "last_verified_at": "2026-06-06",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国反垄断法(2022修正)",
+          "pkulaw_article": "25.0",
+          "pkulaw_update_time": "2026.05.27 14:17:42",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d3236788421feacfbdfb.html?way=mcp#tiao_25.0)"
+        }
+      }
+    },
+    {
+      "id": "anti_monopoly_law_26",
+      "law": "反垄断法",
+      "article": "第二十六条",
+      "title": "经营者集中申报义务",
+      "keywords": [
+        "经营者集中",
+        "申报标准",
+        "事先申报",
+        "未申报不得实施",
+        "限制竞争效果"
+      ],
+      "scenarios": [
+        "投资并购",
+        "股权收购",
+        "控制权变更",
+        "交割条件"
+      ],
+      "status": "current",
+      "effective_from": "2022-08-01",
+      "last_verified_at": "2026-06-06",
+      "verification_cycle_days": 90,
+      "source_name": "国家法律法规数据库",
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国反垄断法(2022修正)",
+          "pkulaw_article": "26.0",
+          "pkulaw_update_time": "2026.05.27 14:17:42",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d3236788421feacfbdfb.html?way=mcp#tiao_26.0)"
+        }
+      }
+    },
+    {
       "id": "ecommerce_law_18",
       "law": "电子商务法",
       "article": "第十八条",

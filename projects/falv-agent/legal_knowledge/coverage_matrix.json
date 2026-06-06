@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-06-05",
+  "updated_at": "2026-06-06",
   "description": "合同类型法条覆盖矩阵。用于定义不同合同类型在审查时应具备的本地高频法条基线，不替代具体案情下的法律检索。",
   "coverage_policy": {
     "required_citation_ids": "该合同类型的基础审查通常应覆盖的法条。",
@@ -9,7 +9,9 @@
   },
   "contract_types": {
     "通用": {
-      "core_laws": ["民法典"],
+      "core_laws": [
+        "民法典"
+      ],
       "required_citation_ids": [
         "civil_code_143",
         "civil_code_153",
@@ -22,13 +24,27 @@
         "civil_code_585"
       ],
       "conditional_topics": {
-        "格式条款": ["civil_code_496", "civil_code_497"],
-        "情势变更": ["civil_code_533"],
-        "解除": ["civil_code_562", "civil_code_563", "civil_code_566"]
+        "格式条款": [
+          "civil_code_496",
+          "civil_code_497"
+        ],
+        "情势变更": [
+          "civil_code_533"
+        ],
+        "解除": [
+          "civil_code_562",
+          "civil_code_563",
+          "civil_code_566"
+        ]
       }
     },
     "投资协议": {
-      "core_laws": ["民法典", "公司法"],
+      "core_laws": [
+        "民法典",
+        "公司法",
+        "个人信息保护法",
+        "反垄断法"
+      ],
       "required_citation_ids": [
         "civil_code_143",
         "civil_code_509",
@@ -44,14 +60,45 @@
         "company_law_180"
       ],
       "conditional_topics": {
-        "竞业限制": ["labor_contract_law_23", "labor_contract_law_24"],
-        "个人信息": ["pipl_13", "pipl_21"],
-        "反垄断": ["anti_monopoly_law_18"],
-        "担保": ["civil_code_681", "civil_code_686", "civil_code_692"]
+        "竞业限制": [
+          "labor_contract_law_23",
+          "labor_contract_law_24"
+        ],
+        "担保": [
+          "civil_code_681",
+          "civil_code_686",
+          "civil_code_692"
+        ],
+        "个人信息尽调与披露": [
+          "pipl_13",
+          "pipl_17",
+          "pipl_21",
+          "pipl_23",
+          "pipl_51"
+        ],
+        "敏感个人信息": [
+          "pipl_28",
+          "pipl_29"
+        ],
+        "跨境数据": [
+          "pipl_38",
+          "pipl_39"
+        ],
+        "经营者集中": [
+          "anti_monopoly_law_25",
+          "anti_monopoly_law_26"
+        ],
+        "竞争限制安排": [
+          "anti_monopoly_law_18",
+          "anti_monopoly_law_22"
+        ]
       }
     },
     "劳动合同": {
-      "core_laws": ["劳动合同法", "民法典"],
+      "core_laws": [
+        "劳动合同法",
+        "民法典"
+      ],
       "required_citation_ids": [
         "civil_code_143",
         "labor_contract_law_17",
@@ -65,13 +112,26 @@
         "labor_contract_law_87"
       ],
       "conditional_topics": {
-        "个人信息": ["pipl_13", "pipl_17"],
-        "竞业限制": ["labor_contract_law_23", "labor_contract_law_24"],
-        "违约责任": ["civil_code_577", "civil_code_585"]
+        "个人信息": [
+          "pipl_13",
+          "pipl_17"
+        ],
+        "竞业限制": [
+          "labor_contract_law_23",
+          "labor_contract_law_24"
+        ],
+        "违约责任": [
+          "civil_code_577",
+          "civil_code_585"
+        ]
       }
     },
     "数据处理协议": {
-      "core_laws": ["个人信息保护法", "数据安全法", "网络安全法"],
+      "core_laws": [
+        "个人信息保护法",
+        "数据安全法",
+        "网络安全法"
+      ],
       "required_citation_ids": [
         "pipl_13",
         "pipl_17",
@@ -87,13 +147,26 @@
         "cybersecurity_law_37"
       ],
       "conditional_topics": {
-        "格式条款": ["civil_code_496", "civil_code_497"],
-        "违约责任": ["civil_code_577", "civil_code_584", "civil_code_585"],
-        "商业秘密": ["anti_unfair_competition_law_9"]
+        "格式条款": [
+          "civil_code_496",
+          "civil_code_497"
+        ],
+        "违约责任": [
+          "civil_code_577",
+          "civil_code_584",
+          "civil_code_585"
+        ],
+        "商业秘密": [
+          "anti_unfair_competition_law_9"
+        ]
       }
     },
     "电商平台服务协议": {
-      "core_laws": ["民法典", "电子商务法", "个人信息保护法"],
+      "core_laws": [
+        "民法典",
+        "电子商务法",
+        "个人信息保护法"
+      ],
       "required_citation_ids": [
         "civil_code_496",
         "civil_code_497",
@@ -107,13 +180,26 @@
         "anti_monopoly_law_22"
       ],
       "conditional_topics": {
-        "广告投放": ["advertising_law_28", "advertising_law_38"],
-        "消费者数据": ["pipl_28", "pipl_51"],
-        "知识产权": ["copyright_law_10", "trademark_law_43"]
+        "广告投放": [
+          "advertising_law_28",
+          "advertising_law_38"
+        ],
+        "消费者数据": [
+          "pipl_28",
+          "pipl_51"
+        ],
+        "知识产权": [
+          "copyright_law_10",
+          "trademark_law_43"
+        ]
       }
     },
     "广告协议": {
-      "core_laws": ["民法典", "广告法", "反不正当竞争法"],
+      "core_laws": [
+        "民法典",
+        "广告法",
+        "反不正当竞争法"
+      ],
       "required_citation_ids": [
         "civil_code_509",
         "civil_code_577",
@@ -124,13 +210,26 @@
         "pipl_13"
       ],
       "conditional_topics": {
-        "格式条款": ["civil_code_496", "civil_code_497"],
-        "个人信息委托处理": ["pipl_21", "pipl_23"],
-        "知识产权素材": ["copyright_law_10", "copyright_law_25"]
+        "格式条款": [
+          "civil_code_496",
+          "civil_code_497"
+        ],
+        "个人信息委托处理": [
+          "pipl_21",
+          "pipl_23"
+        ],
+        "知识产权素材": [
+          "copyright_law_10",
+          "copyright_law_25"
+        ]
       }
     },
     "采购合同": {
-      "core_laws": ["民法典"],
+      "core_laws": [
+        "民法典",
+        "个人信息保护法",
+        "反垄断法"
+      ],
       "required_citation_ids": [
         "civil_code_470",
         "civil_code_509",
@@ -143,13 +242,46 @@
         "civil_code_585"
       ],
       "conditional_topics": {
-        "定金": ["civil_code_586", "civil_code_587"],
-        "解除": ["civil_code_562", "civil_code_563", "civil_code_566"],
-        "知识产权": ["copyright_law_10", "trademark_law_43", "patent_law_10"]
+        "定金": [
+          "civil_code_586",
+          "civil_code_587"
+        ],
+        "解除": [
+          "civil_code_562",
+          "civil_code_563",
+          "civil_code_566"
+        ],
+        "知识产权": [
+          "copyright_law_10",
+          "trademark_law_43",
+          "patent_law_10"
+        ],
+        "个人信息或数据处理": [
+          "pipl_13",
+          "pipl_17",
+          "pipl_21",
+          "pipl_23",
+          "pipl_51",
+          "data_security_law_27"
+        ],
+        "敏感个人信息": [
+          "pipl_28",
+          "pipl_29"
+        ],
+        "跨境数据": [
+          "pipl_38",
+          "pipl_39"
+        ],
+        "供应链排他或价格限制": [
+          "anti_monopoly_law_18",
+          "anti_monopoly_law_22"
+        ]
       }
     },
     "商业租赁合同": {
-      "core_laws": ["民法典"],
+      "core_laws": [
+        "民法典"
+      ],
       "required_citation_ids": [
         "civil_code_470",
         "civil_code_509",
@@ -162,13 +294,26 @@
         "civil_code_585"
       ],
       "conditional_topics": {
-        "格式条款": ["civil_code_496", "civil_code_497"],
-        "定金": ["civil_code_586", "civil_code_587"],
-        "情势变更": ["civil_code_533"]
+        "格式条款": [
+          "civil_code_496",
+          "civil_code_497"
+        ],
+        "定金": [
+          "civil_code_586",
+          "civil_code_587"
+        ],
+        "情势变更": [
+          "civil_code_533"
+        ]
       }
     },
     "技术开发合同": {
-      "core_laws": ["民法典", "著作权法", "专利法", "反不正当竞争法"],
+      "core_laws": [
+        "民法典",
+        "著作权法",
+        "专利法",
+        "反不正当竞争法"
+      ],
       "required_citation_ids": [
         "civil_code_470",
         "civil_code_509",
@@ -183,13 +328,25 @@
         "data_security_law_27"
       ],
       "conditional_topics": {
-        "个人信息": ["pipl_13", "pipl_17", "pipl_23", "pipl_51"],
-        "跨境数据": ["pipl_38", "pipl_39"],
-        "违约金": ["civil_code_585"]
+        "个人信息": [
+          "pipl_13",
+          "pipl_17",
+          "pipl_23",
+          "pipl_51"
+        ],
+        "跨境数据": [
+          "pipl_38",
+          "pipl_39"
+        ],
+        "违约金": [
+          "civil_code_585"
+        ]
       }
     },
     "借款合同": {
-      "core_laws": ["民法典"],
+      "core_laws": [
+        "民法典"
+      ],
       "required_citation_ids": [
         "civil_code_143",
         "civil_code_509",
@@ -204,13 +361,28 @@
         "civil_code_692"
       ],
       "conditional_topics": {
-        "格式条款": ["civil_code_496", "civil_code_497"],
-        "解除": ["civil_code_562", "civil_code_563", "civil_code_566"],
-        "公司担保": ["company_law_57", "company_law_67"]
+        "格式条款": [
+          "civil_code_496",
+          "civil_code_497"
+        ],
+        "解除": [
+          "civil_code_562",
+          "civil_code_563",
+          "civil_code_566"
+        ],
+        "公司担保": [
+          "company_law_57",
+          "company_law_67"
+        ]
       }
     },
     "知识产权许可合同": {
-      "core_laws": ["民法典", "著作权法", "商标法", "专利法"],
+      "core_laws": [
+        "民法典",
+        "著作权法",
+        "商标法",
+        "专利法"
+      ],
       "required_citation_ids": [
         "civil_code_470",
         "civil_code_509",
@@ -223,13 +395,25 @@
         "anti_unfair_competition_law_9"
       ],
       "conditional_topics": {
-        "个人信息": ["pipl_13", "pipl_21"],
-        "格式条款": ["civil_code_496", "civil_code_497"],
-        "违约金": ["civil_code_585"]
+        "个人信息": [
+          "pipl_13",
+          "pipl_21"
+        ],
+        "格式条款": [
+          "civil_code_496",
+          "civil_code_497"
+        ],
+        "违约金": [
+          "civil_code_585"
+        ]
       }
     },
     "分销代理合同": {
-      "core_laws": ["民法典", "反垄断法", "反不正当竞争法"],
+      "core_laws": [
+        "民法典",
+        "反垄断法",
+        "反不正当竞争法"
+      ],
       "required_citation_ids": [
         "civil_code_470",
         "civil_code_509",
@@ -242,13 +426,27 @@
         "anti_unfair_competition_law_9"
       ],
       "conditional_topics": {
-        "广告宣传": ["advertising_law_28", "advertising_law_38"],
-        "个人信息": ["pipl_13", "pipl_17"],
-        "格式条款": ["civil_code_496", "civil_code_497"]
+        "广告宣传": [
+          "advertising_law_28",
+          "advertising_law_38"
+        ],
+        "个人信息": [
+          "pipl_13",
+          "pipl_17"
+        ],
+        "格式条款": [
+          "civil_code_496",
+          "civil_code_497"
+        ]
       }
     },
     "SaaS云服务协议": {
-      "core_laws": ["民法典", "个人信息保护法", "数据安全法", "网络安全法"],
+      "core_laws": [
+        "民法典",
+        "个人信息保护法",
+        "数据安全法",
+        "网络安全法"
+      ],
       "required_citation_ids": [
         "civil_code_470",
         "civil_code_496",
@@ -265,9 +463,80 @@
         "cybersecurity_law_37"
       ],
       "conditional_topics": {
-        "跨境数据": ["pipl_38", "pipl_39"],
-        "敏感个人信息": ["pipl_28", "pipl_29"],
-        "违约金": ["civil_code_585"]
+        "跨境数据": [
+          "pipl_38",
+          "pipl_39"
+        ],
+        "敏感个人信息": [
+          "pipl_28",
+          "pipl_29"
+        ],
+        "违约金": [
+          "civil_code_585"
+        ]
+      }
+    },
+    "平台技术服务协议": {
+      "core_laws": [
+        "民法典",
+        "个人信息保护法",
+        "数据安全法",
+        "网络安全法",
+        "电子商务法",
+        "反垄断法"
+      ],
+      "required_citation_ids": [
+        "civil_code_496",
+        "civil_code_497",
+        "civil_code_509",
+        "civil_code_577",
+        "civil_code_584",
+        "pipl_13",
+        "pipl_17",
+        "pipl_21",
+        "pipl_23",
+        "pipl_51",
+        "data_security_law_27",
+        "cybersecurity_law_37",
+        "ecommerce_law_35"
+      ],
+      "conditional_topics": {
+        "平台规则与格式条款": [
+          "civil_code_496",
+          "civil_code_497",
+          "ecommerce_law_35"
+        ],
+        "委托处理个人信息": [
+          "pipl_21",
+          "pipl_51"
+        ],
+        "向第三方提供个人信息": [
+          "pipl_23"
+        ],
+        "敏感个人信息": [
+          "pipl_28",
+          "pipl_29"
+        ],
+        "跨境数据": [
+          "pipl_38",
+          "pipl_39"
+        ],
+        "平台支配地位与差别待遇": [
+          "anti_monopoly_law_22",
+          "ecommerce_law_35"
+        ],
+        "排他合作或价格限制": [
+          "anti_monopoly_law_18",
+          "anti_monopoly_law_22"
+        ],
+        "广告投放": [
+          "advertising_law_28",
+          "advertising_law_38"
+        ],
+        "知识产权": [
+          "copyright_law_10",
+          "trademark_law_43"
+        ]
       }
     }
   }
