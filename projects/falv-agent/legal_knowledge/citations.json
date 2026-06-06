@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-06-05",
+  "updated_at": "2026-06-06",
   "upstream_strategy": "local_structured_cache_with_manual_refresh",
   "citations": [
     {
@@ -22,10 +22,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "143",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_143.0)"
+        }
+      }
     },
     {
       "id": "civil_code_153",
@@ -45,10 +56,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "153",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_153.0)"
+        }
+      }
     },
     {
       "id": "civil_code_496",
@@ -67,10 +89,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "496",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_496.0)"
+        }
+      }
     },
     {
       "id": "civil_code_497",
@@ -90,10 +123,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "497",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_497.0)"
+        }
+      }
     },
     {
       "id": "civil_code_509",
@@ -113,10 +157,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "509",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_509.0)"
+        }
+      }
     },
     {
       "id": "civil_code_533",
@@ -137,10 +192,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "533",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_533.0)"
+        }
+      }
     },
     {
       "id": "civil_code_585",
@@ -162,13 +228,24 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
       "source_url": "https://flk.npc.gov.cn/",
       "replaces": [
         "合同法第一百一十四条"
-      ]
+      ],
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "585",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_585.0)"
+        }
+      }
     },
     {
       "id": "labor_contract_law_17",
@@ -189,10 +266,21 @@
       ],
       "status": "current",
       "effective_from": "2008-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+          "pkulaw_article": "17.0",
+          "pkulaw_update_time": "2026.05.27 14:01:07",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_17.0)"
+        }
+      }
     },
     {
       "id": "pipl_21",
@@ -216,10 +304,21 @@
       ],
       "status": "current",
       "effective_from": "2021-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国个人信息保护法",
+          "pkulaw_article": "21.0",
+          "pkulaw_update_time": "2026.05.27 14:16:35",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_21.0)"
+        }
+      }
     },
     {
       "id": "pipl_38",
@@ -241,10 +340,21 @@
       ],
       "status": "current",
       "effective_from": "2021-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国个人信息保护法",
+          "pkulaw_article": "38.0",
+          "pkulaw_update_time": "2026.05.27 14:16:35",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_38.0)"
+        }
+      }
     },
     {
       "id": "company_law_84",
@@ -264,10 +374,21 @@
       ],
       "status": "current",
       "effective_from": "2024-07-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国公司法(2023修订)",
+          "pkulaw_article": "84.0",
+          "pkulaw_update_time": "2026.01.06 13:34:48",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_84.0)"
+        }
+      }
     },
     {
       "id": "civil_code_146",
@@ -287,10 +408,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "146",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_146.0)"
+        }
+      }
     },
     {
       "id": "civil_code_147",
@@ -308,10 +440,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "147",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_147.0)"
+        }
+      }
     },
     {
       "id": "civil_code_148",
@@ -329,10 +472,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "148",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_148.0)"
+        }
+      }
     },
     {
       "id": "civil_code_151",
@@ -351,10 +505,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "151",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_151.0)"
+        }
+      }
     },
     {
       "id": "civil_code_188",
@@ -372,10 +537,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "188",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_188.0)"
+        }
+      }
     },
     {
       "id": "civil_code_465",
@@ -393,10 +569,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "465",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_465.0)"
+        }
+      }
     },
     {
       "id": "civil_code_470",
@@ -418,10 +605,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "470",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_470.0)"
+        }
+      }
     },
     {
       "id": "civil_code_472",
@@ -439,10 +637,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "472",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_472.0)"
+        }
+      }
     },
     {
       "id": "civil_code_483",
@@ -459,10 +668,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "483",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_483.0)"
+        }
+      }
     },
     {
       "id": "civil_code_510",
@@ -480,10 +700,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "510",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_510.0)"
+        }
+      }
     },
     {
       "id": "civil_code_511",
@@ -504,10 +735,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "511",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_511.0)"
+        }
+      }
     },
     {
       "id": "civil_code_525",
@@ -525,10 +767,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "525",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_525.0)"
+        }
+      }
     },
     {
       "id": "civil_code_526",
@@ -546,10 +799,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "526",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_526.0)"
+        }
+      }
     },
     {
       "id": "civil_code_527",
@@ -568,10 +832,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "527",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_527.0)"
+        }
+      }
     },
     {
       "id": "civil_code_543",
@@ -588,10 +863,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "543",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_543.0)"
+        }
+      }
     },
     {
       "id": "civil_code_562",
@@ -609,10 +895,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "562",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_562.0)"
+        }
+      }
     },
     {
       "id": "civil_code_563",
@@ -631,10 +928,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "563",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_563.0)"
+        }
+      }
     },
     {
       "id": "civil_code_566",
@@ -654,10 +962,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "566",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_566.0)"
+        }
+      }
     },
     {
       "id": "civil_code_577",
@@ -676,10 +995,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "577",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_577.0)"
+        }
+      }
     },
     {
       "id": "civil_code_580",
@@ -697,10 +1027,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "580",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_580.0)"
+        }
+      }
     },
     {
       "id": "civil_code_582",
@@ -719,10 +1060,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "582",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_582.0)"
+        }
+      }
     },
     {
       "id": "civil_code_584",
@@ -741,10 +1093,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "584",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_584.0)"
+        }
+      }
     },
     {
       "id": "civil_code_586",
@@ -762,10 +1125,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "586",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_586.0)"
+        }
+      }
     },
     {
       "id": "civil_code_587",
@@ -783,10 +1157,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "587",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_587.0)"
+        }
+      }
     },
     {
       "id": "civil_code_680",
@@ -805,10 +1190,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "680",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_680.0)"
+        }
+      }
     },
     {
       "id": "civil_code_681",
@@ -827,10 +1223,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "681",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_681.0)"
+        }
+      }
     },
     {
       "id": "civil_code_686",
@@ -848,10 +1255,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "686",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_686.0)"
+        }
+      }
     },
     {
       "id": "civil_code_692",
@@ -869,10 +1287,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "692",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_692.0)"
+        }
+      }
     },
     {
       "id": "civil_code_1032",
@@ -890,10 +1319,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "1032",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_1032.0)"
+        }
+      }
     },
     {
       "id": "civil_code_1034",
@@ -915,10 +1355,21 @@
       ],
       "status": "current",
       "effective_from": "2021-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国民法典",
+          "pkulaw_article": "1034",
+          "pkulaw_update_time": "2026.05.29 16:32:39",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_1034.0)"
+        }
+      }
     },
     {
       "id": "company_law_5",
@@ -940,10 +1391,21 @@
       ],
       "status": "current",
       "effective_from": "2024-07-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国公司法(2023修订)",
+          "pkulaw_article": "5.0",
+          "pkulaw_update_time": "2026.01.06 13:34:48",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_5.0)"
+        }
+      }
     },
     {
       "id": "company_law_57",
@@ -962,10 +1424,21 @@
       ],
       "status": "current",
       "effective_from": "2024-07-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国公司法(2023修订)",
+          "pkulaw_article": "57.0",
+          "pkulaw_update_time": "2026.01.06 13:34:48",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_57.0)"
+        }
+      }
     },
     {
       "id": "company_law_59",
@@ -987,10 +1460,21 @@
       ],
       "status": "current",
       "effective_from": "2024-07-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国公司法(2023修订)",
+          "pkulaw_article": "59.0",
+          "pkulaw_update_time": "2026.01.06 13:34:48",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_59.0)"
+        }
+      }
     },
     {
       "id": "company_law_67",
@@ -1009,10 +1493,21 @@
       ],
       "status": "current",
       "effective_from": "2024-07-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国公司法(2023修订)",
+          "pkulaw_article": "67.0",
+          "pkulaw_update_time": "2026.01.06 13:34:48",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_67.0)"
+        }
+      }
     },
     {
       "id": "company_law_88",
@@ -1031,10 +1526,21 @@
       ],
       "status": "current",
       "effective_from": "2024-07-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国公司法(2023修订)",
+          "pkulaw_article": "88.0",
+          "pkulaw_update_time": "2026.01.06 13:34:48",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_88.0)"
+        }
+      }
     },
     {
       "id": "company_law_89",
@@ -1054,10 +1560,21 @@
       ],
       "status": "current",
       "effective_from": "2024-07-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国公司法(2023修订)",
+          "pkulaw_article": "89.0",
+          "pkulaw_update_time": "2026.01.06 13:34:48",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_89.0)"
+        }
+      }
     },
     {
       "id": "company_law_152",
@@ -1076,10 +1593,21 @@
       ],
       "status": "current",
       "effective_from": "2024-07-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国公司法(2023修订)",
+          "pkulaw_article": "152.0",
+          "pkulaw_update_time": "2026.01.06 13:34:48",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_152.0)"
+        }
+      }
     },
     {
       "id": "company_law_180",
@@ -1099,10 +1627,21 @@
       ],
       "status": "current",
       "effective_from": "2024-07-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国公司法(2023修订)",
+          "pkulaw_article": "180.0",
+          "pkulaw_update_time": "2026.01.06 13:34:48",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_180.0)"
+        }
+      }
     },
     {
       "id": "labor_contract_law_19",
@@ -1120,10 +1659,21 @@
       ],
       "status": "current",
       "effective_from": "2008-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+          "pkulaw_article": "19.0",
+          "pkulaw_update_time": "2026.05.27 14:01:07",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_19.0)"
+        }
+      }
     },
     {
       "id": "labor_contract_law_20",
@@ -1141,10 +1691,21 @@
       ],
       "status": "current",
       "effective_from": "2008-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+          "pkulaw_article": "20.0",
+          "pkulaw_update_time": "2026.05.27 14:01:07",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_20.0)"
+        }
+      }
     },
     {
       "id": "labor_contract_law_23",
@@ -1162,10 +1723,21 @@
       ],
       "status": "current",
       "effective_from": "2008-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+          "pkulaw_article": "23.0",
+          "pkulaw_update_time": "2026.05.27 14:01:07",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_23.0)"
+        }
+      }
     },
     {
       "id": "labor_contract_law_24",
@@ -1184,10 +1756,21 @@
       ],
       "status": "current",
       "effective_from": "2008-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+          "pkulaw_article": "24.0",
+          "pkulaw_update_time": "2026.05.27 14:01:07",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_24.0)"
+        }
+      }
     },
     {
       "id": "labor_contract_law_39",
@@ -1207,10 +1790,21 @@
       ],
       "status": "current",
       "effective_from": "2008-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+          "pkulaw_article": "39.0",
+          "pkulaw_update_time": "2026.05.27 14:01:07",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_39.0)"
+        }
+      }
     },
     {
       "id": "labor_contract_law_40",
@@ -1229,10 +1823,21 @@
       ],
       "status": "current",
       "effective_from": "2008-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+          "pkulaw_article": "40.0",
+          "pkulaw_update_time": "2026.05.27 14:01:07",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_40.0)"
+        }
+      }
     },
     {
       "id": "labor_contract_law_47",
@@ -1250,10 +1855,21 @@
       ],
       "status": "current",
       "effective_from": "2008-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+          "pkulaw_article": "47.0",
+          "pkulaw_update_time": "2026.05.27 14:01:07",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_47.0)"
+        }
+      }
     },
     {
       "id": "labor_contract_law_87",
@@ -1272,10 +1888,21 @@
       ],
       "status": "current",
       "effective_from": "2008-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+          "pkulaw_article": "87.0",
+          "pkulaw_update_time": "2026.05.27 14:01:07",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_87.0)"
+        }
+      }
     },
     {
       "id": "pipl_13",
@@ -1296,10 +1923,21 @@
       ],
       "status": "current",
       "effective_from": "2021-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国个人信息保护法",
+          "pkulaw_article": "13.0",
+          "pkulaw_update_time": "2026.05.27 14:16:35",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_13.0)"
+        }
+      }
     },
     {
       "id": "pipl_17",
@@ -1319,10 +1957,21 @@
       ],
       "status": "current",
       "effective_from": "2021-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国个人信息保护法",
+          "pkulaw_article": "17.0",
+          "pkulaw_update_time": "2026.05.27 14:16:35",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_17.0)"
+        }
+      }
     },
     {
       "id": "pipl_23",
@@ -1341,10 +1990,21 @@
       ],
       "status": "current",
       "effective_from": "2021-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国个人信息保护法",
+          "pkulaw_article": "23.0",
+          "pkulaw_update_time": "2026.05.27 14:16:35",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_23.0)"
+        }
+      }
     },
     {
       "id": "pipl_28",
@@ -1365,10 +2025,21 @@
       ],
       "status": "current",
       "effective_from": "2021-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国个人信息保护法",
+          "pkulaw_article": "28.0",
+          "pkulaw_update_time": "2026.05.27 14:16:35",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_28.0)"
+        }
+      }
     },
     {
       "id": "pipl_29",
@@ -1387,10 +2058,21 @@
       ],
       "status": "current",
       "effective_from": "2021-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国个人信息保护法",
+          "pkulaw_article": "29.0",
+          "pkulaw_update_time": "2026.05.27 14:16:35",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_29.0)"
+        }
+      }
     },
     {
       "id": "pipl_39",
@@ -1409,10 +2091,21 @@
       ],
       "status": "current",
       "effective_from": "2021-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国个人信息保护法",
+          "pkulaw_article": "39.0",
+          "pkulaw_update_time": "2026.05.27 14:16:35",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_39.0)"
+        }
+      }
     },
     {
       "id": "pipl_47",
@@ -1432,10 +2125,21 @@
       ],
       "status": "current",
       "effective_from": "2021-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国个人信息保护法",
+          "pkulaw_article": "47.0",
+          "pkulaw_update_time": "2026.05.27 14:16:35",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_47.0)"
+        }
+      }
     },
     {
       "id": "pipl_51",
@@ -1456,10 +2160,21 @@
       ],
       "status": "current",
       "effective_from": "2021-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国个人信息保护法",
+          "pkulaw_article": "51.0",
+          "pkulaw_update_time": "2026.05.27 14:16:35",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_51.0)"
+        }
+      }
     },
     {
       "id": "data_security_law_27",
@@ -1478,10 +2193,21 @@
       ],
       "status": "current",
       "effective_from": "2021-09-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国数据安全法",
+          "pkulaw_article": "27.0",
+          "pkulaw_update_time": "2026.05.27 14:16:16",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/1dd3a2fb498ecb3ebdfb.html?way=mcp#tiao_27.0)"
+        }
+      }
     },
     {
       "id": "cybersecurity_law_37",
@@ -1501,10 +2227,21 @@
       ],
       "status": "current",
       "effective_from": "2017-06-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国网络安全法(2025修正)",
+          "pkulaw_article": "37.0",
+          "pkulaw_update_time": "2026.01.06 13:40:48",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/fe9682732480b562bdfb.html?way=mcp#tiao_37.0)"
+        }
+      }
     },
     {
       "id": "anti_unfair_competition_law_9",
@@ -1524,10 +2261,21 @@
       ],
       "status": "current",
       "effective_from": "2018-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国反不正当竞争法(2025修订)",
+          "pkulaw_article": "9.0",
+          "pkulaw_update_time": "2026.01.06 13:39:25",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/1d79285621ad7295bdfb.html?way=mcp#tiao_9.0)"
+        }
+      }
     },
     {
       "id": "anti_monopoly_law_18",
@@ -1546,10 +2294,21 @@
       ],
       "status": "current",
       "effective_from": "2022-08-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国反垄断法(2022修正)",
+          "pkulaw_article": "18.0",
+          "pkulaw_update_time": "2026.05.27 14:17:42",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d3236788421feacfbdfb.html?way=mcp#tiao_18.0)"
+        }
+      }
     },
     {
       "id": "anti_monopoly_law_22",
@@ -1570,10 +2329,21 @@
       ],
       "status": "current",
       "effective_from": "2022-08-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国反垄断法(2022修正)",
+          "pkulaw_article": "22.0",
+          "pkulaw_update_time": "2026.05.27 14:17:42",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d3236788421feacfbdfb.html?way=mcp#tiao_22.0)"
+        }
+      }
     },
     {
       "id": "ecommerce_law_18",
@@ -1591,10 +2361,21 @@
       ],
       "status": "current",
       "effective_from": "2019-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国电子商务法",
+          "pkulaw_article": "18.0",
+          "pkulaw_update_time": "2026.05.27 14:09:29",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/3f020f79c1e5316ebdfb.html?way=mcp#tiao_18.0)"
+        }
+      }
     },
     {
       "id": "ecommerce_law_35",
@@ -1613,10 +2394,21 @@
       ],
       "status": "current",
       "effective_from": "2019-01-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国电子商务法",
+          "pkulaw_article": "35.0",
+          "pkulaw_update_time": "2026.05.27 14:09:29",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/3f020f79c1e5316ebdfb.html?way=mcp#tiao_35.0)"
+        }
+      }
     },
     {
       "id": "advertising_law_28",
@@ -1636,10 +2428,21 @@
       ],
       "status": "current",
       "effective_from": "2015-09-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国广告法(2021修正)",
+          "pkulaw_article": "28.0",
+          "pkulaw_update_time": "2026.05.27 14:16:11",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ed14f353bf1e5fdbdfb.html?way=mcp#tiao_28.0)"
+        }
+      }
     },
     {
       "id": "advertising_law_38",
@@ -1660,10 +2463,21 @@
       ],
       "status": "current",
       "effective_from": "2015-09-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国广告法(2021修正)",
+          "pkulaw_article": "38.0",
+          "pkulaw_update_time": "2026.05.27 14:16:11",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ed14f353bf1e5fdbdfb.html?way=mcp#tiao_38.0)"
+        }
+      }
     },
     {
       "id": "copyright_law_10",
@@ -1684,10 +2498,21 @@
       ],
       "status": "current",
       "effective_from": "2021-06-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国著作权法(2020修正)",
+          "pkulaw_article": "10.0",
+          "pkulaw_update_time": "2026.05.27 14:14:16",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/a3b3a54bea64f090bdfb.html?way=mcp#tiao_10.0)"
+        }
+      }
     },
     {
       "id": "copyright_law_17",
@@ -1707,10 +2532,21 @@
       ],
       "status": "current",
       "effective_from": "2021-06-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国著作权法(2020修正)",
+          "pkulaw_article": "17.0",
+          "pkulaw_update_time": "2026.05.27 14:14:16",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/a3b3a54bea64f090bdfb.html?way=mcp#tiao_17.0)"
+        }
+      }
     },
     {
       "id": "copyright_law_18",
@@ -1729,10 +2565,21 @@
       ],
       "status": "current",
       "effective_from": "2021-06-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国著作权法(2020修正)",
+          "pkulaw_article": "18.0",
+          "pkulaw_update_time": "2026.05.27 14:14:16",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/a3b3a54bea64f090bdfb.html?way=mcp#tiao_18.0)"
+        }
+      }
     },
     {
       "id": "copyright_law_25",
@@ -1752,10 +2599,21 @@
       ],
       "status": "current",
       "effective_from": "2021-06-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国著作权法(2020修正)",
+          "pkulaw_article": "25.0",
+          "pkulaw_update_time": "2026.05.27 14:14:16",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/a3b3a54bea64f090bdfb.html?way=mcp#tiao_25.0)"
+        }
+      }
     },
     {
       "id": "trademark_law_43",
@@ -1775,10 +2633,21 @@
       ],
       "status": "current",
       "effective_from": "2019-11-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国商标法(2019修正)",
+          "pkulaw_article": "43.0",
+          "pkulaw_update_time": "2026.05.27 14:12:07",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/937235cafaf2a66fbdfb.html?way=mcp#tiao_43.0)"
+        }
+      }
     },
     {
       "id": "patent_law_10",
@@ -1798,10 +2667,21 @@
       ],
       "status": "current",
       "effective_from": "2021-06-01",
-      "last_verified_at": "2026-06-05",
+      "last_verified_at": "2026-06-06",
       "verification_cycle_days": 90,
       "source_name": "国家法律法规数据库",
-      "source_url": "https://flk.npc.gov.cn/"
+      "source_url": "https://flk.npc.gov.cn/",
+      "upstream_checks": {
+        "pkulaw_mcp": {
+          "verified_at": "2026-06-06",
+          "status": "ok",
+          "timeliness": "现行有效",
+          "pkulaw_title": "中华人民共和国专利法实施细则(2023修订)",
+          "pkulaw_article": "10.0",
+          "pkulaw_update_time": "2026.01.06 13:34:38",
+          "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/51e6a70b12e0ce51bdfb.html?way=mcp#tiao_10.0)"
+        }
+      }
     }
   ]
 }

@@ -7,6 +7,7 @@
 - 本地库只作为可审计缓存，不宣称覆盖全部法律。
 - 上游来源优先为国家法律法规数据库；北大法宝 MCP 已注册到 Claude Code 用户级配置，需设置 `PKULAW_ACCESS_TOKEN` 后才能实际调用。
 - 每条法条必须记录 `last_verified_at`、`source_name`、`source_url` 和 `verification_cycle_days`。
+- 通过北大法宝 MCP 核验过的条文，额外记录 `upstream_checks.pkulaw_mcp`，包含核验日期、现行有效状态、北大法宝更新时间和来源链接。
 - 超过校验周期的条文标记为 `stale`，不能静默视为已确认现行有效。
 - 未收录条文标记为 `unknown`，提示人工复核。
 
@@ -36,3 +37,11 @@ python3 scripts/legal_coverage_check.py
 python3 scripts/legal_coverage_check.py --type 投资协议 --as-markdown
 python3 scripts/usage_log.py report
 ```
+
+## 最近核验
+
+2026-06-06 已使用北大法宝 `mcp-fatiao` / `get_law_item_content` 对 `citations.json` 现有 80 条高频法条完成批量核验：
+
+- 80 条全部命中。
+- 80 条均显示为“现行有效”。
+- 审计文件：`legal_knowledge/audits/pkulaw_batch_verify_2026-06-06.json`

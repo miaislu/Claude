@@ -1,0 +1,1453 @@
+{
+  "schema_version": "1.0",
+  "checked_at": "2026-06-06",
+  "source": "北大法宝 MCP / mcp-fatiao / get_law_item_content",
+  "apply": true,
+  "start": 0,
+  "max_calls": 80,
+  "actual_calls": 80,
+  "ok_count": 80,
+  "error_count": 0,
+  "results": [
+    {
+      "index": 0,
+      "id": "civil_code_143",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第一百四十三条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "143",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_143.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 1,
+      "id": "civil_code_153",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第一百五十三条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "153",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_153.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 2,
+      "id": "civil_code_496",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第四百九十六条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "496",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_496.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 3,
+      "id": "civil_code_497",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第四百九十七条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "497",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_497.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 4,
+      "id": "civil_code_509",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百零九条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "509",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_509.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 5,
+      "id": "civil_code_533",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百三十三条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "533",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_533.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 6,
+      "id": "civil_code_585",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百八十五条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "585",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_585.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 7,
+      "id": "labor_contract_law_17",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "劳动合同法",
+        "article": "第十七条",
+        "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+        "pkulaw_article": "17.0",
+        "timeliness": "现行有效",
+        "issue_date": "2012.12.28",
+        "implement_date": "2013.07.01",
+        "pkulaw_update_time": "2026.05.27 14:01:07",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_17.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 8,
+      "id": "pipl_21",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "个人信息保护法",
+        "article": "第二十一条",
+        "pkulaw_title": "中华人民共和国个人信息保护法",
+        "pkulaw_article": "21.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.08.20",
+        "implement_date": "2021.11.01",
+        "pkulaw_update_time": "2026.05.27 14:16:35",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_21.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 9,
+      "id": "pipl_38",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "个人信息保护法",
+        "article": "第三十八条",
+        "pkulaw_title": "中华人民共和国个人信息保护法",
+        "pkulaw_article": "38.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.08.20",
+        "implement_date": "2021.11.01",
+        "pkulaw_update_time": "2026.05.27 14:16:35",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_38.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 10,
+      "id": "company_law_84",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "公司法",
+        "article": "第八十四条",
+        "pkulaw_title": "中华人民共和国公司法(2023修订)",
+        "pkulaw_article": "84.0",
+        "timeliness": "现行有效",
+        "issue_date": "2023.12.29",
+        "implement_date": "2024.07.01",
+        "pkulaw_update_time": "2026.01.06 13:34:48",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_84.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 11,
+      "id": "civil_code_146",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第一百四十六条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "146",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_146.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 12,
+      "id": "civil_code_147",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第一百四十七条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "147",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_147.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 13,
+      "id": "civil_code_148",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第一百四十八条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "148",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_148.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 14,
+      "id": "civil_code_151",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第一百五十一条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "151",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_151.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 15,
+      "id": "civil_code_188",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第一百八十八条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "188",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_188.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 16,
+      "id": "civil_code_465",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第四百六十五条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "465",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_465.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 17,
+      "id": "civil_code_470",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第四百七十条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "470",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_470.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 18,
+      "id": "civil_code_472",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第四百七十二条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "472",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_472.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 19,
+      "id": "civil_code_483",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第四百八十三条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "483",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_483.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 20,
+      "id": "civil_code_510",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百一十条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "510",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_510.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 21,
+      "id": "civil_code_511",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百一十一条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "511",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_511.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 22,
+      "id": "civil_code_525",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百二十五条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "525",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_525.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 23,
+      "id": "civil_code_526",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百二十六条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "526",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_526.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 24,
+      "id": "civil_code_527",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百二十七条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "527",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_527.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 25,
+      "id": "civil_code_543",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百四十三条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "543",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_543.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 26,
+      "id": "civil_code_562",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百六十二条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "562",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_562.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 27,
+      "id": "civil_code_563",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百六十三条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "563",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_563.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 28,
+      "id": "civil_code_566",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百六十六条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "566",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_566.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 29,
+      "id": "civil_code_577",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百七十七条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "577",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_577.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 30,
+      "id": "civil_code_580",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百八十条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "580",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_580.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 31,
+      "id": "civil_code_582",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百八十二条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "582",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_582.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 32,
+      "id": "civil_code_584",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百八十四条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "584",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_584.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 33,
+      "id": "civil_code_586",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百八十六条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "586",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_586.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 34,
+      "id": "civil_code_587",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第五百八十七条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "587",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_587.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 35,
+      "id": "civil_code_680",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第六百八十条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "680",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_680.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 36,
+      "id": "civil_code_681",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第六百八十一条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "681",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_681.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 37,
+      "id": "civil_code_686",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第六百八十六条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "686",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_686.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 38,
+      "id": "civil_code_692",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第六百九十二条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "692",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_692.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 39,
+      "id": "civil_code_1032",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第一千零三十二条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "1032",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_1032.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 40,
+      "id": "civil_code_1034",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "民法典",
+        "article": "第一千零三十四条",
+        "pkulaw_title": "中华人民共和国民法典",
+        "pkulaw_article": "1034",
+        "timeliness": "现行有效",
+        "issue_date": "2020.05.28",
+        "implement_date": "2021.01.01",
+        "pkulaw_update_time": "2026.05.29 16:32:39",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/aa00daaeb5a4fe4ebdfb.html?way=mcp#tiao_1034.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 41,
+      "id": "company_law_5",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "公司法",
+        "article": "第五条",
+        "pkulaw_title": "中华人民共和国公司法(2023修订)",
+        "pkulaw_article": "5.0",
+        "timeliness": "现行有效",
+        "issue_date": "2023.12.29",
+        "implement_date": "2024.07.01",
+        "pkulaw_update_time": "2026.01.06 13:34:48",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_5.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 42,
+      "id": "company_law_57",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "公司法",
+        "article": "第五十七条",
+        "pkulaw_title": "中华人民共和国公司法(2023修订)",
+        "pkulaw_article": "57.0",
+        "timeliness": "现行有效",
+        "issue_date": "2023.12.29",
+        "implement_date": "2024.07.01",
+        "pkulaw_update_time": "2026.01.06 13:34:48",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_57.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 43,
+      "id": "company_law_59",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "公司法",
+        "article": "第五十九条",
+        "pkulaw_title": "中华人民共和国公司法(2023修订)",
+        "pkulaw_article": "59.0",
+        "timeliness": "现行有效",
+        "issue_date": "2023.12.29",
+        "implement_date": "2024.07.01",
+        "pkulaw_update_time": "2026.01.06 13:34:48",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_59.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 44,
+      "id": "company_law_67",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "公司法",
+        "article": "第六十七条",
+        "pkulaw_title": "中华人民共和国公司法(2023修订)",
+        "pkulaw_article": "67.0",
+        "timeliness": "现行有效",
+        "issue_date": "2023.12.29",
+        "implement_date": "2024.07.01",
+        "pkulaw_update_time": "2026.01.06 13:34:48",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_67.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 45,
+      "id": "company_law_88",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "公司法",
+        "article": "第八十八条",
+        "pkulaw_title": "中华人民共和国公司法(2023修订)",
+        "pkulaw_article": "88.0",
+        "timeliness": "现行有效",
+        "issue_date": "2023.12.29",
+        "implement_date": "2024.07.01",
+        "pkulaw_update_time": "2026.01.06 13:34:48",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_88.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 46,
+      "id": "company_law_89",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "公司法",
+        "article": "第八十九条",
+        "pkulaw_title": "中华人民共和国公司法(2023修订)",
+        "pkulaw_article": "89.0",
+        "timeliness": "现行有效",
+        "issue_date": "2023.12.29",
+        "implement_date": "2024.07.01",
+        "pkulaw_update_time": "2026.01.06 13:34:48",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_89.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 47,
+      "id": "company_law_152",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "公司法",
+        "article": "第一百五十二条",
+        "pkulaw_title": "中华人民共和国公司法(2023修订)",
+        "pkulaw_article": "152.0",
+        "timeliness": "现行有效",
+        "issue_date": "2023.12.29",
+        "implement_date": "2024.07.01",
+        "pkulaw_update_time": "2026.01.06 13:34:48",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_152.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 48,
+      "id": "company_law_180",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "公司法",
+        "article": "第一百八十条",
+        "pkulaw_title": "中华人民共和国公司法(2023修订)",
+        "pkulaw_article": "180.0",
+        "timeliness": "现行有效",
+        "issue_date": "2023.12.29",
+        "implement_date": "2024.07.01",
+        "pkulaw_update_time": "2026.01.06 13:34:48",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ba805acd08846d7bdfb.html?way=mcp#tiao_180.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 49,
+      "id": "labor_contract_law_19",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "劳动合同法",
+        "article": "第十九条",
+        "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+        "pkulaw_article": "19.0",
+        "timeliness": "现行有效",
+        "issue_date": "2012.12.28",
+        "implement_date": "2013.07.01",
+        "pkulaw_update_time": "2026.05.27 14:01:07",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_19.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 50,
+      "id": "labor_contract_law_20",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "劳动合同法",
+        "article": "第二十条",
+        "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+        "pkulaw_article": "20.0",
+        "timeliness": "现行有效",
+        "issue_date": "2012.12.28",
+        "implement_date": "2013.07.01",
+        "pkulaw_update_time": "2026.05.27 14:01:07",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_20.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 51,
+      "id": "labor_contract_law_23",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "劳动合同法",
+        "article": "第二十三条",
+        "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+        "pkulaw_article": "23.0",
+        "timeliness": "现行有效",
+        "issue_date": "2012.12.28",
+        "implement_date": "2013.07.01",
+        "pkulaw_update_time": "2026.05.27 14:01:07",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_23.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 52,
+      "id": "labor_contract_law_24",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "劳动合同法",
+        "article": "第二十四条",
+        "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+        "pkulaw_article": "24.0",
+        "timeliness": "现行有效",
+        "issue_date": "2012.12.28",
+        "implement_date": "2013.07.01",
+        "pkulaw_update_time": "2026.05.27 14:01:07",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_24.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 53,
+      "id": "labor_contract_law_39",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "劳动合同法",
+        "article": "第三十九条",
+        "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+        "pkulaw_article": "39.0",
+        "timeliness": "现行有效",
+        "issue_date": "2012.12.28",
+        "implement_date": "2013.07.01",
+        "pkulaw_update_time": "2026.05.27 14:01:07",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_39.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 54,
+      "id": "labor_contract_law_40",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "劳动合同法",
+        "article": "第四十条",
+        "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+        "pkulaw_article": "40.0",
+        "timeliness": "现行有效",
+        "issue_date": "2012.12.28",
+        "implement_date": "2013.07.01",
+        "pkulaw_update_time": "2026.05.27 14:01:07",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_40.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 55,
+      "id": "labor_contract_law_47",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "劳动合同法",
+        "article": "第四十七条",
+        "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+        "pkulaw_article": "47.0",
+        "timeliness": "现行有效",
+        "issue_date": "2012.12.28",
+        "implement_date": "2013.07.01",
+        "pkulaw_update_time": "2026.05.27 14:01:07",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_47.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 56,
+      "id": "labor_contract_law_87",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "劳动合同法",
+        "article": "第八十七条",
+        "pkulaw_title": "中华人民共和国劳动合同法(2012修正)",
+        "pkulaw_article": "87.0",
+        "timeliness": "现行有效",
+        "issue_date": "2012.12.28",
+        "implement_date": "2013.07.01",
+        "pkulaw_update_time": "2026.05.27 14:01:07",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/7ab5e7d605f859e6bdfb.html?way=mcp#tiao_87.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 57,
+      "id": "pipl_13",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "个人信息保护法",
+        "article": "第十三条",
+        "pkulaw_title": "中华人民共和国个人信息保护法",
+        "pkulaw_article": "13.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.08.20",
+        "implement_date": "2021.11.01",
+        "pkulaw_update_time": "2026.05.27 14:16:35",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_13.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 58,
+      "id": "pipl_17",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "个人信息保护法",
+        "article": "第十七条",
+        "pkulaw_title": "中华人民共和国个人信息保护法",
+        "pkulaw_article": "17.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.08.20",
+        "implement_date": "2021.11.01",
+        "pkulaw_update_time": "2026.05.27 14:16:35",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_17.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 59,
+      "id": "pipl_23",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "个人信息保护法",
+        "article": "第二十三条",
+        "pkulaw_title": "中华人民共和国个人信息保护法",
+        "pkulaw_article": "23.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.08.20",
+        "implement_date": "2021.11.01",
+        "pkulaw_update_time": "2026.05.27 14:16:35",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_23.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 60,
+      "id": "pipl_28",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "个人信息保护法",
+        "article": "第二十八条",
+        "pkulaw_title": "中华人民共和国个人信息保护法",
+        "pkulaw_article": "28.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.08.20",
+        "implement_date": "2021.11.01",
+        "pkulaw_update_time": "2026.05.27 14:16:35",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_28.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 61,
+      "id": "pipl_29",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "个人信息保护法",
+        "article": "第二十九条",
+        "pkulaw_title": "中华人民共和国个人信息保护法",
+        "pkulaw_article": "29.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.08.20",
+        "implement_date": "2021.11.01",
+        "pkulaw_update_time": "2026.05.27 14:16:35",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_29.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 62,
+      "id": "pipl_39",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "个人信息保护法",
+        "article": "第三十九条",
+        "pkulaw_title": "中华人民共和国个人信息保护法",
+        "pkulaw_article": "39.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.08.20",
+        "implement_date": "2021.11.01",
+        "pkulaw_update_time": "2026.05.27 14:16:35",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_39.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 63,
+      "id": "pipl_47",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "个人信息保护法",
+        "article": "第四十七条",
+        "pkulaw_title": "中华人民共和国个人信息保护法",
+        "pkulaw_article": "47.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.08.20",
+        "implement_date": "2021.11.01",
+        "pkulaw_update_time": "2026.05.27 14:16:35",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_47.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 64,
+      "id": "pipl_51",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "个人信息保护法",
+        "article": "第五十一条",
+        "pkulaw_title": "中华人民共和国个人信息保护法",
+        "pkulaw_article": "51.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.08.20",
+        "implement_date": "2021.11.01",
+        "pkulaw_update_time": "2026.05.27 14:16:35",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d653ed619d0961c0bdfb.html?way=mcp#tiao_51.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 65,
+      "id": "data_security_law_27",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "数据安全法",
+        "article": "第二十七条",
+        "pkulaw_title": "中华人民共和国数据安全法",
+        "pkulaw_article": "27.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.06.10",
+        "implement_date": "2021.09.01",
+        "pkulaw_update_time": "2026.05.27 14:16:16",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/1dd3a2fb498ecb3ebdfb.html?way=mcp#tiao_27.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 66,
+      "id": "cybersecurity_law_37",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "网络安全法",
+        "article": "第三十七条",
+        "pkulaw_title": "中华人民共和国网络安全法(2025修正)",
+        "pkulaw_article": "37.0",
+        "timeliness": "现行有效",
+        "issue_date": "2025.10.28",
+        "implement_date": "2026.01.01",
+        "pkulaw_update_time": "2026.01.06 13:40:48",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/fe9682732480b562bdfb.html?way=mcp#tiao_37.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 67,
+      "id": "anti_unfair_competition_law_9",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "反不正当竞争法",
+        "article": "第九条",
+        "pkulaw_title": "中华人民共和国反不正当竞争法(2025修订)",
+        "pkulaw_article": "9.0",
+        "timeliness": "现行有效",
+        "issue_date": "2025.06.27",
+        "implement_date": "2025.10.15",
+        "pkulaw_update_time": "2026.01.06 13:39:25",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/1d79285621ad7295bdfb.html?way=mcp#tiao_9.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 68,
+      "id": "anti_monopoly_law_18",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "反垄断法",
+        "article": "第十八条",
+        "pkulaw_title": "中华人民共和国反垄断法(2022修正)",
+        "pkulaw_article": "18.0",
+        "timeliness": "现行有效",
+        "issue_date": "2022.06.24",
+        "implement_date": "2022.08.01",
+        "pkulaw_update_time": "2026.05.27 14:17:42",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d3236788421feacfbdfb.html?way=mcp#tiao_18.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 69,
+      "id": "anti_monopoly_law_22",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "反垄断法",
+        "article": "第二十二条",
+        "pkulaw_title": "中华人民共和国反垄断法(2022修正)",
+        "pkulaw_article": "22.0",
+        "timeliness": "现行有效",
+        "issue_date": "2022.06.24",
+        "implement_date": "2022.08.01",
+        "pkulaw_update_time": "2026.05.27 14:17:42",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/d3236788421feacfbdfb.html?way=mcp#tiao_22.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 70,
+      "id": "ecommerce_law_18",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "电子商务法",
+        "article": "第十八条",
+        "pkulaw_title": "中华人民共和国电子商务法",
+        "pkulaw_article": "18.0",
+        "timeliness": "现行有效",
+        "issue_date": "2018.08.31",
+        "implement_date": "2019.01.01",
+        "pkulaw_update_time": "2026.05.27 14:09:29",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/3f020f79c1e5316ebdfb.html?way=mcp#tiao_18.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 71,
+      "id": "ecommerce_law_35",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "电子商务法",
+        "article": "第三十五条",
+        "pkulaw_title": "中华人民共和国电子商务法",
+        "pkulaw_article": "35.0",
+        "timeliness": "现行有效",
+        "issue_date": "2018.08.31",
+        "implement_date": "2019.01.01",
+        "pkulaw_update_time": "2026.05.27 14:09:29",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/3f020f79c1e5316ebdfb.html?way=mcp#tiao_35.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 72,
+      "id": "advertising_law_28",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "广告法",
+        "article": "第二十八条",
+        "pkulaw_title": "中华人民共和国广告法(2021修正)",
+        "pkulaw_article": "28.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.04.29",
+        "implement_date": "2021.04.29",
+        "pkulaw_update_time": "2026.05.27 14:16:11",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ed14f353bf1e5fdbdfb.html?way=mcp#tiao_28.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 73,
+      "id": "advertising_law_38",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "广告法",
+        "article": "第三十八条",
+        "pkulaw_title": "中华人民共和国广告法(2021修正)",
+        "pkulaw_article": "38.0",
+        "timeliness": "现行有效",
+        "issue_date": "2021.04.29",
+        "implement_date": "2021.04.29",
+        "pkulaw_update_time": "2026.05.27 14:16:11",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/8ed14f353bf1e5fdbdfb.html?way=mcp#tiao_38.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 74,
+      "id": "copyright_law_10",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "著作权法",
+        "article": "第十条",
+        "pkulaw_title": "中华人民共和国著作权法(2020修正)",
+        "pkulaw_article": "10.0",
+        "timeliness": "现行有效",
+        "issue_date": "2020.11.11",
+        "implement_date": "2021.06.01",
+        "pkulaw_update_time": "2026.05.27 14:14:16",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/a3b3a54bea64f090bdfb.html?way=mcp#tiao_10.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 75,
+      "id": "copyright_law_17",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "著作权法",
+        "article": "第十七条",
+        "pkulaw_title": "中华人民共和国著作权法(2020修正)",
+        "pkulaw_article": "17.0",
+        "timeliness": "现行有效",
+        "issue_date": "2020.11.11",
+        "implement_date": "2021.06.01",
+        "pkulaw_update_time": "2026.05.27 14:14:16",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/a3b3a54bea64f090bdfb.html?way=mcp#tiao_17.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 76,
+      "id": "copyright_law_18",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "著作权法",
+        "article": "第十八条",
+        "pkulaw_title": "中华人民共和国著作权法(2020修正)",
+        "pkulaw_article": "18.0",
+        "timeliness": "现行有效",
+        "issue_date": "2020.11.11",
+        "implement_date": "2021.06.01",
+        "pkulaw_update_time": "2026.05.27 14:14:16",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/a3b3a54bea64f090bdfb.html?way=mcp#tiao_18.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 77,
+      "id": "copyright_law_25",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "著作权法",
+        "article": "第二十五条",
+        "pkulaw_title": "中华人民共和国著作权法(2020修正)",
+        "pkulaw_article": "25.0",
+        "timeliness": "现行有效",
+        "issue_date": "2020.11.11",
+        "implement_date": "2021.06.01",
+        "pkulaw_update_time": "2026.05.27 14:14:16",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/a3b3a54bea64f090bdfb.html?way=mcp#tiao_25.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 78,
+      "id": "trademark_law_43",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "商标法",
+        "article": "第四十三条",
+        "pkulaw_title": "中华人民共和国商标法(2019修正)",
+        "pkulaw_article": "43.0",
+        "timeliness": "现行有效",
+        "issue_date": "2019.04.23",
+        "implement_date": "2019.11.01",
+        "pkulaw_update_time": "2026.05.27 14:12:07",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/937235cafaf2a66fbdfb.html?way=mcp#tiao_43.0)",
+        "verified_at": "2026-06-06"
+      }
+    },
+    {
+      "index": 79,
+      "id": "patent_law_10",
+      "check": {
+        "status": "ok",
+        "message": "成功",
+        "law": "专利法",
+        "article": "第十条",
+        "pkulaw_title": "中华人民共和国专利法实施细则(2023修订)",
+        "pkulaw_article": "10.0",
+        "timeliness": "现行有效",
+        "issue_date": "2023.12.11",
+        "implement_date": "2024.01.20",
+        "pkulaw_update_time": "2026.01.06 13:34:38",
+        "pkulaw_url": "[北大法宝](https://www.pkulaw.com/chl/51e6a70b12e0ce51bdfb.html?way=mcp#tiao_10.0)",
+        "verified_at": "2026-06-06"
+      }
+    }
+  ]
+}

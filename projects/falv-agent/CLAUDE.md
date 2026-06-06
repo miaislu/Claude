@@ -143,6 +143,13 @@ python3 scripts/legal_citation_check.py --input /tmp/falv_results.json --use-pku
 python3 scripts/pkulaw_mcp_client.py law-item --title 民法典 --article 585
 ```
 
+批量核验本地高频法条库：
+
+```bash
+python3 scripts/pkulaw_batch_verify.py --max-calls 20
+python3 scripts/pkulaw_batch_verify.py --max-calls 80 --apply
+```
+
 合同类型覆盖矩阵入口：
 
 ```bash
