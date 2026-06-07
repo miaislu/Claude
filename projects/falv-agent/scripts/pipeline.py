@@ -237,6 +237,7 @@ class AnalysisResults:
     party_stance: str
     review_mode: str
     overall_score: Optional[int]
+    risk_calibration: dict    # 风险评级校准结果
     agent_results: list       # List[AgentResult as dict]
     skipped_agents: list      # 失败的 Agent 名称
     citation_warnings: list   # 法条引用警告
@@ -546,9 +547,9 @@ def validate_party_stance(text: str, party: str) -> dict:
     return {"valid": True, "detected": asdict(det), "message": "审查立场已通过校验。"}
 
 
-def validate_citations(text: str) -> list:
+def validate_citations(text: str, pkulaw_policy: str = "local") -> list:
     if check_legal_citations is not None:
-        result = check_legal_citations(text)
+        result = check_legal_citations(text, pkulaw_policy=pkulaw_policy)
         return [
             item for item in result.get("findings", [])
             if item.get("status") in ["deprecated", "stale", "unknown", "topic_mismatch"]
@@ -568,7 +569,69 @@ def validate_citations(text: str) -> list:
     return sorted(set(warnings))
 
 
-def load_legal_coverage(contract_type: str) -> dict:
+def keyword_hits(keywords: list[str], text: str) -> list[str]:
+    return [kw for kw in keywords if kw and kw in text]
+
+
+def summarize_review_topics(entry: dict, contract_text: str = "") -> dict:
+    """
+    根据触发词/排除词激活议题驱动审查清单。
+    该判断只负责提示深入审查，不直接生成法律结论。
+    """
+    topics = entry.get("review_topics", [])
+    if not topics:
+        return {
+            "active_topics": [],
+            "suppressed_topics": [],
+            "confirmation_questions": [],
+        }
+
+    text_sample = contract_text[:50000] if contract_text else ""
+    active_topics = []
+    suppressed_topics = []
+    confirmation_questions: list[str] = []
+
+    for topic in topics:
+        triggers = keyword_hits(topic.get("trigger_keywords", []), text_sample)
+        exclusions = keyword_hits(topic.get("exclusion_keywords", []), text_sample)
+        if not text_sample:
+            status = "baseline"
+        elif triggers and exclusions:
+            status = "triggered_with_exclusion"
+        elif triggers:
+            status = "triggered"
+        else:
+            status = "not_triggered"
+
+        topic_summary = {
+            "id": topic.get("id", ""),
+            "name": topic.get("name", ""),
+            "category": topic.get("category", ""),
+            "status": status,
+            "law_ids": topic.get("law_ids", []),
+            "matched_keywords": triggers,
+            "matched_exclusion_keywords": exclusions,
+            "review_questions": topic.get("review_questions", []),
+            "confirmation_questions": topic.get("confirmation_questions", []),
+            "output_guidance": topic.get("output_guidance", ""),
+        }
+
+        if status in ["baseline", "triggered", "triggered_with_exclusion"]:
+            active_topics.append(topic_summary)
+            for question in topic_summary["confirmation_questions"]:
+                if question not in confirmation_questions:
+                    confirmation_questions.append(question)
+        elif exclusions:
+            suppressed_topics.append(topic_summary)
+
+    return {
+        "active_topics": active_topics,
+        "suppressed_topics": suppressed_topics,
+        "confirmation_questions": confirmation_questions,
+    }
+
+
+def load_legal_coverage(contract_type: str, contract_text: str = "") -> dict:
     """
     读取合同类型法条覆盖矩阵，作为 Agent 分析前的法律依据基线。
     失败时只返回 error，不阻断审查主流程。
@@ -604,6 +667,8 @@ def load_legal_coverage(contract_type: str) -> dict:
             "title": item.get("title", ""),
         })
 
+    topic_summary = summarize_review_topics(entry, contract_text)
+
     return {
         "status": "matched" if selected_type == contract_type else "fallback",
         "contract_type": selected_type,
@@ -611,8 +676,104 @@ def load_legal_coverage(contract_type: str) -> dict:
         "required_citation_ids": required_ids,
         "required_citations": required_citations,
         "conditional_topics": entry.get("conditional_topics", {}),
+        "review_topics": entry.get("review_topics", []),
+        "active_review_topics": topic_summary["active_topics"],
+        "suppressed_review_topics": topic_summary["suppressed_topics"],
+        "confirmation_questions": topic_summary["confirmation_questions"],
         "missing_required_ids": missing_ids,
-        "instruction": "审查该类型合同时，应优先检查基础法条覆盖；条件议题仅在合同文本或交易背景触发时适用。",
+        "instruction": "审查该类型合同时，应优先检查基础法条覆盖；条件议题和审查议题仅在合同文本或交易背景触发时适用。触发词只提示深入审查，不直接构成违法或重大风险结论；confirmation_questions 应作为需向业务确认事项输出。",
+    }
+
+
+def load_risk_calibration_policy() -> dict:
+    path = KNOWLEDGE_DIR / "risk_calibration.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {
+            "score_bands": [],
+            "major_risk_factors": [],
+            "downgrade_signals": [],
+            "rules": [],
+        }
+
+
+def text_from_agent_results(agent_results: list[AgentResult]) -> str:
+    parts = []
+    for result in agent_results:
+        if result.content:
+            parts.append(result.content)
+        elif result.parsed:
+            parts.append(json.dumps(result.parsed, ensure_ascii=False))
+    return "\n".join(parts)
+
+
+def base_risk_level(score: Optional[int], policy: dict) -> dict:
+    if score is None:
+        return {
+            "level": "需人工判断",
+            "band": "unknown",
+            "description": "部分 Agent 未能输出可计算分数，需人工复核。",
+        }
+    bands = sorted(policy.get("score_bands", []), key=lambda item: item.get("min_score", 0), reverse=True)
+    for band in bands:
+        if score >= int(band.get("min_score", 0)):
+            return {
+                "level": band.get("level", "需人工判断"),
+                "band": band.get("level", ""),
+                "description": band.get("description", ""),
+            }
+    return {"level": "需人工判断", "band": "unknown", "description": ""}
+
+
+def calibrate_risk_level(score: Optional[int], legal_coverage: dict, agent_results: list[AgentResult]) -> dict:
+    """
+    将模型分数校准为律师报告用风险等级。
+    重点防止将普通争议、对方可能挑战、对委托方有利保护性条款误判为重大风险。
+    """
+    policy = load_risk_calibration_policy()
+    base = base_risk_level(score, policy)
+    result_text = text_from_agent_results(agent_results)
+    active_topics = legal_coverage.get("active_review_topics", [])
+    active_topic_text = json.dumps(active_topics, ensure_ascii=False)
+    combined_text = "\n".join([result_text, active_topic_text])
+
+    major_factors = []
+    for factor in policy.get("major_risk_factors", []):
+        hits = [kw for kw in factor.get("keywords", []) if kw and kw in combined_text]
+        if hits:
+            major_factors.append({
+                "id": factor.get("id", ""),
+                "name": factor.get("name", ""),
+                "matched_keywords": hits[:8],
+            })
+
+    downgrade_hits = [kw for kw in policy.get("downgrade_signals", []) if kw and kw in combined_text]
+    confirmation_questions = legal_coverage.get("confirmation_questions", [])
+
+    final_level = base["level"]
+    adjustment = "none"
+    if base["level"] == "重大风险候选":
+        if major_factors:
+            final_level = "重大风险"
+            adjustment = "confirmed_major_factor"
+        else:
+            final_level = "中等风险"
+            adjustment = "downgraded_no_major_factor"
+    elif base["level"] == "高度风险" and not major_factors:
+        final_level = "重大风险"
+        adjustment = "downgraded_from_high_without_major_factor"
+
+    return {
+        "score": score,
+        "base_level": base["level"],
+        "final_level": final_level,
+        "adjustment": adjustment,
+        "major_factors": major_factors,
+        "downgrade_signals": downgrade_hits[:10],
+        "confirmation_question_count": len(confirmation_questions),
+        "rules": policy.get("rules", []),
+        "instruction": "报告风险评级应优先使用 final_level。重大风险必须能对应 major_factors；若仅有 downgrade_signals，应避免直接写成重大风险。",
     }
 
 
@@ -769,7 +930,7 @@ async def call_agent(
                     },
                 ])
 
-        citation_warnings = validate_citations(content)
+        citation_warnings = validate_citations(content, session_ctx.get("pkulaw_policy", "local"))
         success = not validation_errors and parsed is not None
         return AgentResult(
             agent_name=agent_name,
@@ -939,13 +1100,16 @@ async def _run_analyze(args):
 
     # ── 构建 session_context ─────────────────────────────────────────────
     review_mode = "平衡分析" if args.party == "平衡分析" else "单方委托"
-    legal_coverage = load_legal_coverage(args.type)
+    legal_coverage = load_legal_coverage(args.type, contract_text)
+    risk_calibration_policy = load_risk_calibration_policy()
     session_ctx = {
         "contract_type":  args.type,
         "party_stance":   args.party,
         "review_mode":    review_mode,
         "context_file":   args.context_file,
         "legal_coverage": legal_coverage,
+        "risk_calibration_policy": risk_calibration_policy,
+        "pkulaw_policy": args.pkulaw_policy,
         "strictness": {
             "for_client_party": "严格" if review_mode == "单方委托" else "一般",
             "for_counterparty": "一般",
@@ -1013,6 +1177,7 @@ async def _run_analyze(args):
         print(f"\n⚠️  跳过的 Agent：{skipped}", file=sys.stderr)
 
     overall_score = extract_risk_score(results)
+    risk_calibration = calibrate_risk_level(overall_score, legal_coverage, results)
     citation_warnings = []
     for r in results:
         for warning in r.citation_warnings:
@@ -1040,6 +1205,7 @@ async def _run_analyze(args):
         party_stance    = args.party,
         review_mode     = review_mode,
         overall_score   = overall_score,
+        risk_calibration = risk_calibration,
         agent_results   = [asdict(r) for r in results],
         skipped_agents  = skipped,
         citation_warnings = citation_warnings,
@@ -1075,6 +1241,8 @@ async def _run_analyze(args):
     print(json.dumps({
         "status":        "ok",
         "overall_score": overall_score,
+        "risk_level":    risk_calibration.get("final_level", ""),
+        "risk_adjustment": risk_calibration.get("adjustment", ""),
         "passed":        len(passed),
         "skipped":       skipped,
         "output_file":   str(output_path),
@@ -1113,6 +1281,8 @@ def main():
                        help="分析结果 JSON 输出路径")
     p_ana.add_argument("--security-preflight", default="",
                        help="security_preflight.py 输出的 JSON 文件路径（可选）")
+    p_ana.add_argument("--pkulaw-policy", choices=["local", "on-demand", "always"], default="local",
+                       help="法条上游校验策略：local=只查本地；on-demand=必要时调用北大法宝；always=所有引用均调用北大法宝")
 
     args = parser.parse_args()
 

@@ -23,6 +23,9 @@
      b. 对哪方更有利 / 不利？
      c. 是否触发法定风险情形？
      d. 如需引用法条 → 先确认该法条存在（见第二节）
+     e. 如 session_context.legal_coverage.active_review_topics 已列出议题
+        → 优先按该议题的 review_questions 检查，并将 confirmation_questions
+          中无法仅凭合同文本判断的事项列为"需向业务确认事项"
 
 步骤 4 — 自我审查（输出前必做）
   └─ 检查清单：
@@ -32,6 +35,16 @@
      ✓ 是否使用了绝对性结论？（应改为"通常认为"等）
      ✓ 输出是否包含免责声明？
 ```
+
+### 1.1 议题驱动审查规则
+
+当 `session_context.legal_coverage` 包含 `active_review_topics` 时：
+
+- `matched_keywords` 只表示需要深入审查，不等于违法、不等于重大风险。
+- `matched_exclusion_keywords` 只表示需要降低误报或谨慎定性，不等于当然合规。
+- 对 `review_questions` 应逐项形成"满足 / 不满足 / 需进一步确认"的判断。
+- 对 `confirmation_questions`，凡合同文本无法回答的，不得自行假设，应在报告中列为"需向业务确认事项"。
+- 不得因为某条款对对方不利，就当然认定为我方重大风险；仍须先做立场和受益方判断。
 
 ---
 

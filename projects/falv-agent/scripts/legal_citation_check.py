@@ -105,6 +105,9 @@ def topic_match(citation: dict, context: str) -> bool:
     return any(keyword and keyword in context for keyword in keywords)
 
 
+PKULAW_POLICIES = {"local", "on-demand", "always"}
+
+
 def pkulaw_verify_law_item(law: str, raw_article: str) -> dict:
     if get_law_item_content is None:
         return {"status": "unavailable", "message": "未加载 pkulaw_mcp_client。"}
@@ -126,7 +129,27 @@ def pkulaw_verify_law_item(law: str, raw_article: str) -> dict:
     }
 
 
-def check_text(text: str, use_pkulaw: bool = False) -> dict:
+def is_major_context(context: str) -> bool:
+    return any(token in context for token in [
+        "重大风险", "高度风险", "高危", "必须修改", "must_fix", "行政处罚",
+        "合同无效", "不得实施集中", "个人信息", "数据出境", "无限责任",
+    ])
+
+
+def should_use_pkulaw(policy: str, status: str, major_context: bool = False) -> bool:
+    if policy == "always":
+        return True
+    if policy == "on-demand":
+        return status in ["unknown", "stale", "topic_mismatch"] or major_context
+    return False
+
+
+def check_text(text: str, use_pkulaw: bool = False, pkulaw_policy: str = "local") -> dict:
+    if use_pkulaw:
+        pkulaw_policy = "on-demand"
+    if pkulaw_policy not in PKULAW_POLICIES:
+        raise ValueError(f"不支持的北大法宝校验策略：{pkulaw_policy}")
+
     citation_index, deprecated = load_knowledge()
     findings = []
     seen = set()
@@ -140,6 +163,9 @@ def check_text(text: str, use_pkulaw: bool = False) -> dict:
         if dedupe_key in seen:
             continue
         seen.add(dedupe_key)
+
+        context = local_context(text, match.start(), match.end())
+        major_context = is_major_context(context)
 
         if law in deprecated:
             info = deprecated[law]
@@ -164,14 +190,14 @@ def check_text(text: str, use_pkulaw: bool = False) -> dict:
                 "level": "warning",
                 "message": "本地结构化法条库未收录该条文，需人工复核；不视为已确认现行有效。",
             }
-            if use_pkulaw:
+            if should_use_pkulaw(pkulaw_policy, "unknown", major_context):
                 finding["upstream_check"] = pkulaw_verify_law_item(law, raw_article)
+                finding["upstream_reason"] = "policy_on_demand_unknown_or_major"
             findings.append(finding)
             continue
 
         age = days_since(item.get("last_verified_at"))
         cycle = int(item.get("verification_cycle_days") or 90)
-        context = local_context(text, match.start(), match.end())
         is_topic_match = topic_match(item, context)
         status = "current"
         level = "info"
@@ -200,8 +226,13 @@ def check_text(text: str, use_pkulaw: bool = False) -> dict:
             "source_name": item.get("source_name", ""),
             "source_url": item.get("source_url", ""),
         }
-        if use_pkulaw and status in ["stale", "topic_mismatch"]:
+        if should_use_pkulaw(pkulaw_policy, status, major_context):
             finding["upstream_check"] = pkulaw_verify_law_item(law, raw_article)
+            finding["upstream_reason"] = (
+                "policy_always"
+                if pkulaw_policy == "always"
+                else "policy_on_demand_stale_topic_or_major"
+            )
         findings.append(finding)
 
     summary = {"current": 0, "stale": 0, "unknown": 0, "deprecated": 0, "topic_mismatch": 0}
@@ -216,7 +247,8 @@ def check_text(text: str, use_pkulaw: bool = False) -> dict:
             "path": str(KNOWLEDGE_DIR / "citations.json"),
             "checked_at": date.today().isoformat(),
             "upstreams": ["国家法律法规数据库", "北大法宝"],
-            "pkulaw_mcp_enabled": use_pkulaw,
+            "pkulaw_policy": pkulaw_policy,
+            "pkulaw_mcp_enabled": pkulaw_policy != "local",
         },
     }
 
@@ -226,6 +258,8 @@ def main():
     parser.add_argument("--input", required=True, help="待检查文件路径（txt/md/json）")
     parser.add_argument("--output", help="输出 JSON 路径；省略则打印到 stdout")
     parser.add_argument("--use-pkulaw", action="store_true", help="对 unknown/stale/topic_mismatch 条文调用北大法宝 MCP 做上游核验")
+    parser.add_argument("--pkulaw-policy", choices=sorted(PKULAW_POLICIES), default="local",
+                        help="北大法宝校验策略：local=只查本地；on-demand=仅 unknown/stale/topic mismatch/重大上下文查；always=所有引用均查")
     args = parser.parse_args()
 
     path = Path(args.input).expanduser()
@@ -234,7 +268,7 @@ def main():
         text = extract_text_from_json(json.loads(raw))
     else:
         text = raw
-    result = check_text(text, use_pkulaw=args.use_pkulaw)
+    result = check_text(text, use_pkulaw=args.use_pkulaw, pkulaw_policy=args.pkulaw_policy)
     payload = json.dumps(result, ensure_ascii=False, indent=2)
     if args.output:
         Path(args.output).expanduser().write_text(payload, encoding="utf-8")

@@ -156,7 +156,17 @@ python3 scripts/pkulaw_batch_verify.py --max-calls 80 --apply
 python3 scripts/legal_coverage_check.py --type 投资协议 --as-markdown
 ```
 
-`coverage_matrix.json` 用于定义每类合同的基础法条覆盖包和条件议题。它是“合同类型 × 法律依据”的第一层基线；使用日志和人工标注后续只用于发现盲区，不作为早期覆盖的唯一依据。
+`coverage_matrix.json` 用于定义每类合同的基础法条覆盖包、条件议题和议题驱动审查单元。当前结构是“合同类型 × 审查议题 × 触发词/排除词 × 需确认事项 × 法条依据”；使用日志和人工标注后续只用于发现盲区，不作为早期覆盖的唯一依据。
+
+多文件交易包预审入口：
+
+```bash
+python3 scripts/bundle_review.py <交易文件夹> --output /tmp/falv_bundle_manifest.json
+```
+
+该脚本不调用 LLM，用于识别股东协议/SHA、投资协议/认购协议、公司章程、披露函、交割条件清单等文件角色，并输出缺失文件和跨文件一致性检查点。
+
+风险评级校准规则位于 `legal_knowledge/risk_calibration.json`。`pipeline.py analyze` 会输出 `risk_calibration.final_level`；报告应优先使用该字段，不应仅因普通争议、对方可能挑战或措辞瑕疵评为重大风险。
 
 `pipeline.py analyze` 会在审查完成后写入去敏使用日志 `logs/usage_events.jsonl`。日志只保存合同类型、审查模式、法条命中、异常引用和覆盖缺口，不保存合同全文、文件路径或具体当事方名称。汇总入口：
 
@@ -166,7 +176,13 @@ python3 scripts/usage_log.py report
 
 北大法宝 MCP 已注册到 Claude Code 用户级配置（`/Users/miazhang/.claude.json`），包括法律法规检索、精准法条、法条识别、引用校验、案例检索、案号识别和法宝超链等服务。当前配置使用 `Authorization: Bearer ${PKULAW_ACCESS_TOKEN}`，需先在 shell 环境中设置真实 token，再运行 `claude mcp list` 验证健康状态。
 
-接入原则：北大法宝 MCP 是上游检索/校验通道，返回结果应经人工或脚本校验后写入本地 `citations.json` / `coverage_matrix.json`，不要让实时检索结果无审计地覆盖本地结构化库。
+接入原则：北大法宝 MCP 是上游检索/校验通道，返回结果应经人工或脚本校验后写入本地 `citations.json` / `coverage_matrix.json`，不要让实时检索结果无审计地覆盖本地结构化库。为节省调用额度，法条校验默认使用本地库；需要上游核验时显式使用：
+
+```bash
+python3 scripts/legal_citation_check.py --input /tmp/falv_results.json --pkulaw-policy on-demand
+```
+
+`on-demand` 仅对本地未知、过期、主题弱匹配或重大风险上下文中的引用调用北大法宝；`always` 会对所有引用调用，不建议在测试账号下默认使用。
 
 人工刷新入口：
 

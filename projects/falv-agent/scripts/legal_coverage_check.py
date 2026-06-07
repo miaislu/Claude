@@ -33,6 +33,8 @@ def collect_ids(entry: dict[str, Any]) -> list[str]:
     ids = list(entry.get("required_citation_ids", []))
     for topic_ids in entry.get("conditional_topics", {}).values():
         ids.extend(topic_ids)
+    for topic in entry.get("review_topics", []):
+        ids.extend(topic.get("law_ids", []))
     return ids
 
 
@@ -56,6 +58,12 @@ def check_entry(contract_type: str, entry: dict[str, Any], citation_index: dict[
         for topic, ids in conditional_topics.items()
         if any(item_id not in citation_index for item_id in ids)
     }
+    review_topics = entry.get("review_topics", [])
+    review_topic_unknown = {
+        topic.get("id", ""): [item_id for item_id in topic.get("law_ids", []) if item_id not in citation_index]
+        for topic in review_topics
+        if any(item_id not in citation_index for item_id in topic.get("law_ids", []))
+    }
     required_found = [item_id for item_id in required_ids if item_id in citation_index]
     coverage = (len(required_found) / len(required_ids)) if required_ids else 1.0
 
@@ -67,8 +75,10 @@ def check_entry(contract_type: str, entry: dict[str, Any], citation_index: dict[
         "coverage": round(coverage, 4),
         "missing_required_ids": required_unknown,
         "unknown_conditional_ids": conditional_unknown,
+        "unknown_review_topic_ids": review_topic_unknown,
         "required_citations": [summarize_citation(citation_index[item_id]) for item_id in required_found],
         "conditional_topics": conditional_topics,
+        "review_topic_count": len(review_topics),
     }
 
 
@@ -86,7 +96,12 @@ def check_matrix(matrix: dict[str, Any], citation_index: dict[str, dict[str, Any
         entries = contract_types
 
     results = [check_entry(name, entry, citation_index) for name, entry in entries.items()]
-    ok = all(not item["missing_required_ids"] and not item["unknown_conditional_ids"] for item in results)
+    ok = all(
+        not item["missing_required_ids"]
+        and not item["unknown_conditional_ids"]
+        and not item["unknown_review_topic_ids"]
+        for item in results
+    )
     return {
         "ok": ok,
         "schema_version": matrix.get("schema_version", ""),
@@ -121,6 +136,10 @@ def render_markdown(payload: dict[str, Any]) -> str:
             lines.append(f"- 缺失基础法条 ID：{', '.join(item['missing_required_ids'])}")
         if item.get("unknown_conditional_ids"):
             lines.append(f"- 条件议题存在未知 ID：{json.dumps(item['unknown_conditional_ids'], ensure_ascii=False)}")
+        if item.get("unknown_review_topic_ids"):
+            lines.append(f"- 审查议题存在未知 ID：{json.dumps(item['unknown_review_topic_ids'], ensure_ascii=False)}")
+        if item.get("review_topic_count"):
+            lines.append(f"- 审查议题数：{item['review_topic_count']}")
         lines.append("")
     return "\n".join(lines)
 

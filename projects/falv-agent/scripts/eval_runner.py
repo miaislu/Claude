@@ -33,6 +33,7 @@ SECURITY_PREFLIGHT = ROOT / "scripts" / "security_preflight.py"
 LEGAL_CITATION_CHECK = ROOT / "scripts" / "legal_citation_check.py"
 LEGAL_COVERAGE_CHECK = ROOT / "scripts" / "legal_coverage_check.py"
 USAGE_LOG = ROOT / "scripts" / "usage_log.py"
+BUNDLE_REVIEW = ROOT / "scripts" / "bundle_review.py"
 
 
 @dataclass
@@ -221,6 +222,14 @@ def eval_coverage_fixture() -> CaseResult:
     results_by_type = {item.get("contract_type"): item for item in result.get("results", [])}
     pipeline = load_pipeline_module()
     investment_coverage = pipeline.load_legal_coverage("投资协议")
+    investment_triggered = pipeline.load_legal_coverage(
+        "投资协议",
+        "本轮股权收购将导致控制权变更，投资人取得董事席位和一票否决权，并可能触发经营者集中申报。"
+    )
+    platform_triggered = pipeline.load_legal_coverage(
+        "平台技术服务协议",
+        "平台向商家提供API数据接口和技术服务，可能处理用户订单信息、手机号和地址；协议还包含排他合作、最低价和流量限制安排。"
+    )
 
     add_check(
         checks,
@@ -261,6 +270,31 @@ def eval_coverage_fixture() -> CaseResult:
         and investment_coverage.get("contract_type") == "投资协议"
         and "company_law_84" in investment_coverage.get("required_citation_ids", []),
         str(investment_coverage),
+    )
+    investment_topic_ids = [item.get("id") for item in investment_triggered.get("active_review_topics", [])]
+    platform_topic_ids = [item.get("id") for item in platform_triggered.get("active_review_topics", [])]
+    add_check(
+        checks,
+        "coverage_investment_topic_activation",
+        "investment_antitrust_concentration" in investment_topic_ids,
+        str(investment_triggered.get("active_review_topics", [])),
+    )
+    add_check(
+        checks,
+        "coverage_platform_topic_activation",
+        "platform_pipl_processing" in platform_topic_ids
+        and "platform_antitrust_dominance" in platform_topic_ids,
+        str(platform_triggered.get("active_review_topics", [])),
+    )
+    add_check(
+        checks,
+        "coverage_confirmation_questions",
+        bool(investment_triggered.get("confirmation_questions"))
+        and bool(platform_triggered.get("confirmation_questions")),
+        str({
+            "investment": investment_triggered.get("confirmation_questions"),
+            "platform": platform_triggered.get("confirmation_questions"),
+        }),
     )
 
     return CaseResult(name="legal coverage fixture", passed=all(c.passed for c in checks), checks=checks)
@@ -312,6 +346,107 @@ def eval_usage_log_fixture() -> CaseResult:
     return CaseResult(name="usage log fixture", passed=all(c.passed for c in checks), checks=checks)
 
 
+def eval_bundle_fixture() -> CaseResult:
+    checks: list[CheckResult] = []
+    bundle_dir = CASES_DIR / "investment_bundle"
+    result = run_json([sys.executable, str(BUNDLE_REVIEW), str(bundle_dir)])
+    roles = [item.get("role") for item in result.get("documents", [])]
+    triggered = [
+        item.get("id")
+        for item in result.get("cross_file_checks", [])
+        if item.get("status") == "triggered"
+    ]
+    missing = [item.get("role") for item in result.get("missing_expected_documents", [])]
+
+    add_check(
+        checks,
+        "bundle_transaction_type",
+        result.get("transaction_type") == "投资交易包",
+        str(result),
+    )
+    add_check(
+        checks,
+        "bundle_roles",
+        "股东协议/SHA" in roles
+        and "投资协议/认购协议" in roles
+        and "公司章程" in roles,
+        str(roles),
+    )
+    add_check(
+        checks,
+        "bundle_cross_file_checks",
+        "governance_vs_articles" in triggered
+        and "closing_conditions_vs_main_agreement" in triggered,
+        str(triggered),
+    )
+    add_check(
+        checks,
+        "bundle_missing_expected_documents",
+        "披露函/披露清单" in missing,
+        str(missing),
+    )
+    return CaseResult(name="transaction bundle fixture", passed=all(c.passed for c in checks), checks=checks)
+
+
+def eval_risk_calibration_fixture() -> CaseResult:
+    checks: list[CheckResult] = []
+    pipeline = load_pipeline_module()
+    coverage = pipeline.load_legal_coverage(
+        "投资协议",
+        "本轮股权收购涉及取得控制权、决定性影响、经营者集中申报和交割条件。"
+    )
+    major = pipeline.calibrate_risk_level(55, coverage, [])
+    ordinary = pipeline.calibrate_risk_level(55, {"active_review_topics": [], "confirmation_questions": []}, [])
+    add_check(
+        checks,
+        "risk_major_factor_upgrade",
+        major.get("final_level") == "重大风险" and major.get("major_factors"),
+        str(major),
+    )
+    add_check(
+        checks,
+        "risk_no_major_factor_downgrade",
+        ordinary.get("final_level") == "中等风险"
+        and ordinary.get("adjustment") == "downgraded_no_major_factor",
+        str(ordinary),
+    )
+    return CaseResult(name="risk calibration fixture", passed=all(c.passed for c in checks), checks=checks)
+
+
+def eval_citation_policy_fixture() -> CaseResult:
+    checks: list[CheckResult] = []
+    text = "重大风险：《民法典》第五百八十五条可能涉及违约金调整。"
+    code, result = run_json_with_status([
+        sys.executable,
+        str(LEGAL_CITATION_CHECK),
+        "--input",
+        str(FIXTURES_DIR / "citation_check_input.txt"),
+        "--pkulaw-policy",
+        "local",
+    ])
+    add_check(
+        checks,
+        "citation_policy_local",
+        code == 0 and result.get("knowledge_base", {}).get("pkulaw_policy") == "local",
+        str(result),
+    )
+    module_spec = importlib.util.spec_from_file_location("falv_citation_eval", LEGAL_CITATION_CHECK)
+    if module_spec is None or module_spec.loader is None:
+        add_check(checks, "citation_policy_major_context", False, "无法加载 legal_citation_check.py")
+    else:
+        module = importlib.util.module_from_spec(module_spec)
+        module_spec.loader.exec_module(module)
+        add_check(
+            checks,
+            "citation_policy_major_context",
+            module.is_major_context(text) is True
+            and module.should_use_pkulaw("on-demand", "current", True) is True
+            and module.should_use_pkulaw("local", "unknown", True) is False,
+            "policy helpers failed",
+        )
+    return CaseResult(name="citation policy fixture", passed=all(c.passed for c in checks), checks=checks)
+
+
 def discover_cases(case_filter: Optional[str]) -> list[Path]:
     case_dirs = sorted(path for path in CASES_DIR.iterdir() if (path / "case.json").exists())
     if case_filter:
@@ -340,8 +475,11 @@ def main():
     if not args.case:
         results.append(eval_render_fixture())
         results.append(eval_citation_fixture())
-        results.append(eval_coverage_fixture())
-        results.append(eval_usage_log_fixture())
+    results.append(eval_coverage_fixture())
+    results.append(eval_usage_log_fixture())
+    results.append(eval_bundle_fixture())
+    results.append(eval_risk_calibration_fixture())
+    results.append(eval_citation_policy_fixture())
 
     if args.json:
         payload = {

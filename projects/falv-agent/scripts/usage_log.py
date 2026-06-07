@@ -106,6 +106,7 @@ def build_event(analysis: dict[str, Any], contract_text: str = "") -> dict[str, 
     citation_info = collect_citations(analysis)
     legal_coverage = analysis.get("legal_coverage") or {}
     required_ids = legal_coverage.get("required_citation_ids", [])
+    active_topics = legal_coverage.get("active_review_topics", [])
     used_ids = citation_info["used_knowledge_ids"]
     missing_required_ids = [
         item_id for item_id in required_ids
@@ -126,6 +127,8 @@ def build_event(analysis: dict[str, Any], contract_text: str = "") -> dict[str, 
         "legal_coverage_status": legal_coverage.get("status", ""),
         "legal_coverage_type": legal_coverage.get("contract_type", ""),
         "required_citation_ids": required_ids,
+        "active_review_topic_ids": [item.get("id", "") for item in active_topics if item.get("id")],
+        "confirmation_question_count": len(legal_coverage.get("confirmation_questions", [])),
         "used_knowledge_ids": used_ids,
         "missing_required_citation_ids": missing_required_ids,
         "problematic_citations": citation_info["problematic_citations"],
