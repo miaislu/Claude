@@ -1,4 +1,4 @@
-# /falv fanyi — 法律术语白话翻译
+# /legal plain-language — 法律术语白话翻译
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。
 
@@ -9,10 +9,10 @@
 ## 用法
 
 ```
-/falv fanyi <文件路径或粘贴文本>
-/falv fanyi "不可抗力系指不能预见、不能避免且不能克服的客观情况"
-/falv fanyi 合同第五条.txt --level 小学生    # 用最简单的语言解释
-/falv fanyi 合同.pdf --glossary              # 同时输出术语表
+/legal plain-language <文件路径或粘贴文本>
+/legal plain-language "不可抗力系指不能预见、不能避免且不能克服的客观情况"
+/legal plain-language 合同第五条.txt --level 小学生    # 用最简单的语言解释
+/legal plain-language 合同.pdf --glossary              # 同时输出术语表
 ```
 
 ## 参数

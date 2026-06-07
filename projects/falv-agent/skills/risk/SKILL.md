@@ -1,4 +1,4 @@
-# /falv fengxian — 风险条款快速评分
+# /legal risk — 风险条款快速评分
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。
 
@@ -9,9 +9,9 @@
 ## 用法
 
 ```
-/falv fengxian <文件路径或粘贴内容>
-/falv fengxian 合同.txt --top 5      # 只显示前5个最高风险条款
-/falv fengxian 合同.txt --party 乙方  # 重点关注对乙方的风险
+/legal risk <文件路径或粘贴内容>
+/legal risk 合同.txt --top 5      # 只显示前5个最高风险条款
+/legal risk 合同.txt --party 乙方  # 重点关注对乙方的风险
 ```
 
 ## 参数
@@ -24,8 +24,8 @@
 
 ## 执行流程
 
-1. 调用 `tiao-kuan-fen-xi` Agent 快速提取条款列表
-2. 调用 `feng-xian-ping-gu` Agent 对所有条款评分
+1. 调用 `clause-analyzer` Agent 快速提取条款列表
+2. 调用 `risk-assessor` Agent 对所有条款评分
 3. 按风险分从高到低排序，输出热力表
 
 ## 输出格式

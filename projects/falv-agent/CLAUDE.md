@@ -4,32 +4,43 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-**中国法律 AI Agent** — 基于 Claude Code 技能系统的中文法律助手，聚焦中国法律体系（民法典、劳动法、公司法、数据合规法等）。通过 `/falv` 系列斜杠命令提供合同审查、风险评估、合规检查、文件起草等功能。
+**中国法律 AI Agent** — 基于 Claude Code 技能系统的中文法律助手，聚焦中国法律体系（民法典、劳动法、公司法、数据合规法等）。通过 `/legal` 系列斜杠命令提供合同审查、风险评估、合规检查、文件起草等功能。
 
-参考项目：[ai-legal-claude](https://github.com/zubair-trabzada/ai-legal-claude)（英美法体系版本）。
+参考项目：[claude-for-legal-ZH](https://github.com/CSlawyer1985/claude-for-legal-ZH)（中国法版本，功能对比与差异见下方）。
+
+**五项核心特性：**
+- **冷启动面试**（`/legal onboard`）：首次使用设置实践画像，后续所有审查自动个性化
+- **来源溯源标注**：每条法律依据强制标注 `[本地库]` / `[法宝核验]` / `[未验证]`
+- **双轴风险评价**：法律风险与商业谈判摩擦分离评分，互不混淆
+- **Managed Agent Cookbook**：YAML 格式，可部署到 Anthropic 托管基础设施，无需本地 API Key
+- **14 种合同类型**（新增诉讼/仲裁协议），IP 模块扩充 NDA 专项 + 著作权转让专项
 
 ---
 
 ## 项目结构
 
 ```
-.claude/
-├── skills/
-│   ├── falv/SKILL.md          # 主命令路由器（/falv 入口）
-│   ├── shencha/SKILL.md       # /falv shencha — 合同审查
-│   ├── fengxian/SKILL.md      # /falv fengxian — 风险评估
-│   ├── hege/SKILL.md          # /falv hege — 合规检查
-│   ├── qicao/SKILL.md         # /falv qicao — 文件起草
-│   ├── fanyi/SKILL.md         # /falv fanyi — 法律术语转白话
-│   ├── laodong/SKILL.md       # /falv laodong — 劳动合同专项
-│   ├── gongsi/SKILL.md        # /falv gongsi — 公司法事务
-│   └── baogao/SKILL.md        # /falv baogao — 生成 PDF 报告
-├── agents/
-│   ├── tiao-kuan-fen-xi.md    # 条款分析师 Agent
-│   ├── feng-xian-ping-gu.md   # 风险评估师 Agent
-│   ├── he-gui-jian-cha.md     # 合规检查员 Agent
-│   ├── yi-wu-jie-xi.md        # 权利义务解析 Agent
-│   └── jian-yi-yin-qing.md    # 修改建议 Agent
+skills/
+├── legal/SKILL.md             # 主命令路由器（/legal 入口）
+├── onboard/SKILL.md           # /legal onboard — 冷启动面试，写入实践画像
+├── review/SKILL.md            # /legal review — 合同全面审查（旗舰）
+├── risk/SKILL.md              # /legal risk — 风险条款评分
+├── compliance/SKILL.md        # /legal compliance — 合规检查
+├── draft/SKILL.md             # /legal draft — 文件起草
+├── plain-language/SKILL.md    # /legal plain-language — 法律术语转白话
+├── labor/SKILL.md             # /legal labor — 劳动合同专项
+├── corporate/SKILL.md         # /legal corporate — 公司法事务
+└── report/SKILL.md            # /legal report — 生成 Word/PDF 报告
+agents/
+├── clause-analyzer.md         # 条款分析师 Agent（Phase 1）
+├── risk-assessor.md           # 风险评估师 Agent（Phase 2，含双轴评分）
+├── compliance-checker.md      # 合规检查员 Agent（Phase 2）
+├── obligations-extractor.md   # 权利义务解析 Agent（Phase 2）
+└── amendment-writer.md        # 修改建议 Agent（Phase 3）
+managed-agent-cookbooks/
+└── contract-review/
+    ├── agent.yaml             # 主编排 Agent（Anthropic 托管基础设施）
+    └── subagents/             # 五个子 Agent YAML
 scripts/
 ├── pipeline.py                # Python 控制流：类型识别、DAG 调度、校验、评分
 ├── security_preflight.py      # 审查前本地保密与敏感信息预检
@@ -72,10 +83,10 @@ pip3 install reportlab
 安装后在 Claude Code 中直接使用：
 
 ```
-/falv shencha 合同.pdf
-/falv fengxian 协议.txt
-/falv hege --type pipl
-/falv qicao --type 劳动合同
+/legal review 合同.pdf
+/legal risk 协议.txt
+/legal compliance --type pipl
+/legal draft --type 劳动合同
 ```
 
 ---
@@ -105,7 +116,7 @@ python3 scripts/eval_runner.py --case barley_sha_founder_j
 
 ## 保密与合规产品机制
 
-`/falv shencha` 在提取文本后、类型识别前运行 `security_preflight.py`。该脚本只在本地扫描敏感信息，不调用 API。
+`/legal review` 在提取文本后、类型识别前运行 `security_preflight.py`。该脚本只在本地扫描敏感信息，不调用 API。
 
 当预检结果为 `MEDIUM` 或 `HIGH` 时，必须让用户选择：
 
@@ -202,7 +213,7 @@ python3 scripts/update_legal_citations.py \
 
 ## Agent 架构
 
-`/falv shencha`（旗舰命令）采用 **Claude Code UI + Python 显式控制流 + Agent 专项分析** 架构。
+`/legal review`（旗舰命令）采用 **Claude Code UI + Python 显式控制流 + Agent 专项分析** 架构。
 
 执行顺序为三阶段 DAG：
 

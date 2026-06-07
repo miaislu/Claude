@@ -1,4 +1,4 @@
-# /falv laodong — 劳动合同专项审查
+# /legal labor — 劳动合同专项审查
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。
 
@@ -9,9 +9,9 @@
 ## 用法
 
 ```
-/falv laodong <文件路径>
-/falv laodong 劳动合同.pdf --party 劳动者
-/falv laodong 劳动合同.pdf --party 用人单位
+/legal labor <文件路径>
+/legal labor 劳动合同.pdf --party 劳动者
+/legal labor 劳动合同.pdf --party 用人单位
 ```
 
 ## 参数

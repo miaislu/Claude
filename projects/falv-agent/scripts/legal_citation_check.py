@@ -177,6 +177,7 @@ def check_text(text: str, use_pkulaw: bool = False, pkulaw_policy: str = "local"
                 "level": "error",
                 "message": info.get("message", f"《{law}》已废止或不应引用。"),
                 "replaced_by": info.get("replaced_by", ""),
+                "source_tier": "未验证",   # 废止法不视为有效来源
             })
             continue
 
@@ -189,10 +190,14 @@ def check_text(text: str, use_pkulaw: bool = False, pkulaw_policy: str = "local"
                 "status": "unknown",
                 "level": "warning",
                 "message": "本地结构化法条库未收录该条文，需人工复核；不视为已确认现行有效。",
+                "source_tier": "未验证",
             }
             if should_use_pkulaw(pkulaw_policy, "unknown", major_context):
-                finding["upstream_check"] = pkulaw_verify_law_item(law, raw_article)
+                upstream = pkulaw_verify_law_item(law, raw_article)
+                finding["upstream_check"] = upstream
                 finding["upstream_reason"] = "policy_on_demand_unknown_or_major"
+                if isinstance(upstream, dict) and upstream.get("status") == "verified":
+                    finding["source_tier"] = "法宝核验"
             findings.append(finding)
             continue
 
@@ -212,6 +217,14 @@ def check_text(text: str, use_pkulaw: bool = False, pkulaw_policy: str = "local"
             level = "warning"
             message = "条文已收录且未过期，但上下文关键词弱匹配，建议人工复核适用性。"
 
+        # 本地库命中：默认 [本地库]；stale 降为 [本地库（过期）]
+        if status == "current" or status == "topic_mismatch":
+            tier = "本地库"
+        elif status == "stale":
+            tier = "本地库（过期）"
+        else:
+            tier = "未验证"
+
         finding = {
             "citation": citation_text,
             "law": law,
@@ -225,14 +238,19 @@ def check_text(text: str, use_pkulaw: bool = False, pkulaw_policy: str = "local"
             "verification_cycle_days": cycle,
             "source_name": item.get("source_name", ""),
             "source_url": item.get("source_url", ""),
+            "source_tier": tier,
         }
         if should_use_pkulaw(pkulaw_policy, status, major_context):
-            finding["upstream_check"] = pkulaw_verify_law_item(law, raw_article)
+            upstream = pkulaw_verify_law_item(law, raw_article)
+            finding["upstream_check"] = upstream
             finding["upstream_reason"] = (
                 "policy_always"
                 if pkulaw_policy == "always"
                 else "policy_on_demand_stale_topic_or_major"
             )
+            # 如果法宝核验通过，升级到法宝核验层级
+            if isinstance(upstream, dict) and upstream.get("status") == "verified":
+                finding["source_tier"] = "法宝核验"
         findings.append(finding)
 
     summary = {"current": 0, "stale": 0, "unknown": 0, "deprecated": 0, "topic_mismatch": 0}

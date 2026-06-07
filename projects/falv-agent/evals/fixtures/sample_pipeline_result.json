@@ -7,7 +7,7 @@
   "skipped_agents": [],
   "citation_warnings": [
     {
-      "agent": "feng-xian-ping-gu",
+      "agent": "risk-assessor",
       "warning": {
         "citation": "《合同法》第六十条",
         "law": "合同法",
@@ -34,7 +34,7 @@
   },
   "agent_results": [
     {
-      "agent_name": "tiao-kuan-fen-xi",
+      "agent_name": "clause-analyzer",
       "success": true,
       "content": "",
       "parsed": {
@@ -59,7 +59,7 @@
       "elapsed_seconds": 0.1
     },
     {
-      "agent_name": "feng-xian-ping-gu",
+      "agent_name": "risk-assessor",
       "success": true,
       "content": "",
       "parsed": {
@@ -83,7 +83,7 @@
       "elapsed_seconds": 0.1
     },
     {
-      "agent_name": "he-gui-jian-cha",
+      "agent_name": "compliance-checker",
       "success": true,
       "content": "",
       "parsed": {
@@ -111,7 +111,7 @@
       "elapsed_seconds": 0.1
     },
     {
-      "agent_name": "yi-wu-jie-xi",
+      "agent_name": "obligations-extractor",
       "success": true,
       "content": "",
       "parsed": {
@@ -133,7 +133,7 @@
       "elapsed_seconds": 0.1
     },
     {
-      "agent_name": "jian-yi-yin-qing",
+      "agent_name": "amendment-writer",
       "success": true,
       "content": "",
       "parsed": {

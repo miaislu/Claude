@@ -116,6 +116,13 @@ ROUTING: dict[str, dict] = {
         "context":  "saas.md",
         "parties":  ["企业用户", "服务商", "平衡分析"],
     },
+    "诉讼/仲裁协议": {
+        "keywords": ["仲裁协议", "仲裁条款", "保全", "诉讼和解", "调解协议",
+                     "诉讼时效", "管辖约定", "诉诸仲裁", "争议解决机制",
+                     "财产保全", "证据保全", "执行和解"],
+        "context":  "litigation.md",
+        "parties":  ["申请方/原告", "被申请方/被告", "平衡分析"],
+    },
 }
 ROUTING_FALLBACK = {
     "context": "general.md",
@@ -136,6 +143,7 @@ TITLE_HINTS = {
     "知识产权许可合同": ["知识产权许可协议", "商标许可协议", "专利许可协议", "著作权许可协议"],
     "分销代理合同": ["分销协议", "经销协议", "代理协议", "渠道合作协议"],
     "SaaS云服务协议": ["SaaS服务协议", "云服务协议", "订阅服务协议"],
+    "诉讼/仲裁协议": ["仲裁协议", "和解协议", "调解协议", "诉讼保全协议", "争议解决协议"],
 }
 
 DEPRECATED_LAWS = [
@@ -144,11 +152,11 @@ DEPRECATED_LAWS = [
 ]
 
 AGENT_SCHEMAS = {
-    "tiao-kuan-fen-xi": ["basic_info", "clauses"],
-    "feng-xian-ping-gu": ["risk_assessment", "overall_risk_score"],
-    "he-gui-jian-cha": ["compliance_check"],
-    "yi-wu-jie-xi": ["timeline", "party_a_obligations", "party_b_obligations"],
-    "jian-yi-yin-qing": ["recommendations"],
+    "clause-analyzer": ["basic_info", "clauses"],
+    "risk-assessor": ["risk_assessment", "overall_risk_score"],
+    "compliance-checker": ["compliance_check"],
+    "obligations-extractor": ["timeline", "party_a_obligations", "party_b_obligations"],
+    "amendment-writer": ["recommendations"],
 }
 
 GENERIC_PARTY_TERMS = {
@@ -158,25 +166,25 @@ GENERIC_PARTY_TERMS = {
 }
 
 AGENT_WEIGHTS = {
-    "tiao-kuan-fen-xi": 0.20,
-    "feng-xian-ping-gu": 0.25,
-    "he-gui-jian-cha":   0.20,
-    "yi-wu-jie-xi":      0.15,
-    "jian-yi-yin-qing":  0.20,
+    "clause-analyzer": 0.20,
+    "risk-assessor": 0.25,
+    "compliance-checker":   0.20,
+    "obligations-extractor":      0.15,
+    "amendment-writer":  0.20,
 }
 
 # ── Agent 依赖 DAG（决定执行顺序和上下文传递）─────────────────────────────
 #
-#  Phase 1: tiao-kuan-fen-xi（条款分析师）
+#  Phase 1: clause-analyzer（条款分析师）
 #    └─ 独立运行，输出条款分类 JSON
 #    └─ 依据：是其他 Agent 的输入基础
 #
-#  Phase 2: feng-xian-ping-gu | he-gui-jian-cha | yi-wu-jie-xi （真并发）
+#  Phase 2: risk-assessor | compliance-checker | obligations-extractor （真并发）
 #    └─ 全部接收 Phase 1 输出作为额外上下文
 #    └─ feng 明确声明依赖（"基于条款分析师的分类结果"）
 #    └─ he / yi 不强依赖但受益于条款分类（clause_id 交叉引用）
 #
-#  Phase 3: jian-yi-yin-qing（修改建议引擎）
+#  Phase 3: amendment-writer（修改建议引擎）
 #    └─ 明确依赖 feng（高危条款列表）和 he（合规缺失项）
 #    └─ 依据 agent 文件："读取风险评估师和合规检查员的结果"
 #
@@ -184,20 +192,20 @@ AGENT_PHASES = [
     {
         "phase": 1,
         "label": "条款识别",
-        "agents": ["tiao-kuan-fen-xi"],
+        "agents": ["clause-analyzer"],
         "upstream": [],                                  # 无依赖
     },
     {
         "phase": 2,
         "label": "并发分析",
-        "agents": ["feng-xian-ping-gu", "he-gui-jian-cha", "yi-wu-jie-xi"],
-        "upstream": ["tiao-kuan-fen-xi"],                # 接收 Phase 1 输出
+        "agents": ["risk-assessor", "compliance-checker", "obligations-extractor"],
+        "upstream": ["clause-analyzer"],                # 接收 Phase 1 输出
     },
     {
         "phase": 3,
         "label": "修改建议",
-        "agents": ["jian-yi-yin-qing"],
-        "upstream": ["feng-xian-ping-gu", "he-gui-jian-cha"],  # 接收 Phase 2 核心输出
+        "agents": ["amendment-writer"],
+        "upstream": ["risk-assessor", "compliance-checker"],  # 接收 Phase 2 核心输出
     },
 ]
 
@@ -462,7 +470,7 @@ def validate_agent_output(agent_name: str, parsed: Optional[dict]) -> list:
 
 def validate_agent_deep_schema(agent_name: str, parsed: dict) -> list:
     errors = []
-    if agent_name == "tiao-kuan-fen-xi":
+    if agent_name == "clause-analyzer":
         clauses = parsed.get("clauses", [])
         if not isinstance(clauses, list):
             return ["clauses 必须为数组"]
@@ -473,7 +481,7 @@ def validate_agent_deep_schema(agent_name: str, parsed: dict) -> list:
             for key in ["id", "category", "location", "summary"]:
                 if not item.get(key):
                     errors.append(f"clauses[{idx}] 缺少字段：{key}")
-    elif agent_name == "feng-xian-ping-gu":
+    elif agent_name == "risk-assessor":
         risks = parsed.get("risk_assessment", [])
         if not isinstance(risks, list):
             return ["risk_assessment 必须为数组"]
@@ -487,18 +495,22 @@ def validate_agent_deep_schema(agent_name: str, parsed: dict) -> list:
             score = item.get("risk_score")
             if not isinstance(score, (int, float)) or score < 0 or score > 10:
                 errors.append(f"risk_assessment[{idx}].risk_score 必须为 0-10 数字")
-    elif agent_name == "he-gui-jian-cha":
+            # business_friction_score 可选，但若存在须为 0-10 数字
+            friction = item.get("business_friction_score")
+            if friction is not None and (not isinstance(friction, (int, float)) or friction < 0 or friction > 10):
+                errors.append(f"risk_assessment[{idx}].business_friction_score 若存在须为 0-10 数字")
+    elif agent_name == "compliance-checker":
         check = parsed.get("compliance_check", {})
         if not isinstance(check, dict):
             return ["compliance_check 必须为 object"]
         for key in ["overall_status", "applicable_laws", "passed", "failed", "invalid_clauses"]:
             if key not in check:
                 errors.append(f"compliance_check 缺少字段：{key}")
-    elif agent_name == "yi-wu-jie-xi":
+    elif agent_name == "obligations-extractor":
         for key in ["timeline", "party_a_obligations", "party_b_obligations"]:
             if not isinstance(parsed.get(key), list):
                 errors.append(f"{key} 必须为数组")
-    elif agent_name == "jian-yi-yin-qing":
+    elif agent_name == "amendment-writer":
         recs = parsed.get("recommendations", [])
         if not isinstance(recs, list):
             return ["recommendations 必须为数组"]
@@ -796,14 +808,14 @@ def calibrate_risk_level(score: Optional[int], legal_coverage: dict, agent_resul
 
 def compact_agent_result(result: AgentResult) -> dict:
     parsed = result.parsed or {}
-    if result.agent_name == "tiao-kuan-fen-xi":
+    if result.agent_name == "clause-analyzer":
         clauses = parsed.get("clauses", [])
         return {
             "basic_info": parsed.get("basic_info", {}),
             "total_clauses": parsed.get("total_clauses", len(clauses) if isinstance(clauses, list) else 0),
             "clauses": clauses[:80] if isinstance(clauses, list) else [],
         }
-    if result.agent_name == "feng-xian-ping-gu":
+    if result.agent_name == "risk-assessor":
         risks = parsed.get("risk_assessment", [])
         if isinstance(risks, list):
             risks = sorted(risks, key=lambda x: x.get("risk_score", 0) if isinstance(x, dict) else 0, reverse=True)[:20]
@@ -813,7 +825,7 @@ def compact_agent_result(result: AgentResult) -> dict:
             "medium_risk_count": parsed.get("medium_risk_count"),
             "top_risks": risks,
         }
-    if result.agent_name == "he-gui-jian-cha":
+    if result.agent_name == "compliance-checker":
         check = parsed.get("compliance_check", {})
         if isinstance(check, dict):
             return {
@@ -822,7 +834,7 @@ def compact_agent_result(result: AgentResult) -> dict:
                 "failed": check.get("failed", []),
                 "invalid_clauses": check.get("invalid_clauses", []),
             }
-    if result.agent_name == "yi-wu-jie-xi":
+    if result.agent_name == "obligations-extractor":
         return {
             "timeline": parsed.get("timeline", [])[:30] if isinstance(parsed.get("timeline"), list) else [],
             "party_a_obligations": parsed.get("party_a_obligations", [])[:30] if isinstance(parsed.get("party_a_obligations"), list) else [],
@@ -830,7 +842,7 @@ def compact_agent_result(result: AgentResult) -> dict:
             "imbalance_flags": parsed.get("imbalance_flags", []),
             "key_deadlines_summary": parsed.get("key_deadlines_summary", ""),
         }
-    if result.agent_name == "jian-yi-yin-qing":
+    if result.agent_name == "amendment-writer":
         return {
             "must_fix_count": parsed.get("must_fix_count"),
             "strongly_recommended_count": parsed.get("strongly_recommended_count"),
@@ -974,14 +986,14 @@ def score_agent_component(result: AgentResult) -> Optional[int]:
     if not result.success or not result.parsed:
         return None
     p = result.parsed
-    if result.agent_name == "feng-xian-ping-gu":
+    if result.agent_name == "risk-assessor":
         raw = p.get("overall_risk_score")
         if isinstance(raw, (int, float)):
             return max(0, min(100, int(100 - raw * 10)))
         high = p.get("high_risk_count", 0) or 0
         medium = p.get("medium_risk_count", 0) or 0
         return max(0, min(100, 90 - int(high) * 18 - int(medium) * 8))
-    if result.agent_name == "he-gui-jian-cha":
+    if result.agent_name == "compliance-checker":
         check = p.get("compliance_check", {})
         if not isinstance(check, dict):
             return 70
@@ -996,15 +1008,15 @@ def score_agent_component(result: AgentResult) -> Optional[int]:
         status_raw = str(check.get("overall_status", "")).strip()
         base = _STATUS_SCORES.get(status_raw, 76)  # 未知状态默认 76
         return max(0, min(100, base - failed * 8 - invalid * 15))
-    if result.agent_name == "jian-yi-yin-qing":
+    if result.agent_name == "amendment-writer":
         must = p.get("must_fix_count", 0) or 0
         strong = p.get("strongly_recommended_count", 0) or 0
         optional = p.get("optional_count", 0) or 0
         return max(0, min(100, 92 - int(must) * 12 - int(strong) * 6 - int(optional) * 2))
-    if result.agent_name == "tiao-kuan-fen-xi":
+    if result.agent_name == "clause-analyzer":
         clauses = p.get("clauses", [])
         return 90 if isinstance(clauses, list) and clauses else 72
-    if result.agent_name == "yi-wu-jie-xi":
+    if result.agent_name == "obligations-extractor":
         imbalance = safe_len(p.get("imbalance_flags"))
         return max(0, min(100, 88 - imbalance * 5))
     return None
@@ -1142,10 +1154,10 @@ async def _run_analyze(args):
 
     # ── 按 DAG 分阶段执行 ─────────────────────────────────────────────────────
     #
-    #  Phase 1 (单独): tiao-kuan-fen-xi
-    #  Phase 2 (并发): feng-xian-ping-gu | he-gui-jian-cha | yi-wu-jie-xi
+    #  Phase 1 (单独): clause-analyzer
+    #  Phase 2 (并发): risk-assessor | compliance-checker | obligations-extractor
     #                  ← 均接收 Phase 1 输出
-    #  Phase 3 (单独): jian-yi-yin-qing
+    #  Phase 3 (单独): amendment-writer
     #                  ← 接收 Phase 2 的 feng + he 输出
     #
     client    = AsyncAnthropic()

@@ -1,18 +1,18 @@
-# /falv baogao — 生成 PDF 报告
+# /legal report — 生成 PDF 报告
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。
 
 ## 功能描述
 
-将最近一次 `/falv shencha` 或其他审查结果导出为格式化 PDF 报告，可供存档、分享或提交给律师参考。
+将最近一次 `/legal review` 或其他审查结果导出为格式化 PDF 报告，可供存档、分享或提交给律师参考。
 
 ## 用法
 
 ```
-/falv baogao                          # 导出最近一次审查结果
-/falv baogao --last                   # 同上
-/falv baogao --file 报告名称.pdf       # 指定输出文件名
-/falv baogao --include-suggestions    # 包含详细修改建议
+/legal report                          # 导出最近一次审查结果
+/legal report --last                   # 同上
+/legal report --file 报告名称.pdf       # 指定输出文件名
+/legal report --include-suggestions    # 包含详细修改建议
 ```
 
 ## 参数

@@ -1,4 +1,4 @@
-# /falv hege — 合规检查
+# /legal compliance — 合规检查
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。
 
@@ -9,11 +9,11 @@
 ## 用法
 
 ```
-/falv hege <文件路径>
-/falv hege 隐私政策.txt --type pipl
-/falv hege 用户协议.txt --type 电商
-/falv hege 劳动合同.pdf --type 劳动法
-/falv hege 数据处理协议.txt --type 数据安全
+/legal compliance <文件路径>
+/legal compliance 隐私政策.txt --type pipl
+/legal compliance 用户协议.txt --type 电商
+/legal compliance 劳动合同.pdf --type 劳动法
+/legal compliance 数据处理协议.txt --type 数据安全
 ```
 
 ## 参数
@@ -38,7 +38,7 @@
 ## 执行流程
 
 1. 根据 `--type` 参数加载对应的合规检查清单
-2. 调用 `he-gui-jian-cha` Agent 执行逐项检查
+2. 调用 `compliance-checker` Agent 执行逐项检查
 3. 输出差距报告：通过项、未通过项、需补充内容
 
 ## 输出格式

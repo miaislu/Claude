@@ -1,4 +1,4 @@
-# /falv qicao — 法律文件起草
+# /legal draft — 法律文件起草
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。
 
@@ -9,10 +9,10 @@
 ## 用法
 
 ```
-/falv qicao
-/falv qicao --type 劳动合同
-/falv qicao --type 技术开发合同 --party 委托方
-/falv qicao --type NDA --brief
+/legal draft
+/legal draft --type 劳动合同
+/legal draft --type 技术开发合同 --party 委托方
+/legal draft --type NDA --brief
 ```
 
 ## 参数
@@ -74,7 +74,7 @@
 
 ```
 草稿已完成。建议：
-  → 运行 /falv shencha 对此草稿进行全面审查
+  → 运行 /legal review 对此草稿进行全面审查
   → 如需调整，直接告诉我修改哪条
 ```
 

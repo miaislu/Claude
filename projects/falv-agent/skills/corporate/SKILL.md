@@ -1,4 +1,4 @@
-# /falv gongsi — 公司法事务
+# /legal corporate — 公司法事务
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。
 
@@ -9,11 +9,11 @@
 ## 用法
 
 ```
-/falv gongsi --type <文件类型> [文件路径]
-/falv gongsi --type 股权转让 股权转让协议.pdf
-/falv gongsi --type 章程 公司章程.txt
-/falv gongsi --type 投资协议 term-sheet.pdf
-/falv gongsi --type 股权架构     # 无文件，交互式咨询
+/legal corporate --type <文件类型> [文件路径]
+/legal corporate --type 股权转让 股权转让协议.pdf
+/legal corporate --type 章程 公司章程.txt
+/legal corporate --type 投资协议 term-sheet.pdf
+/legal corporate --type 股权架构     # 无文件，交互式咨询
 ```
 
 ## 支持的文件类型

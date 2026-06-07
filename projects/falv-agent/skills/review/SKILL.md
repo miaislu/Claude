@@ -1,4 +1,4 @@
-# /falv shencha — 合同全面审查
+# /legal review — 合同全面审查
 
 ## 功能描述
 
@@ -7,12 +7,12 @@
 ## 用法
 
 ```
-/falv shencha <文件路径>
-/falv shencha 合同.pdf
-/falv shencha 合同.txt --type 投资协议 --party 投资方
-/falv shencha <交易文件夹路径> --bundle
-/falv shencha --resume 和缓医疗_审查报告_20260604_2142.checkpoint.json
-/falv shencha --brief
+/legal review <文件路径>
+/legal review 合同.pdf
+/legal review 合同.txt --type 投资协议 --party 投资方
+/legal review <交易文件夹路径> --bundle
+/legal review --resume 和缓医疗_审查报告_20260604_2142.checkpoint.json
+/legal review --brief
 ```
 
 ## 参数
@@ -31,6 +31,41 @@
 ## 执行流程
 
 > 所有 Agent 须遵守 `agents/_guidelines.md`（法条引用规范、禁止行为）。
+
+---
+
+### ◆ Step -1：加载实践画像（可选，自动执行）
+
+```bash
+# 检查实践画像是否存在
+test -f ~/.claude/legal-agent-profile.md && \
+  echo "PROFILE_EXISTS=true" || echo "PROFILE_EXISTS=false"
+```
+
+```
+IF ~/.claude/legal-agent-profile.md 存在:
+  → 读取文件内容
+  → 将画像注入 session_context.practice_profile 字段
+  → 在审查开始时简短说明：
+    "已加载实践画像（[生成日期]）：[身份] · [风险偏好] · 关注 [关注点列表]"
+  → 继续执行 Step 0
+
+ELIF 文件不存在:
+  → 提示（一行，不打断流程）：
+    "提示：运行 /legal onboard 可设置实践画像，让审查结果更贴合你的业务背景。"
+  → 继续执行 Step 0，不强制要求
+
+不论是否有画像，均继续正常执行审查流程，不等待用户操作。
+```
+
+**画像对审查的影响：**
+
+| 画像字段 | 对审查的影响 |
+|---|---|
+| 风险偏好：保守 | 对委托方所有不利条款均严格标注，不过滤轻微问题 |
+| 风险偏好：务实 | 聚焦重大/高风险，轻微问题仅列清单不展开 |
+| 特别关注点 | 对应类型条款（如 IP 归属、竞业）优先展开分析 |
+| 内部审查指引 | 将指引要求作为额外检查项注入 session_context |
 
 ---
 
@@ -359,7 +394,7 @@ python3 ~/.claude/scripts/checkpoint.py update \
 ```
 📄 报告已保存：reports/<项目名称>_审查报告_YYYYMMDD_HHMM.docx
 💾 检查点：reports/<项目名称>_审查报告_YYYYMMDD_HHMM.checkpoint.json
-   如需补充：/falv shencha --resume <检查点文件名>
+   如需补充：/legal review --resume <检查点文件名>
 ```
 
 **Word 导出失败降级：**

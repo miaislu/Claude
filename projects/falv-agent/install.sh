@@ -43,7 +43,7 @@ mkdir -p "$CLAUDE_DIR/agents"
 # ── 安装技能 ──────────────────────────────────────────────────────────────────
 info "安装法律技能..."
 
-SKILLS=(falv shencha fengxian hege qicao fanyi laodong gongsi baogao)
+SKILLS=(falv review risk hege draft plain-language laodong gongsi baogao)
 SKILL_NAMES=("主路由" "合同审查" "风险评估" "合规检查" "文件起草" "白话翻译" "劳动合同" "公司法" "PDF报告")
 
 installed_skills=0
@@ -66,7 +66,7 @@ done
 # ── 安装 Agent ────────────────────────────────────────────────────────────────
 info "安装专项 Agent..."
 
-AGENTS=(tiao-kuan-fen-xi feng-xian-ping-gu he-gui-jian-cha yi-wu-jie-xi jian-yi-yin-qing)
+AGENTS=(clause-analyzer risk-assessor compliance-checker obligations-extractor amendment-writer)
 AGENT_NAMES=("条款分析师" "风险评估师" "合规检查员" "权利义务解析" "修改建议引擎")
 
 # 公共指南（所有 Agent 依赖）
@@ -157,10 +157,10 @@ success "已安装 ${installed_skills} 个技能，${installed_agents} 个 Agent
 echo ""
 echo "  在 Claude Code 中使用："
 echo "  ┌──────────────────────────────────────────┐"
-echo "  │  /falv shencha 合同.pdf                  │"
-echo "  │  /falv fengxian 协议.txt                 │"
+echo "  │  /falv review 合同.pdf                  │"
+echo "  │  /falv risk 协议.txt                 │"
 echo "  │  /falv hege --type pipl                  │"
-echo "  │  /falv qicao --type 劳动合同              │"
+echo "  │  /falv draft --type 劳动合同              │"
 echo "  │  /falv                  （查看所有命令）  │"
 echo "  └──────────────────────────────────────────┘"
 echo ""

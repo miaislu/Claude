@@ -53,11 +53,11 @@ def fmt_list_value(value):
 
 def render(data: dict) -> str:
     agents = agent_map(data)
-    tiao = parsed(agents.get("tiao-kuan-fen-xi"))
-    feng = parsed(agents.get("feng-xian-ping-gu"))
-    hegui = parsed(agents.get("he-gui-jian-cha"))
-    yiwu = parsed(agents.get("yi-wu-jie-xi"))
-    jianyi = parsed(agents.get("jian-yi-yin-qing"))
+    tiao = parsed(agents.get("clause-analyzer"))
+    feng = parsed(agents.get("risk-assessor"))
+    hegui = parsed(agents.get("compliance-checker"))
+    yiwu = parsed(agents.get("obligations-extractor"))
+    jianyi = parsed(agents.get("amendment-writer"))
     clause_lookup = build_clause_lookup(tiao)
 
     lines = [
@@ -104,11 +104,29 @@ def render(data: dict) -> str:
             continue
         degree = risk_degree(item.get("risk_score"))
         source = issue_source_tag(item)
+        friction_score = item.get("business_friction_score")
+        friction_desc = item.get("business_friction_description", "")
+        if friction_score is not None:
+            friction_label = (
+                "低" if friction_score <= 3 else
+                "中" if friction_score <= 6 else
+                "高" if friction_score <= 9 else "极高"
+            )
+            friction_line = f"- 商业摩擦：{friction_label}（{friction_score}/10）"
+            if friction_desc:
+                friction_line += f" — {friction_desc}"
+        else:
+            friction_line = ""
+
         lines.extend([
             "",
             f"### 问题 {idx}：{item.get('risk_description') or item.get('clause_id') or '待补充问题标题'}",
-            f"- 风险等级：{degree}",
-            f"- 问题类型：{source}",
+            f"- 法律风险：{degree}（{item.get('risk_score', '')}/10）",
+        ])
+        if friction_line:
+            lines.append(friction_line)
+        lines.extend([
+            f"- 问题类型：[{source}]",
             f"- 涉及条款：{item.get('clause_id', '')}",
             f"- 条款位置：{item.get('location') or clause_lookup.get(item.get('clause_id'), {}).get('location', '')}",
             f"- 影响对象：{item.get('affected_party', '')}",
