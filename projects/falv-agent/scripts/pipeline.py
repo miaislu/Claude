@@ -31,6 +31,7 @@ except ImportError:
 try:
     from legal_citation_check import check_text as check_legal_citations
 except ImportError:
+    print("⚠️  legal_citation_check 模块未找到，法条引用校验功能已禁用。", file=sys.stderr)
     check_legal_citations = None
 
 try:
@@ -38,6 +39,7 @@ try:
     from usage_log import build_event as build_usage_event
     from usage_log import DEFAULT_LOG as DEFAULT_USAGE_LOG
 except ImportError:
+    print("⚠️  usage_log 模块未找到，使用日志功能已禁用。", file=sys.stderr)
     append_usage_event = None
     build_usage_event = None
     DEFAULT_USAGE_LOG = None
@@ -200,7 +202,7 @@ AGENT_PHASES = [
 ]
 
 DEFAULT_AGENTS_DIR = Path("~/.claude/agents").expanduser()
-DEFAULT_MODEL       = "claude-opus-4-5"
+DEFAULT_MODEL       = "claude-opus-4-8"
 PROJECT_ROOT        = Path(__file__).resolve().parents[1]
 KNOWLEDGE_DIR       = PROJECT_ROOT / "legal_knowledge"
 
@@ -526,23 +528,38 @@ def validate_party_stance(text: str, party: str) -> dict:
     concrete_cores = [party_core(p) for p in identified]
     party_norm = party_core(party_clean)
 
-    if identified and party_clean in GENERIC_PARTY_TERMS:
-        return {
-            "valid": False,
-            "detected": asdict(det),
-            "message": "已识别到具体当事方，不得使用泛称作为审查立场。",
-            "available_parties": det.available_parties,
-        }
-
     if identified:
+        # 先做模糊匹配：当用户输入的缩称（如"投资方"）包含在某个已识别当事方的括注中时也应视为有效。
+        # 例如："投资方" 可以匹配 "上海云玡企业管理咨询有限公司（投资方）"。
         matched = any(party_norm and (party_norm in core or core in party_norm) for core in concrete_cores)
-        if not matched:
+        if matched:
+            return {"valid": True, "detected": asdict(det), "message": "审查立场已通过校验。"}
+
+        # 模糊匹配失败时，再判断是否属于无法定位的泛称。
+        if party_clean in GENERIC_PARTY_TERMS:
             return {
                 "valid": False,
                 "detected": asdict(det),
-                "message": "审查立场未匹配到合同中的具体当事方。",
+                "message": "已识别到具体当事方，不得使用泛称作为审查立场。",
                 "available_parties": det.available_parties,
             }
+
+        # 模糊匹配失败且不是泛称（可能是手工输入的名称不完整）。
+        return {
+            "valid": False,
+            "detected": asdict(det),
+            "message": "审查立场未匹配到合同中的具体当事方。",
+            "available_parties": det.available_parties,
+        }
+
+    # 合同未提取到具体当事方：只对明显泛称做最低限度拦截。
+    if party_clean in GENERIC_PARTY_TERMS:
+        return {
+            "valid": False,
+            "detected": asdict(det),
+            "message": "未能从合同中提取具体当事方，请提供更明确的立场名称（如公司全称或协议中使用的缩称）。",
+            "available_parties": det.available_parties,
+        }
 
     return {"valid": True, "detected": asdict(det), "message": "审查立场已通过校验。"}
 
@@ -970,7 +987,14 @@ def score_agent_component(result: AgentResult) -> Optional[int]:
             return 70
         failed = safe_len(check.get("failed"))
         invalid = safe_len(check.get("invalid_clauses"))
-        base = 92 if "不" not in str(check.get("overall_status", "")) else 76
+        # 用枚举映射，不再依赖"不"字出现与否
+        _STATUS_SCORES = {
+            "合规": 92, "compliant": 92,
+            "部分合规": 78, "partial": 78, "partial_compliant": 78,
+            "不合规": 60, "non_compliant": 60, "noncompliant": 60,
+        }
+        status_raw = str(check.get("overall_status", "")).strip()
+        base = _STATUS_SCORES.get(status_raw, 76)  # 未知状态默认 76
         return max(0, min(100, base - failed * 8 - invalid * 15))
     if result.agent_name == "jian-yi-yin-qing":
         must = p.get("must_fix_count", 0) or 0

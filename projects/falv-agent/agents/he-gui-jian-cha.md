@@ -115,6 +115,17 @@
 {
   "compliance_check": {
     "overall_status": "不合规",
+```
+
+> `overall_status` 必须使用以下三个枚举值之一，不得使用其他表述：
+> - `"合规"` — 全部必查项通过，无重大缺陷
+> - `"部分合规"` — 存在需补充/调整事项，但尚无效力风险
+> - `"不合规"` — 存在可能导致合同无效、被撤销或重大违规的问题
+
+```json
+{
+  "compliance_check": {
+    "overall_status": "不合规",
     "applicable_laws": ["民法典", "劳动合同法", "个人信息保护法"],
     "passed": [
       {
