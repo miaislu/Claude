@@ -173,6 +173,17 @@ AGENT_WEIGHTS = {
     "amendment-writer":  0.20,
 }
 
+# clause-analyzer 需要输出完整条款列表，给更大 token 预算。
+# amendment-writer 需要输出完整替换文本，同样加大。
+# 其他 Agent 输出相对紧凑，4096 足够。
+MAX_TOKENS_BY_AGENT: dict[str, int] = {
+    "clause-analyzer":       8192,
+    "risk-assessor":         4096,
+    "compliance-checker":    4096,
+    "obligations-extractor": 4096,
+    "amendment-writer":      8192,
+}
+
 # ── Agent 依赖 DAG（决定执行顺序和上下文传递）─────────────────────────────
 #
 #  Phase 1: clause-analyzer（条款分析师）
@@ -473,8 +484,12 @@ def validate_agent_deep_schema(agent_name: str, parsed: dict) -> list:
     errors = []
     if agent_name == "clause-analyzer":
         clauses = parsed.get("clauses", [])
+        truncated = parsed.get("truncated", False)
         if not isinstance(clauses, list):
             return ["clauses 必须为数组"]
+        # truncated=true 时允许条款列表为空（模型已标记不完整，比 JSON 崩溃好）
+        if not clauses and not truncated:
+            errors.append("clauses 为空且 truncated 未标记为 true，输出可能不完整")
         for idx, item in enumerate(clauses[:80]):
             if not isinstance(item, dict):
                 errors.append(f"clauses[{idx}] 必须为 object")
@@ -938,7 +953,7 @@ async def call_agent(
         for attempt in range(2):
             resp = await client.messages.create(
                 model=DEFAULT_MODEL,
-                max_tokens=4096,
+                max_tokens=MAX_TOKENS_BY_AGENT.get(agent_name, 4096),
                 system=system,
                 messages=messages,
             )
@@ -1043,9 +1058,10 @@ def score_review_completeness(agent_results: list) -> Optional[int]:
         p = r.parsed
 
         if r.agent_name == "clause-analyzer":
-            clauses = p.get("clauses", [])
+            clauses   = p.get("clauses", [])
+            truncated = p.get("truncated", False)
             if isinstance(clauses, list) and clauses:
-                score += 25
+                score += 20 if truncated else 25   # 截断时扣 5 分
             anomalies = p.get("anomalies", [])
             missing   = p.get("missing_mandatory_clauses", [])
             if anomalies or missing:

@@ -108,6 +108,8 @@ def render(data: dict) -> str:
                 lines.append(f"- {label}：{basic.get(key)}")
     else:
         lines.append("- 未取得结构化基本信息。")
+    if tiao.get("truncated"):
+        lines.append("- ⚠️ 条款列表已按优先级截断：合同较长，仅高危类条款已完整索引，程序性条款已省略。")
     if tiao.get("total_clauses") is not None:
         lines.append(f"- 已识别条款数量：{tiao.get('total_clauses')}")
 
