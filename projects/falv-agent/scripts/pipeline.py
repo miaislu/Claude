@@ -334,17 +334,70 @@ def extract_parties(text: str) -> tuple[list, bool]:
             role, name = m.group(1), m.group(2)
             add_party(parties, name, role)
 
+    # “ = 左弯引号  ” = 右弯引号
+    # 兼容 ASCII 直引号 " 和中国合同常用的全角弯引号
+    _Q_OPEN  = r'["“]'
+    _Q_CLOSE = r'["”]'
+    _Q_NOT   = r'[^"“”]'
+
     alias_patterns = [
-        r"([A-Za-z][A-Za-z0-9 ._-]{0,30}|[\u4e00-\u9fa5A-Za-z0-9（）()·.\-]{2,60})[，,]?\s*[（(]?以下简称[“\"]([^”\"]{1,30})[”\"][）)]?",
-        r"([A-Za-z][A-Za-z0-9 ._-]{0,30}|[\u4e00-\u9fa5A-Za-z0-9（）()·.\-]{2,60})[（(][“\"]([^”\"]{1,30})[”\"](?:方)?[）)]",
+        # 格式：公司名（以下简称“别称”）
+        rf"([A-Za-z][A-Za-z0-9 ._-]{{0,30}}|[一-龥A-Za-z0-9（）()\xb7.\-]{{2,60}})[，,]?\s*[（(]?以下简称{_Q_OPEN}({_Q_NOT}{{1,30}}){_Q_CLOSE}[）)]?",
+        # 格式：公司名（“别称”） 直接紧邻别称
+        rf"([A-Za-z][A-Za-z0-9 ._-]{{0,30}}|[一-龥A-Za-z0-9（）()\xb7.\-]{{2,60}})[（(]{_Q_OPEN}({_Q_NOT}{{1,30}}){_Q_CLOSE}(?:方)?[）)]",
     ]
     for pattern in alias_patterns:
         for m in re.finditer(pattern, block):
             raw, alias = m.group(1), m.group(2)
             raw = normalize_space(raw)
+            # 排除地址尾段：末尾是数字/字母/括号/地址词 → 地址，不是公司名
+            if re.search(r'[0-9A-Za-z)）号层室幢楼]+$', raw):
+                continue
+            if not re.search(r'[\u4e00-\u9fa5]', raw):
+                continue
             if any(skip in raw for skip in ["协议", "合同", "以下简称", "鉴于", "身份证号", "统一社会信用代码", "一家依照", "一名中国籍"]):
                 continue
             add_party(parties, raw, alias)
+
+    # 中国合同标准长格式：公司全称，[描述/地址]（"别称"）
+    # 现有 alias_patterns 要求别称紧邻公司名；此处按句号/分号切割，
+    # 每段取【第一个】法人实体名称 + 段内别称，避免把地址里的实体误认为签署方。
+    _alias_marker_re = re.compile(rf'[\uff08(]{_Q_OPEN}({_Q_NOT}{{1,25}}){_Q_CLOSE}[\uff09)]')
+    _entity_name_re  = re.compile(
+        r'(公司_\d+|[\u4e00-\u9fa5A-Za-z0-9]{2,50}'
+        r'(?:有限公司|股份有限公司|合伙企业|有限合伙|基金|中心|集团))'
+    )
+    _seen_aliases: set = {party_core(p) for p in parties}
+    for _seg in re.split(r'[；;。\n]', block):
+        _seg = _seg.strip()
+        if len(_seg) < 5:
+            continue
+        _alias_m = _alias_marker_re.search(_seg)
+        if not _alias_m:
+            continue
+        _alias = normalize_space(_alias_m.group(1))
+        if not _alias or _alias in {"方", "乙", "甲", "丙"}:
+            continue
+        # 取该段落中【第一个】法人实体名（公司名在描述/地址之前）
+        _entity_m = _entity_name_re.search(_seg)
+        if not _entity_m:
+            continue
+        _company = normalize_space(_entity_m.group(1))
+        if not _company or len(_company) > 60:
+            continue
+        # 要求包含中文字符 OR 为脱敏占位符（公司_N）
+        if not re.search(r'[\u4e00-\u9fa5]', _company) and not re.match(r'公司_\d+', _company):
+            continue
+        if any(s in _company for s in ["协议", "合同", "鉴于", "一家依照"]):
+            continue
+        if _alias in _seen_aliases:
+            continue
+        # 脱敏占位符（公司_N）作为 name 没有语义价值，以别称为主要标识
+        if re.match(r'公司_\d+', _company):
+            add_party(parties, _alias, _company)
+        else:
+            add_party(parties, _company, _alias)
+        _seen_aliases.add(_alias)
 
     # 对 SHA/投资协议常见的自然人创始人缩写做兜底。
     for m in re.finditer(r"(创始人|Founder|创始股东)[^\n。；;]{0,40}?([A-Z])(?:[，,；;\s]|$)", block, re.I):
