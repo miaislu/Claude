@@ -73,7 +73,7 @@ info "移除脚本..."
 SCRIPTS=(pipeline.py security_preflight.py redact_contract.py legal_citation_check.py \
          legal_coverage_check.py pkulaw_mcp_client.py pkulaw_batch_verify.py usage_log.py \
          update_legal_citations.py render_report.py generate_docx.py generate_pdf.py \
-         checkpoint.py eval_runner.py)
+         checkpoint.py eval_runner.py bundle_review.py)
 for script in "${SCRIPTS[@]}"; do
     target="$CLAUDE_DIR/scripts/$script"
     if [[ -f "$target" ]]; then

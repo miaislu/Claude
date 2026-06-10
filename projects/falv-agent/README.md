@@ -11,8 +11,8 @@ bash install.sh
 安装后在 Claude Code 中使用：
 
 ```text
-/falv shencha 合同.docx
-/falv qicao --type 投资协议
+/legal review 合同.docx
+/legal draft --type 投资协议
 ```
 
 ## 本地回归评测

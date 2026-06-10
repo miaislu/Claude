@@ -60,7 +60,7 @@
 
 ## 接收 session_context
 
-执行前先读取 shencha 传入的 `session_context`，根据以下字段调整行为：
+执行前先读取 review 传入的 `session_context`，根据以下字段调整行为：
 
 ```
 contract_type  → 加载 agents/context/<type>.md 中的专项高危触发清单

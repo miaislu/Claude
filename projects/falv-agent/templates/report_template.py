@@ -27,7 +27,7 @@ EMPTY_REPORT_TEMPLATE = {
         "recommendations_count": 0,
     },
 
-    # 风险评估结果（来自 feng-xian-ping-gu Agent）
+    # 风险评估结果（来自 risk-assessor Agent）
     "risk_assessment": [
         # {
         #   "clause_id": "C001",
@@ -41,7 +41,7 @@ EMPTY_REPORT_TEMPLATE = {
         # }
     ],
 
-    # 合规检查结果（来自 he-gui-jian-cha Agent）
+    # 合规检查结果（来自 compliance-checker Agent）
     "compliance_check": {
         "overall_status": "待检查",
         "applicable_laws": [],
@@ -56,7 +56,7 @@ EMPTY_REPORT_TEMPLATE = {
         ],
     },
 
-    # 修改建议（来自 jian-yi-yin-qing Agent）
+    # 修改建议（来自 amendment-writer Agent）
     "recommendations": [
         # {
         #   "priority": "必须修改",     # 必须修改 / 强烈建议 / 可选优化
