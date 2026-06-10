@@ -246,8 +246,9 @@ class AnalysisResults:
     contract_type: str
     party_stance: str
     review_mode: str
-    overall_score: Optional[int]
-    risk_calibration: dict    # 风险评级校准结果
+    legal_risk_score: Optional[int]          # Axis 1: 法律风险分 (0-100, 越高越安全)
+    review_completeness_score: Optional[int]  # Axis 2: 审查完整度分 (0-100, 越高覆盖越全)
+    risk_calibration: dict                    # 校准后风险等级 (由 legal_risk_score 驱动)
     agent_results: list       # List[AgentResult as dict]
     skipped_agents: list      # 失败的 Agent 名称
     citation_warnings: list   # 法条引用警告
@@ -982,66 +983,102 @@ def safe_len(value) -> int:
     return len(value) if isinstance(value, list) else 0
 
 
-def score_agent_component(result: AgentResult) -> Optional[int]:
-    if not result.success or not result.parsed:
-        return None
-    p = result.parsed
-    if result.agent_name == "risk-assessor":
-        raw = p.get("overall_risk_score")
-        if isinstance(raw, (int, float)):
-            return max(0, min(100, int(100 - raw * 10)))
-        high = p.get("high_risk_count", 0) or 0
-        medium = p.get("medium_risk_count", 0) or 0
-        return max(0, min(100, 90 - int(high) * 18 - int(medium) * 8))
-    if result.agent_name == "compliance-checker":
-        check = p.get("compliance_check", {})
-        if not isinstance(check, dict):
-            return 70
-        failed = safe_len(check.get("failed"))
-        invalid = safe_len(check.get("invalid_clauses"))
-        # 用枚举映射，不再依赖"不"字出现与否
-        _STATUS_SCORES = {
-            "合规": 92, "compliant": 92,
-            "部分合规": 78, "partial": 78, "partial_compliant": 78,
-            "不合规": 60, "non_compliant": 60, "noncompliant": 60,
-        }
-        status_raw = str(check.get("overall_status", "")).strip()
-        base = _STATUS_SCORES.get(status_raw, 76)  # 未知状态默认 76
-        return max(0, min(100, base - failed * 8 - invalid * 15))
-    if result.agent_name == "amendment-writer":
-        must = p.get("must_fix_count", 0) or 0
-        strong = p.get("strongly_recommended_count", 0) or 0
-        optional = p.get("optional_count", 0) or 0
-        return max(0, min(100, 92 - int(must) * 12 - int(strong) * 6 - int(optional) * 2))
-    if result.agent_name == "clause-analyzer":
-        clauses = p.get("clauses", [])
-        return 90 if isinstance(clauses, list) and clauses else 72
-    if result.agent_name == "obligations-extractor":
-        imbalance = safe_len(p.get("imbalance_flags"))
-        return max(0, min(100, 88 - imbalance * 5))
-    return None
-
-
-def extract_risk_score(agent_results: list[AgentResult]) -> Optional[int]:
+def score_legal_risk(agent_results: list) -> Optional[int]:
     """
-    综合五个 Agent 的分数，按 AGENT_WEIGHTS 加权。
-    失败 Agent 不参与权重归一，但每个失败 Agent 额外扣 3 分，避免“少分析反而高分”。
+    Axis 1: Legal risk score (0-100, higher = safer).
+    Sources: risk-assessor (70%) + compliance-checker (30%).
+    risk_comp  = max(0, 100 - high*20 - medium*8 - low*2)
+    comp_comp  = base{100/65/30} - failed*8 - invalid*18
     """
-    weighted_total = 0.0
-    weight_sum = 0.0
-    failed = 0
+    risk_comp = None
+    comp_comp = None
+
     for r in agent_results:
-        component = score_agent_component(r)
-        weight = AGENT_WEIGHTS.get(r.agent_name, 0)
-        if component is None:
-            failed += 1
+        if not r.success or not r.parsed:
             continue
-        weighted_total += component * weight
-        weight_sum += weight
-    if weight_sum == 0:
+        p = r.parsed
+
+        if r.agent_name == "risk-assessor":
+            risks = p.get("risk_assessment", [])
+            if not isinstance(risks, list):
+                risks = []
+            high = sum(1 for x in risks if isinstance(x, dict) and x.get("risk_score", 0) >= 8)
+            med  = sum(1 for x in risks if isinstance(x, dict) and 5 <= x.get("risk_score", 0) < 8)
+            low  = sum(1 for x in risks if isinstance(x, dict) and 2 <= x.get("risk_score", 0) < 5)
+            risk_comp = max(0, 100 - high * 20 - med * 8 - low * 2)
+
+        elif r.agent_name == "compliance-checker":
+            check = p.get("compliance_check", {})
+            if isinstance(check, dict):
+                _BASE = {
+                    "合规": 100, "compliant": 100,
+                    "部分合规": 65, "partial": 65, "partial_compliant": 65,
+                    "不合规": 30,  "non_compliant": 30, "noncompliant": 30,
+                }
+                base    = _BASE.get(str(check.get("overall_status", "")).strip(), 50)
+                failed  = safe_len(check.get("failed"))
+                invalid = safe_len(check.get("invalid_clauses"))
+                comp_comp = max(0, base - failed * 8 - invalid * 18)
+
+    if risk_comp is None and comp_comp is None:
         return None
-    score = int(round(weighted_total / weight_sum)) - failed * 3
-    return max(0, min(100, score))
+    if risk_comp is None:
+        return comp_comp
+    if comp_comp is None:
+        return risk_comp
+    return int(round(risk_comp * 0.70 + comp_comp * 0.30))
+
+
+def score_review_completeness(agent_results: list) -> Optional[int]:
+    """
+    Axis 2: Review completeness score (0-100, higher = more complete).
+    Sources: clause-analyzer (30pt) + obligations-extractor (35pt) + amendment-writer (35pt).
+    Independent of contract risk level; measures coverage quality.
+    """
+    score = 0
+
+    for r in agent_results:
+        if not r.success or not r.parsed:
+            continue
+        p = r.parsed
+
+        if r.agent_name == "clause-analyzer":
+            clauses = p.get("clauses", [])
+            if isinstance(clauses, list) and clauses:
+                score += 25
+            anomalies = p.get("anomalies", [])
+            missing   = p.get("missing_mandatory_clauses", [])
+            if anomalies or missing:
+                score += 5
+
+        elif r.agent_name == "obligations-extractor":
+            has_obligations = (
+                p.get("obligations_matrix") or
+                (isinstance(p.get("party_a_obligations"), list) and p.get("party_a_obligations"))
+            )
+            timeline = p.get("timeline") or p.get("critical_deadlines_timeline")
+            if has_obligations:
+                score += 20
+            if isinstance(timeline, list) and timeline:
+                score += 15
+
+        elif r.agent_name == "amendment-writer":
+            recs = p.get("recommendations", [])
+            if isinstance(recs, list) and recs:
+                score += 20
+                with_text = sum(
+                    1 for rec in recs
+                    if isinstance(rec, dict) and rec.get("suggested_text")
+                )
+                if with_text / len(recs) >= 0.50:
+                    score += 15
+
+    relevant = [r for r in agent_results
+                if r.agent_name in ("clause-analyzer", "obligations-extractor", "amendment-writer")]
+    if not any(r.success for r in relevant):
+        return None
+
+    return min(100, score)
 
 
 # ── 子命令：detect ────────────────────────────────────────────────────────
@@ -1212,8 +1249,9 @@ async def _run_analyze(args):
     if skipped:
         print(f"\n⚠️  跳过的 Agent：{skipped}", file=sys.stderr)
 
-    overall_score = extract_risk_score(results)
-    risk_calibration = calibrate_risk_level(overall_score, legal_coverage, results)
+    legal_risk_score          = score_legal_risk(results)
+    review_completeness_score = score_review_completeness(results)
+    risk_calibration = calibrate_risk_level(legal_risk_score, legal_coverage, results)
     citation_warnings = []
     for r in results:
         for warning in r.citation_warnings:
@@ -1240,8 +1278,9 @@ async def _run_analyze(args):
         contract_type   = args.type,
         party_stance    = args.party,
         review_mode     = review_mode,
-        overall_score   = overall_score,
-        risk_calibration = risk_calibration,
+        legal_risk_score          = legal_risk_score,
+        review_completeness_score = review_completeness_score,
+        risk_calibration          = risk_calibration,
         agent_results   = [asdict(r) for r in results],
         skipped_agents  = skipped,
         citation_warnings = citation_warnings,
@@ -1276,8 +1315,9 @@ async def _run_analyze(args):
     # 向 stdout 输出摘要供 SKILL.md 展示
     print(json.dumps({
         "status":        "ok",
-        "overall_score": overall_score,
-        "risk_level":    risk_calibration.get("final_level", ""),
+        "legal_risk_score":          legal_risk_score,
+        "review_completeness_score": review_completeness_score,
+        "risk_level":                risk_calibration.get("final_level", ""),
         "risk_adjustment": risk_calibration.get("adjustment", ""),
         "passed":        len(passed),
         "skipped":       skipped,

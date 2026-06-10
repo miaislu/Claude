@@ -10,6 +10,7 @@ import argparse
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 
 def agent_map(data: dict) -> dict:
@@ -60,13 +61,31 @@ def render(data: dict) -> str:
     jianyi = parsed(agents.get("amendment-writer"))
     clause_lookup = build_clause_lookup(tiao)
 
+    legal_risk   = data.get("legal_risk_score")
+    completeness = data.get("review_completeness_score")
+    risk_level   = data.get("risk_calibration", {}).get("final_level", "") if isinstance(data.get("risk_calibration"), dict) else ""
+
+    def _risk_label(score: Optional[int]) -> str:
+        if score is None: return "未评分"
+        if score >= 85:   return f"{score}/100（低风险）"
+        if score >= 65:   return f"{score}/100（中等风险）"
+        if score >= 40:   return f"{score}/100（重大风险）"
+        return              f"{score}/100（高度风险）"
+
+    def _completeness_label(score: Optional[int]) -> str:
+        if score is None: return "未评分"
+        if score >= 80:   return f"{score}/100（良好）"
+        if score >= 60:   return f"{score}/100（基本覆盖）"
+        return              f"{score}/100（覆盖不足）"
+
     lines = [
         "# 法律审查意见要点（草稿）",
         "",
         f"- 合同类型：{data.get('contract_type', '')}",
         f"- 审查立场：{data.get('party_stance', '')}",
         f"- 审查模式：{data.get('review_mode', '')}",
-        f"- 综合评分：{data.get('overall_score', '未评分')}",
+        f"- 法律风险：{_risk_label(legal_risk)}" + (f"  →  {risk_level}" if risk_level else ""),
+        f"- 审查完整度：{_completeness_label(completeness)}",
         f"- 生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M')}",
     ]
 

@@ -3,7 +3,6 @@
   "contract_type": "投资协议",
   "party_stance": "J",
   "review_mode": "单方委托",
-  "overall_score": 72,
   "skipped_agents": [],
   "citation_warnings": [
     {
@@ -22,12 +21,31 @@
   "security_preflight": {
     "confidentiality_level": "HIGH",
     "sensitive_items": [
-      {"type": "身份证号", "count": 1},
-      {"type": "手机号", "count": 1}
+      {
+        "type": "身份证号",
+        "count": 1
+      },
+      {
+        "type": "手机号",
+        "count": 1
+      }
     ],
     "keyword_hits": [
-      {"category": "融资/股权", "keywords": ["股东协议", "估值"], "count": 2},
-      {"category": "商业秘密", "keywords": ["商业秘密"], "count": 1}
+      {
+        "category": "融资/股权",
+        "keywords": [
+          "股东协议",
+          "估值"
+        ],
+        "count": 2
+      },
+      {
+        "category": "商业秘密",
+        "keywords": [
+          "商业秘密"
+        ],
+        "count": 1
+      }
     ],
     "requires_user_confirmation": true,
     "recommended_mode": "redacted_review"
@@ -89,7 +107,10 @@
       "parsed": {
         "compliance_check": {
           "overall_status": "基本合规",
-          "applicable_laws": ["民法典", "公司法"],
+          "applicable_laws": [
+            "民法典",
+            "公司法"
+          ],
           "passed": [],
           "failed": [],
           "invalid_clauses": [],
@@ -156,5 +177,12 @@
   ],
   "guidelines": "",
   "context_content": "",
-  "elapsed_total": 0.5
+  "elapsed_total": 0.5,
+  "legal_risk_score": 72,
+  "review_completeness_score": 75,
+  "risk_calibration": {
+    "final_level": "中等风险",
+    "adjustment": "none",
+    "major_factors": []
+  }
 }
