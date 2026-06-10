@@ -1,3 +1,8 @@
+---
+name: corporate
+description: 公司法事务 — 股权结构、公司治理、合规检查，适用2024年新《公司法》
+---
+
 # /legal corporate — 公司法事务
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。

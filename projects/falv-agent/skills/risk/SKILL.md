@@ -1,3 +1,8 @@
+---
+name: risk
+description: 风险条款评分 — 对合同条款进行法律风险（0-10）和商业摩擦（0-10）双轴评分
+---
+
 # /legal risk — 风险条款快速评分
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。

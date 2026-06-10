@@ -1,3 +1,8 @@
+---
+name: report
+description: 生成 Word 报告 — 将最近一次审查结果导出为正式法律意见要点文档
+---
+
 # /legal report — 生成 PDF 报告
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。

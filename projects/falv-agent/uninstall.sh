@@ -35,7 +35,7 @@ echo ""
 # ── 移除技能 ──────────────────────────────────────────────────────────────────
 info "移除法律技能..."
 
-SKILLS=(falv shencha fengxian hege qicao fanyi laodong gongsi baogao)
+SKILLS=(legal onboard review risk compliance draft plain-language labor corporate report)
 
 for skill in "${SKILLS[@]}"; do
     target="$CLAUDE_DIR/skills/$skill"
@@ -50,7 +50,7 @@ done
 # ── 移除 Agent ────────────────────────────────────────────────────────────────
 info "移除专项 Agent..."
 
-AGENTS=(tiao-kuan-fen-xi feng-xian-ping-gu he-gui-jian-cha yi-wu-jie-xi jian-yi-yin-qing _guidelines)
+AGENTS=(clause-analyzer risk-assessor compliance-checker obligations-extractor amendment-writer _guidelines)
 
 for agent in "${AGENTS[@]}"; do
     target="$CLAUDE_DIR/agents/$agent.md"
@@ -59,6 +59,26 @@ for agent in "${AGENTS[@]}"; do
         success "  ✓ 已移除 Agent：$agent"
     else
         warn "  - Agent 不存在（跳过）：$agent"
+    fi
+done
+
+# ── 移除 context 目录 ─────────────────────────────────────────────────────────
+if [[ -d "$CLAUDE_DIR/agents/context" ]]; then
+    rm -rf "$CLAUDE_DIR/agents/context"
+    success "  ✓ 已移除合同类型专项上下文目录"
+fi
+
+# ── 移除脚本 ──────────────────────────────────────────────────────────────────
+info "移除脚本..."
+SCRIPTS=(pipeline.py security_preflight.py redact_contract.py legal_citation_check.py \
+         legal_coverage_check.py pkulaw_mcp_client.py pkulaw_batch_verify.py usage_log.py \
+         update_legal_citations.py render_report.py generate_docx.py generate_pdf.py \
+         checkpoint.py eval_runner.py)
+for script in "${SCRIPTS[@]}"; do
+    target="$CLAUDE_DIR/scripts/$script"
+    if [[ -f "$target" ]]; then
+        rm -f "$target"
+        success "  ✓ 已移除：$script"
     fi
 done
 

@@ -185,7 +185,7 @@ python3 scripts/bundle_review.py <交易文件夹> --output /tmp/falv_bundle_man
 python3 scripts/usage_log.py report
 ```
 
-北大法宝 MCP 已注册到 Claude Code 用户级配置（`/Users/miazhang/.claude.json`），包括法律法规检索、精准法条、法条识别、引用校验、案例检索、案号识别和法宝超链等服务。当前配置使用 `Authorization: Bearer ${PKULAW_ACCESS_TOKEN}`，需先在 shell 环境中设置真实 token，再运行 `claude mcp list` 验证健康状态。
+北大法宝 MCP 已注册到 Claude Code 用户级配置（`~/.claude.json`），包括法律法规检索、精准法条、法条识别、引用校验、案例检索、案号识别和法宝超链等服务。当前配置使用 `Authorization: Bearer ${PKULAW_ACCESS_TOKEN}`，需先在 shell 环境中设置真实 token，再运行 `claude mcp list` 验证健康状态。
 
 接入原则：北大法宝 MCP 是上游检索/校验通道，返回结果应经人工或脚本校验后写入本地 `citations.json` / `coverage_matrix.json`，不要让实时检索结果无审计地覆盖本地结构化库。为节省调用额度，法条校验默认使用本地库；需要上游核验时显式使用：
 

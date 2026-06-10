@@ -1,3 +1,8 @@
+---
+name: legal
+description: 中国法律 AI Agent 主入口，/legal <子命令> 路由到各专项功能
+---
+
 # /legal — Chinese Law AI Agent
 
 ## Usage

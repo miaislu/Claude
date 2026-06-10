@@ -43,8 +43,8 @@ mkdir -p "$CLAUDE_DIR/agents"
 # ── 安装技能 ──────────────────────────────────────────────────────────────────
 info "安装法律技能..."
 
-SKILLS=(falv review risk hege draft plain-language laodong gongsi baogao)
-SKILL_NAMES=("主路由" "合同审查" "风险评估" "合规检查" "文件起草" "白话翻译" "劳动合同" "公司法" "PDF报告")
+SKILLS=(legal onboard review risk compliance draft plain-language labor corporate report)
+SKILL_NAMES=("主路由(/legal)" "冷启动面试" "合同审查" "风险评估" "合规检查" "文件起草" "白话翻译" "劳动合同" "公司法" "Word报告")
 
 installed_skills=0
 for i in "${!SKILLS[@]}"; do
@@ -156,13 +156,14 @@ echo ""
 success "已安装 ${installed_skills} 个技能，${installed_agents} 个 Agent"
 echo ""
 echo "  在 Claude Code 中使用："
-echo "  ┌──────────────────────────────────────────┐"
-echo "  │  /falv review 合同.pdf                  │"
-echo "  │  /falv risk 协议.txt                 │"
-echo "  │  /falv hege --type pipl                  │"
-echo "  │  /falv draft --type 劳动合同              │"
-echo "  │  /falv                  （查看所有命令）  │"
-echo "  └──────────────────────────────────────────┘"
+echo "  ┌────────────────────────────────────────────────┐"
+echo "  │  /legal onboard              （首次使用，设置画像）│"
+echo "  │  /legal review 合同.pdf                        │"
+echo "  │  /legal risk 协议.txt                          │"
+echo "  │  /legal compliance --type pipl                 │"
+echo "  │  /legal draft --type 劳动合同                  │"
+echo "  │  /legal                  （查看所有命令）       │"
+echo "  └────────────────────────────────────────────────┘"
 echo ""
 echo "  文档：查看 CLAUDE.md 了解完整功能说明"
 echo ""

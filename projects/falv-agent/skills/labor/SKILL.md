@@ -1,3 +1,8 @@
+---
+name: labor
+description: 劳动合同专项审查 — 深度分析劳动法合规性，含试用期、竞业禁止、社保等
+---
+
 # /legal labor — 劳动合同专项审查
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。

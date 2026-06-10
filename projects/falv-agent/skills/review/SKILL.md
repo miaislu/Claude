@@ -1,3 +1,8 @@
+---
+name: review
+description: 合同全面审查（旗舰）— 5个专项 Agent 并发分析，输出评分与 Word 报告
+---
+
 # /legal review — 合同全面审查
 
 ## 功能描述
@@ -323,6 +328,39 @@ IF status = "ok", skipped 不为空:
 
 IF status = "error":
   → 展示错误信息，询问用户是否重试或粘贴合同文本
+```
+
+**⚠️ 无 API Key 降级路径（ANTHROPIC_API_KEY 未设置时）：**
+
+`pipeline.py analyze` 需要独立的 `ANTHROPIC_API_KEY`。
+若当前环境为 **Max plan（无独立 API Key）**，pipeline.py analyze 会报 `Connection error`，此时自动切换到降级模式：
+
+```
+IF pipeline.py analyze 返回 Connection error 或 API Key 错误:
+
+  → 通知用户："当前环境无 API Key，切换到 Claude 内联分析模式（无并发）"
+
+  → Claude 直接读取 $FALV_REVIEW_CONTRACT 合同文本，
+    依次扮演 5 个 Agent 角色完成分析（非并发，耗时更长）：
+    1. clause-analyzer：识别并分类条款
+    2. risk-assessor：对每条款评分（法律风险 + 商业摩擦）
+    3. compliance-checker：检查合规性
+    4. obligations-extractor：梳理权利义务时限
+    5. amendment-writer：生成修改建议
+
+  → 分析完成后，直接输出报告（跳过 render_report.py 的 JSON 渲染步骤）
+  → 执行 Step 5 生成 Word 文件
+
+  降级模式限制：
+  - 无加权综合评分（无 JSON 输出）
+  - 无法条引用结构化校验
+  - 无使用日志写入
+  → 报告末尾标注 "[内联分析模式，无 pipeline 评分]"
+```
+
+如需启用完整的 pipeline 并发模式，在终端执行：
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
 ---

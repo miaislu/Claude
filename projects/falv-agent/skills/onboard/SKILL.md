@@ -1,3 +1,8 @@
+---
+name: onboard
+description: 冷启动面试，设置实践画像，个性化所有后续审查结果
+---
+
 # Skill: /legal onboard
 
 ## Trigger

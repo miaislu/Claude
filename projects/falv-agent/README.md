@@ -43,7 +43,7 @@ evals/
 
 本项目保留自己的结构化法条知识库，并把国家法律法规数据库、北大法宝作为上游来源。
 
-当前状态：北大法宝 MCP 已注册到 Claude Code 用户级配置（`/Users/miazhang/.claude.json`），但需要先设置 `PKULAW_ACCESS_TOKEN` 才能通过健康检查并实际调用。查询结果后续应写入本地结构化库，而不是直接替代 `citations.json`。
+当前状态：北大法宝 MCP 已注册到 Claude Code 用户级配置（`~/.claude.json`），但需要先设置 `PKULAW_ACCESS_TOKEN` 才能通过健康检查并实际调用。查询结果后续应写入本地结构化库，而不是直接替代 `citations.json`。
 
 已注册的北大法宝 MCP 服务包括：
 

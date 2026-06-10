@@ -1,3 +1,8 @@
+---
+name: plain-language
+description: 法律术语转白话 — 将合同条款翻译为无法律背景人士可理解的语言
+---
+
 # /legal plain-language — 法律术语白话翻译
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。

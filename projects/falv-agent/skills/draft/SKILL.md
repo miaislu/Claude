@@ -1,3 +1,8 @@
+---
+name: draft
+description: 法律文件起草 — 支持14种合同类型，含必问清单和条款结构模板
+---
+
 # /legal draft — 法律文件起草
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。

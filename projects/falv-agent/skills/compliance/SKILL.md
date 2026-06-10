@@ -1,3 +1,8 @@
+---
+name: compliance
+description: 合规检查 — 核查合同是否符合中国现行法律法规，标注缺失法定条款
+---
+
 # /legal compliance — 合规检查
 
 > 输出规范、法条引用要求和禁止行为见 `agents/_guidelines.md`。
