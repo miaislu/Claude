@@ -24,6 +24,7 @@ warnings.filterwarnings("ignore")
 _ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_ROOT))
 
+from agents.base import AgentBase
 from models import MarketResearchDigest, ResearchSignal, ThesisStatus
 
 # ──────────────────────────────────────────
@@ -49,7 +50,7 @@ _INQUIRY_SCORE_MAP = {
 }
 
 
-class MarketResearcher:
+class MarketResearcher(AgentBase):
     """A 股市场信号监控 Agent。"""
 
     def run_daily_scan(

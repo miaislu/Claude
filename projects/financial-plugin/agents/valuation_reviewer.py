@@ -29,13 +29,17 @@ warnings.filterwarnings("ignore")
 _ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_ROOT))
 
+from agents.base import AgentBase
 from models import ModelBuildResult, ReviewIssue, ValuationReviewResult
 
 # ──────────────────────────────────────────
 # 阈值常量
 # ──────────────────────────────────────────
-_TV_EV_BLOCK   = 0.80    # 终值/EV > 80% → BLOCKER
-_TV_EV_WARN    = 0.60    # 终值/EV > 60% → WARNING
+_TV_EV_BLOCK   = 0.90    # 终值/EV > 90% → BLOCKER（成熟高质量企业 DCF 正常在 70-85%）
+_TV_EV_WARN    = 0.70    # 终值/EV > 70% → WARNING
+
+# 成熟行业：TV/EV 天然偏高，description 中加注提示而非报错
+_MATURE_INDUSTRIES = {"食品饮料", "公用事业", "银行", "保险", "白酒", "饮料", "水务", "高速"}
 _G_MAX         = 0.055   # g > GDP 名义增速（约 5.5%）→ BLOCKER
 _G_WACC_SPREAD = 0.03    # WACC - g < 3% → WARNING（利差过窄）
 _PE_MAX_MULT   = 2.0     # 可比公司 PE 超中位数 2× → 离群值
@@ -62,7 +66,7 @@ _METHODOLOGY_MAP = {
 }
 
 
-class ValuationReviewer:
+class ValuationReviewer(AgentBase):
     """估值审查 Agent。"""
 
     def review(
@@ -101,7 +105,7 @@ class ValuationReviewer:
         )
 
         # ── Module 5：终值合理性 ──────────────
-        self._check_terminal_value(model_result, blockers, warnings_, suggestions)
+        self._check_terminal_value(model_result, blockers, warnings_, suggestions, industry)
 
         # ── Module 6：综合裁定 ────────────────
         verdict, verdict_reason = self._determine_verdict(
@@ -257,25 +261,29 @@ class ValuationReviewer:
         self,
         mr: ModelBuildResult,
         blockers: list, warnings_: list, suggestions: list,
+        industry: str = "",
     ) -> None:
         tv_ratio = mr.terminal_value_pct
         g        = mr.terminal_growth_rate
         wacc     = mr.wacc
 
-        # TV/EV > 80% → BLOCKER
+        is_mature = any(kw in industry for kw in _MATURE_INDUSTRIES)
+        mature_note = "（注：成熟消费/公用行业 DCF 的 TV/EV 通常在 70-85%，属正常范围）" if is_mature else ""
+
+        # TV/EV > 90% → BLOCKER（新阈值，之前为 80%）
         if tv_ratio and tv_ratio > _TV_EV_BLOCK:
             blockers.append(ReviewIssue(
                 dimension="终值",
                 severity="BLOCKER",
-                description=f"终值占 EV {tv_ratio:.1%} 超过 80%，模型严重依赖无法验证的远期假设",
+                description=f"终值占 EV {tv_ratio:.1%} 超过 90%，模型极度依赖无法验证的远期假设{mature_note}",
                 evidence=f"tv_ev_ratio = {tv_ratio:.1%}",
-                fix_suggestion="缩短预测期，或下调永续增长率 g",
+                fix_suggestion="缩短预测期，或下调永续增长率 g，或改用 PB 估值方法",
             ))
         elif tv_ratio and tv_ratio > _TV_EV_WARN:
             warnings_.append(ReviewIssue(
                 dimension="终值",
                 severity="WARNING",
-                description=f"终值占 EV {tv_ratio:.1%}（60%-80%），依赖度较高",
+                description=f"终值占 EV {tv_ratio:.1%}（70%-90%），依赖度较高{mature_note}",
                 evidence=f"tv_ev_ratio = {tv_ratio:.1%}",
             ))
 

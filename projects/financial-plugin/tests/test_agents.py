@@ -185,12 +185,13 @@ class TestValuationReviewer:
         assert result.verdict == "PASS"
         assert result.blockers == []
 
-    def test_blocker_tv_above_80(self, vr):
+    def test_blocker_tv_above_90(self, vr):
+        """新阈值：TV/EV > 90% → BLOCKER；85% 仅为 WARNING。"""
         from models import ModelBuildResult
         mr = ModelBuildResult(
             stock_code="000001",
             wacc=0.08, terminal_growth_rate=0.04,
-            terminal_value_pct=0.85,          # > 80% → BLOCKER
+            terminal_value_pct=0.91,          # > 90% → BLOCKER（新阈值）
         )
         result = vr.review(mr)
         assert result.verdict == "REJECT"

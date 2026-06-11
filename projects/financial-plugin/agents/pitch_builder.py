@@ -30,6 +30,7 @@ warnings.filterwarnings("ignore")
 _ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_ROOT))
 
+from agents.base import AgentBase
 from models import (
     Catalyst,
     EarningsReviewResult,
@@ -45,7 +46,7 @@ _DISCLAIMER = (
 )
 
 
-class PitchBuilder:
+class PitchBuilder(AgentBase):
     """投资材料合成 Agent。"""
 
     def build(

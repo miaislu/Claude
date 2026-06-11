@@ -29,6 +29,7 @@ warnings.filterwarnings("ignore")
 _ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_ROOT))
 
+from agents.base import AgentBase
 from models import (
     ChangeLogEntry,
     LinkageError,
@@ -47,7 +48,7 @@ _BLEND_COMPS  = 0.50   # 可比估值权重
 _TV_EV_WARN   = 0.70   # 终值占 EV 警告阈值
 
 
-class ModelBuilder:
+class ModelBuilder(AgentBase):
     """A 股财务建模 Agent。"""
 
     def build(
@@ -66,7 +67,10 @@ class ModelBuilder:
         comps_codes = comps_codes or []
 
         # 1. 拉取历史数据
+        #    income_hist  — 全部 8 期（含季报），用于 WACC 和三表勾稽
+        #    annual_hist  — 仅年报，用于预测模型和 Excel（避免季报/年报混用）
         income_hist  = self._get_income_history(code)
+        annual_hist  = self._get_annual_income_history(code, n_annual=4)
         balance_hist = self._get_balance_history(code)
         cf_hist      = self._get_cf_history(code)
         shares       = self._get_shares(code)
@@ -74,6 +78,9 @@ class ModelBuilder:
         beta         = self._get_beta(code)
         rf           = self._get_rf()
         metrics_hist = self._get_metrics_hist(code)
+
+        # 年报不足时降级使用全部历史
+        model_base = annual_hist if annual_hist else income_hist
 
         if not income_hist:
             return ModelBuildResult(
@@ -83,18 +90,18 @@ class ModelBuilder:
 
         company_name = self._get_company_name(code)
 
-        # 2. 计算 WACC
+        # 2. 计算 WACC（用全期数据，含最新季报）
         wacc = self._calc_wacc(beta, rf, income_hist, balance_hist)
 
-        # 3. 建预测期利润表（5年）
+        # 3. 建预测期利润表（5年，基于年报口径）
         forecast = self._build_forecast(income_hist, metrics_hist)
 
         # 4. DCF 计算
-        dcf_data = self._calc_dcf(forecast, income_hist, balance_hist, wacc, g, shares, current_price)
+        dcf_data = self._calc_dcf(forecast, model_base, balance_hist, wacc, g, shares, current_price)
 
-        # 5. 可比估值
+        # 5. 可比估值（传入 shares 参数，修复永远 None 的 bug）
         comps_data    = self._get_comps_multiples(comps_codes)
-        comps_price   = self._calc_comps_price(comps_data, income_hist)
+        comps_price   = self._calc_comps_price(comps_data, model_base, shares)
         dcf_price     = dcf_data.get("dcf_price")
         blended_price = self._blend(dcf_price, comps_price)
         dcf_data["comps_price"]   = comps_price
@@ -106,11 +113,10 @@ class ModelBuilder:
         # 6. 三表勾稽
         linkage_errors = self._check_linkage(income_hist, balance_hist, cf_hist)
 
-        # 7. 生成 Excel（历史部分只传年报，避免季报/年报混排）
-        annual_hist = [h for h in income_hist if _is_annual_period(h)] or income_hist
+        # 7. 生成 Excel（历史部分传年报序列，已在步骤 1 中单独拉取）
         excel_path = self._write_excel(
             code, company_name,
-            annual_hist, forecast,
+            model_base, forecast,
             dcf_data, comps_data,
         )
 
@@ -324,21 +330,25 @@ class ModelBuilder:
             "dcf_price": round(dcf_price, 2) if dcf_price else None,
         }
 
+    @staticmethod
     def _calc_comps_price(
-        self,
         comps_data: list[dict],
         income_hist: list[dict],
+        total_shares: float | None = None,
     ) -> float | None:
-        """用可比公司中位数 PE 估算目标价（简化）。"""
+        """
+        用可比公司中位数 PE 估算目标价。
+        total_shares: 目标公司总股本（由 build() 传入，不在此处重新查询）
+        """
         pe_list = [_to_float(c.get("pe_ttm")) for c in comps_data if _to_float(c.get("pe_ttm"))]
         pe_list = [p for p in pe_list if 0 < p < 100]
         if not pe_list or not income_hist:
             return None
         median_pe = sorted(pe_list)[len(pe_list) // 2]
 
-        # EPS = 净利润 / 股本
+        # EPS = 净利润 / 股本（使用外部传入的 total_shares）
         net_profit = _to_float(income_hist[0].get("净利润"))
-        shares = self._get_shares(income_hist[0].get("stock_code", ""))
+        shares = total_shares
         if not net_profit or not shares:
             return None
         eps = net_profit / shares
@@ -382,6 +392,7 @@ class ModelBuilder:
 
     @staticmethod
     def _get_income_history(code: str) -> list[dict]:
+        """拉取近 LOOKBACK_PERIODS 期（含季报/中报/年报），用于 WACC 和勾稽。"""
         try:
             from connectors.fundamental import get_historical_periods, get_income_statement
             from connectors.cache import LOOKBACK_PERIODS
@@ -392,6 +403,30 @@ class ModelBuilder:
                 if rec:
                     rec["_period"] = p
                     results.append(rec)
+            return results
+        except Exception:
+            return []
+
+    @staticmethod
+    def _get_annual_income_history(code: str, n_annual: int = 4) -> list[dict]:
+        """
+        专门拉取最近 n_annual 个年报期（报告日以 12-31 结尾）。
+        扫描范围 = n_annual × 4 个期，确保覆盖足够年报。
+        用于：预测模型基准、Excel 展示。
+        """
+        try:
+            from connectors.fundamental import get_historical_periods, get_income_statement
+            periods = get_historical_periods(code, n=n_annual * 4)
+            results = []
+            for p in periods:
+                if not p.endswith("12-31"):
+                    continue
+                rec = get_income_statement(code, p)
+                if rec:
+                    rec["_period"] = p
+                    results.append(rec)
+                if len(results) >= n_annual:
+                    break
             return results
         except Exception:
             return []

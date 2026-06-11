@@ -219,7 +219,7 @@ def _handle_review_valuation(
     """
     import json as _json
     from agents.valuation_reviewer import ValuationReviewer
-    from models import ModelBuildResult
+    from models import ChangeLogEntry, LinkageError, ModelBuildResult
 
     # 读取最新 ModelBuildResult 存档
     storage = _ROOT / "storage"
@@ -229,10 +229,18 @@ def _handle_review_valuation(
             f"未找到 {code} 的 ModelBuildResult 存档，请先运行 build_model"
         )
     data = _json.loads(files[0].read_text(encoding="utf-8"))
-    mr = ModelBuildResult(**{
+
+    # 正确反序列化嵌套 dataclass（JSON 存档中它们是 list[dict]）
+    scalar_fields = {
         k: v for k, v in data.items()
         if k in ModelBuildResult.__dataclass_fields__
-    })
+        and k not in ("linkage_errors", "change_log")
+    }
+    mr = ModelBuildResult(
+        **scalar_fields,
+        linkage_errors=[LinkageError(**e) for e in (data.get("linkage_errors") or [])],
+        change_log=[ChangeLogEntry(**e)   for e in (data.get("change_log")     or [])],
+    )
 
     return ValuationReviewer().review(mr, context=context, industry=industry, iteration=iteration).to_dict()
 

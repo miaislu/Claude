@@ -25,6 +25,7 @@ warnings.filterwarnings("ignore")
 _ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_ROOT))
 
+from agents.base import AgentBase
 from models import MeetingPrepResult, MeetingQuestion
 
 # 问题模板
@@ -45,8 +46,17 @@ _ATTENDEE_CFO_QS = [
     ("P1", "有息负债规模和再融资计划？"),
 ]
 
+# 风险类型 → 固定自然语言问题（不内嵌 akshare 字段名或截断句子）
+_FLAG_QUESTION: dict[str, str] = {
+    "商誉减值":    "本期商誉减值测试结果如何？收购标的业绩承诺完成情况？",
+    "现金流质量":  "经营现金流与净利润差距扩大，主要原因是什么？预计何时改善？",
+    "政府补贴依赖": "剔除政府补贴后，主业盈利能力的可持续性如何？",
+    "关联交易":    "关联交易的定价依据是什么？是否进行过第三方比价？",
+}
+_FLAG_DEFAULT = "该财务异常指标的具体原因是什么？是否已有改善计划？"
 
-class MeetingPreparer:
+
+class MeetingPreparer(AgentBase):
     """会前情报打包 Agent。"""
 
     def prepare(
@@ -169,23 +179,27 @@ class MeetingPreparer:
     ) -> list[MeetingQuestion]:
         questions: list[MeetingQuestion] = []
 
-        # P0：Thesis 风险必问
+        # P0：Thesis 风险必问（使用自然语言模板，不截断 evidence 字段）
         if earnings:
             for tv in (earnings.get("thesis_verdicts") or []):
                 if tv.get("verdict") == "RISK":
+                    kw = tv["thesis_keyword"]
                     questions.append(MeetingQuestion(
                         priority="P0",
-                        question=f"关于{tv['thesis_keyword']}：{tv.get('evidence','')[:30]}，管理层如何解释？",
+                        question=f"「{kw}」论点出现负面信号，管理层如何解释？是否有改善预期？",
                         source="thesis_risk",
+                        follow_up=f"（数据依据：{tv.get('evidence','')[:50]}）",
                     ))
 
-        # P1：财务异常
+        # P1：财务异常（使用固定自然语言模板，不内嵌 explanation 原文）
         if earnings:
             for rf in (earnings.get("risk_flags") or []):
                 if rf.get("verdict") in ("HIGH_RISK", "MEDIUM_RISK"):
+                    flag_type = rf["flag_type"]
+                    q_text = _FLAG_QUESTION.get(flag_type, _FLAG_DEFAULT)
                     questions.append(MeetingQuestion(
                         priority="P1",
-                        question=f"{rf['flag_type']}：{rf['explanation'][:40]}，是否已有改善计划？",
+                        question=q_text,
                         source="risk_flag",
                     ))
 

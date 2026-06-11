@@ -28,6 +28,7 @@ warnings.filterwarnings("ignore")
 _ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_ROOT))
 
+from agents.base import AgentBase
 from models import (
     EarningsReviewResult,
     ExpectationGap,
@@ -69,8 +70,26 @@ THESIS_METRIC_MAP: dict[str, list[str]] = {
     "渗透":      ["主营业务收入增长率(%)"],
 }
 
+# 最小显著变化阈值：delta < 1pct 视为噪声，不触发 CONFIRM/RISK
+_THESIS_MIN_DELTA: float = 1.0
 
-class EarningsReviewer:
+# akshare 字段名 → 人类可读名称（用于 evidence 文本）
+_FIELD_DISPLAY: dict[str, str] = {
+    "销售毛利率(%)":          "毛利率",
+    "主营业务利润率(%)":       "主营利润率",
+    "销售净利率(%)":           "净利率",
+    "净资产收益率(%)":         "ROE",
+    "加权净资产收益率(%)":     "加权ROE",
+    "主营业务收入增长率(%)":   "营收增速",
+    "净利润增长率(%)":         "净利润增速",
+    "三项费用比重":            "三费率",
+    "主营业务成本率(%)":       "成本率",
+    "总资产净利润率(%)":       "总资产回报率",
+    "经营现金净流量与净利润的比率(%)": "现金流/净利润比",
+}
+
+
+class EarningsReviewer(AgentBase):
     """A 股财报审阅 Agent。"""
 
     def review(
@@ -408,26 +427,41 @@ class EarningsReviewer:
             cur_val = _to_float(current.get(field))
             prev_val = _to_float(prev.get(field))
             if cur_val is not None:
+                display = _FIELD_DISPLAY.get(field, field)  # 用可读名称
                 if prev_val is not None:
                     delta = cur_val - prev_val
-                    direction = "改善" if delta > 0 else "恶化"
                     evidence = (
-                        f"{field} 当期 {cur_val:.2f}，上期 {prev_val:.2f}，"
+                        f"{display} 当期 {cur_val:.2f}%，上期 {prev_val:.2f}%，"
                         f"变化 {delta:+.2f}pct"
                     )
-                    # 关键词暗示正向则 delta>0 = CONFIRM，否则 RISK
-                    pos_keywords = {"提价", "高端化", "增长", "扩张", "渗透", "替代", "提升", "增效"}
+                    # 关键词暗示正向则 delta > MIN_DELTA = CONFIRM，否则 RISK
+                    # 变化 < MIN_DELTA 视为噪声，归 NEUTRAL
+                    # 利润率/收益率类：上升为正向
+                    pos_keywords = {
+                        "提价", "高端化", "增长", "扩张", "渗透", "替代", "提升", "增效",
+                        "毛利", "利润", "盈利", "ROE", "收益率", "净利",
+                    }
                     expects_increase = any(pk in keyword for pk in pos_keywords)
                     if expects_increase:
-                        verdict = "CONFIRM" if delta > 0 else "RISK"
+                        if delta > _THESIS_MIN_DELTA:
+                            verdict = "CONFIRM"
+                        elif delta < -_THESIS_MIN_DELTA:
+                            verdict = "RISK"
+                        else:
+                            verdict = "NEUTRAL"   # 小幅波动不构成论点挑战
                     else:
-                        # 降本/优化等 → 指标下降是 CONFIRM
-                        verdict = "CONFIRM" if delta < 0 else "NEUTRAL"
+                        # 降本/优化等 → 指标下降才是 CONFIRM
+                        if delta < -_THESIS_MIN_DELTA:
+                            verdict = "CONFIRM"
+                        elif delta > _THESIS_MIN_DELTA:
+                            verdict = "RISK"
+                        else:
+                            verdict = "NEUTRAL"
 
-                    confidence = "HIGH" if abs(delta) > 1 else "MEDIUM"
+                    confidence = "HIGH" if abs(delta) > 2 else "MEDIUM"
                     return verdict, evidence, "财务指标", confidence
                 else:
-                    return "NEUTRAL", f"{field} 当期 {cur_val:.2f}，无上期对比数据", "财务指标", "LOW"
+                    return "NEUTRAL", f"{display} 当期 {cur_val:.2f}%，无上期对比数据", "财务指标", "LOW"
 
         # 2. 在 MD&A 文本中搜索关键词（兜底）
         if mda_text:
