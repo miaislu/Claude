@@ -1,0 +1,23 @@
+# 行业估值政策风险列表（Valuation Reviewer 使用）
+# 匹配到的行业在估值时需检查 WACC 是否已做政策风险上调
+sectors:
+  - sector: "游戏"
+    reason: "版号审批不确定性"
+    wacc_add_on_min: 0.01
+    wacc_add_on_max: 0.03
+  - sector: "教育"
+    reason: "双减政策余震，K12 业务受限"
+    wacc_add_on_min: 0.02
+    wacc_add_on_max: 0.04
+  - sector: "互联网"
+    reason: "平台经济监管，反垄断调查"
+    wacc_add_on_min: 0.01
+    wacc_add_on_max: 0.02
+  - sector: "医疗器械"
+    reason: "集采压价风险，利润空间收窄"
+    wacc_add_on_min: 0.01
+    wacc_add_on_max: 0.02
+  - sector: "房地产"
+    reason: "三条红线后遗症，流动性压力"
+    wacc_add_on_min: 0.02
+    wacc_add_on_max: 0.05

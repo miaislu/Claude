@@ -1,0 +1,11 @@
+# 监控股票列表 + thesis 关键词
+# 每日 Market Researcher 扫描范围
+stocks:
+  - code: "600519"
+    name: "贵州茅台"
+    sector: "食品饮料"
+    thesis: ["高端化", "提价", "海外扩张"]
+  - code: "300750"
+    name: "宁德时代"
+    sector: "电力设备"
+    thesis: ["储能渗透", "海外产能", "钠电池"]

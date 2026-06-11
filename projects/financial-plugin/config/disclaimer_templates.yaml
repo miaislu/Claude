@@ -1,0 +1,14 @@
+# 合规声明模板（Pitch Builder 使用）
+buyside:
+  short: |
+    本材料为内部研究参考，不构成投资建议。
+    历史数据不代表未来表现。投资有风险，入市需谨慎。
+
+# 卖方模式：MVP 阶段不启用，预留占位
+sellside:
+  analyst_name: ""          # 待填写：分析师姓名
+  analyst_license: ""       # 待填写：执业证书编号（SAC SXXXXXXXXXXXXXX）
+  firm_name: ""             # 待填写：机构名称
+  declaration: |
+    [占位] 本研究报告由具有中国证券业协会授予的证券投资咨询执业资格的分析师撰写。
+    分析师声明、重要声明、评级说明等完整版本待卖方模式迭代时填充。

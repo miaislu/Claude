@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.ruff_cache/
+
+# 运行时生成数据（不提交到 git）
+storage/
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 系统文件
+.DS_Store
+
+# 编辑器
+.idea/
+.vscode/
+*.swp
