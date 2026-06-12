@@ -74,7 +74,7 @@ class TestHandshake:
 # ──────────────────────────────────────────
 
 class TestToolsList:
-    def test_returns_all_9_tools(self, server):
+    def test_returns_all_12_tools(self, server):
         resp = server._dispatch(req("tools/list"))
         tools = resp["result"]["tools"]
         names = {t["name"] for t in tools}
@@ -83,6 +83,7 @@ class TestToolsList:
             "review_valuation", "build_pitch",
             "prepare_meeting", "prepare_expert_call",
             "scan_market", "query_market",
+            "screen_stocks", "get_analysis_history", "compare_reviews",
         }
         assert names == expected
 

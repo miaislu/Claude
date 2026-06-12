@@ -320,7 +320,7 @@ class MarketResearcher(AgentBase):
     def _save_result(digest: MarketResearchDigest) -> str:
         storage = _ROOT / "storage"
         storage.mkdir(exist_ok=True)
-        date_str = datetime.now().strftime("%Y%m%d")
+        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = storage / f"market_digest_{date_str}.json"
         path.write_text(
             json.dumps(digest.to_dict(), ensure_ascii=False, indent=2, default=str),

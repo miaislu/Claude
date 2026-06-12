@@ -177,6 +177,53 @@ class MeetingPreparer(AgentBase):
         market_d: dict | None,
         code: str,
     ) -> list[MeetingQuestion]:
+        """问题生成：LLM 优先，无 API Key 时 fall back 规则引擎。"""
+
+        # ── LLM 路径 ──────────────────────────────────
+        llm_text = self._call_llm({
+            "task": "meeting_question_generation",
+            "instructions": (
+                f"为即将进行的「{meeting_type}」会议生成准备问题清单。"
+                "请根据以下数据，生成有洞察力的问题。"
+                "严格按照 output_format 输出 JSON 数组。"
+            ),
+            "meeting_type": meeting_type,
+            "attendees": attendees,
+            "thesis_keywords": thesis,
+            "latest_earnings": {
+                "overall_verdict": (earnings or {}).get("overall_verdict", "N/A"),
+                "thesis_risks": [
+                    {"kw": t["thesis_keyword"], "evidence": t.get("evidence","")[:50]}
+                    for t in (earnings or {}).get("thesis_verdicts", [])
+                    if t.get("verdict") == "RISK"
+                ],
+                "risk_flags": [rf["flag_type"] for rf in (earnings or {}).get("risk_flags", [])
+                               if rf.get("verdict") in ("HIGH_RISK", "MEDIUM_RISK")],
+                "expectation_gaps": [
+                    {"metric": g["metric"], "verdict": g["verdict"]}
+                    for g in (earnings or {}).get("expectation_gaps", [])
+                    if g.get("verdict") in ("MISS_STRONG", "BEAT_STRONG")
+                ],
+            } if earnings else None,
+            "valuation": {
+                "verdict": (val_r or {}).get("verdict"),
+                "warnings": [(w["dimension"] + ": " + w["description"][:40])
+                             for w in (val_r or {}).get("warnings", [])[:2]],
+            } if val_r else None,
+            "output_format": (
+                '[{"priority":"P0|P1|P2|P3|P4|COUNTER",'
+                '"question":"<≤30字问题>","source":"<来源说明>"}]'
+            ),
+        }, max_tokens=1500)
+
+        if llm_text:
+            parsed = _parse_llm_questions(llm_text)
+            if parsed:
+                # 补充 attendees / meeting_type 固定问题
+                parsed = self._append_fixed_questions(parsed, meeting_type, attendees)
+                return parsed
+
+        # ── Fall back：规则引擎 ────────────────────────
         questions: list[MeetingQuestion] = []
 
         # P0：Thesis 风险必问（使用自然语言模板，不截断 evidence 字段）
@@ -238,6 +285,27 @@ class MeetingPreparer(AgentBase):
                 questions.append(MeetingQuestion(priority=pri, question=q, source="counter_argument"))
 
         # 截断：P0 全保留，P1~P4 合计 ≤ 8
+        p0 = [q for q in questions if q.priority == "P0"]
+        rest = [q for q in questions if q.priority != "P0"]
+        return (p0 + rest)[:len(p0) + 8]
+
+    @staticmethod
+    def _append_fixed_questions(
+        questions: list[MeetingQuestion],
+        meeting_type: str,
+        attendees: list[str],
+    ) -> list[MeetingQuestion]:
+        """为 LLM 生成的问题清单补充固定的 attendees / 投委会问题。"""
+        existing_sources = {q.source for q in questions}
+        if any("CEO" in a or "实控" in a for a in attendees) and "attendee_ceo" not in existing_sources:
+            for pri, q in _ATTENDEE_CEO_QS:
+                questions.append(MeetingQuestion(priority=pri, question=q, source="attendee_ceo"))
+        if any("CFO" in a or "财务" in a for a in attendees) and "attendee_cfo" not in existing_sources:
+            for pri, q in _ATTENDEE_CFO_QS:
+                questions.append(MeetingQuestion(priority=pri, question=q, source="attendee_cfo"))
+        if meeting_type == "investment_committee" and "counter_argument" not in existing_sources:
+            for pri, q in _STRATEGY_QS:
+                questions.append(MeetingQuestion(priority=pri, question=q, source="counter_argument"))
         p0 = [q for q in questions if q.priority == "P0"]
         rest = [q for q in questions if q.priority != "P0"]
         return (p0 + rest)[:len(p0) + 8]
@@ -331,7 +399,7 @@ class MeetingPreparer(AgentBase):
 
         storage = _ROOT / "storage"
         storage.mkdir(exist_ok=True)
-        date_str = datetime.now().strftime("%Y%m%d")
+        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = storage / f"{code}_brief_{date_str}.md"
         path.write_text(content, encoding="utf-8")
         return str(path)
@@ -356,7 +424,7 @@ class MeetingPreparer(AgentBase):
 
         storage = _ROOT / "storage"
         storage.mkdir(exist_ok=True)
-        date_str = datetime.now().strftime("%Y%m%d")
+        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = storage / f"{sector}_expert_brief_{date_str}.md"
         path.write_text("\n".join(l for l in lines if l is not None), encoding="utf-8")
         return str(path)
@@ -369,7 +437,7 @@ class MeetingPreparer(AgentBase):
                 lines.append(f"  *(来源：{q.source})*")
         storage = _ROOT / "storage"
         storage.mkdir(exist_ok=True)
-        date_str = datetime.now().strftime("%Y%m%d")
+        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = storage / f"{code}_questions_{date_str}.md"
         path.write_text("\n".join(lines), encoding="utf-8")
         return str(path)
@@ -490,3 +558,35 @@ def _f(d: dict | None, key: str) -> float | None:
         return None if math.isnan(x) else x
     except (ValueError, TypeError):
         return None
+
+
+def _parse_llm_questions(llm_text: str) -> list[MeetingQuestion] | None:
+    """解析 LLM 返回的问题 JSON → list[MeetingQuestion]。"""
+    import re as _re, json as _json
+    text = llm_text.strip()
+    match = _re.search(r"\[.*\]", text, _re.DOTALL)
+    if not match:
+        return None
+    try:
+        items = _json.loads(match.group())
+    except Exception:
+        return None
+    if not isinstance(items, list):
+        return None
+    valid_pri = {"P0", "P1", "P2", "P3", "P4", "COUNTER"}
+    results = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        pri = str(item.get("priority", "P3")).upper()
+        if pri not in valid_pri:
+            pri = "P3"
+        q = str(item.get("question", "")).strip()
+        if not q:
+            continue
+        results.append(MeetingQuestion(
+            priority=pri,
+            question=q[:40],
+            source=str(item.get("source", "LLM")),
+        ))
+    return results if results else None

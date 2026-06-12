@@ -316,6 +316,160 @@ def _handle_query_market(
     return MarketResearcher().query(code, days, thesis or []).to_dict()
 
 
+def _handle_screen_stocks(
+    industry: str | None = None,
+    pe_min: float | None = None,
+    pe_max: float | None = None,
+    pb_min: float | None = None,
+    pb_max: float | None = None,
+    mktcap_min_yi: float | None = None,
+    mktcap_max_yi: float | None = None,
+    roe_min: float | None = None,
+    gross_margin_min: float | None = None,
+    net_margin_min: float | None = None,
+    revenue_growth_min: float | None = None,
+    net_profit_growth_min: float | None = None,
+    exclude_st: bool = True,
+    limit: int = 20,
+) -> list:
+    """
+    筛选 A 股股票。估值条件（PE/PB/市值）快速过滤；
+    盈利/成长条件按需拉取财务数据（候选集小时速度快）。
+    """
+    from connectors.screener import screen_stocks
+    return screen_stocks(
+        industry=industry, pe_min=pe_min, pe_max=pe_max,
+        pb_min=pb_min, pb_max=pb_max,
+        mktcap_min_yi=mktcap_min_yi, mktcap_max_yi=mktcap_max_yi,
+        roe_min=roe_min, gross_margin_min=gross_margin_min,
+        net_margin_min=net_margin_min,
+        revenue_growth_min=revenue_growth_min,
+        net_profit_growth_min=net_profit_growth_min,
+        exclude_st=exclude_st, limit=limit,
+    )
+
+
+def _handle_get_analysis_history(code: str) -> dict:
+    """
+    列出某只股票的所有历史分析存档，按 Agent 类型分组。
+    返回每条存档的时间戳和关键结论字段。
+    """
+    import json as _json
+    storage = _ROOT / "storage"
+    agent_keys = [
+        "earnings_review", "model_build", "valuation_review",
+        "pitch_build", "market_digest",
+    ]
+    result: dict[str, list] = {}
+    for key in agent_keys:
+        pattern = f"{code}_{key}_*.json" if key != "market_digest" else f"market_digest_*.json"
+        files = sorted(storage.glob(pattern), reverse=True)
+        entries = []
+        for f in files[:10]:  # 最近 10 条
+            try:
+                data = _json.loads(f.read_text(encoding="utf-8"))
+                entry = {
+                    "file": f.name,
+                    "timestamp": data.get("timestamp") or data.get("digest_date", ""),
+                }
+                # 提取关键结论字段
+                if key == "earnings_review":
+                    entry["overall_verdict"] = data.get("overall_verdict", "")
+                    entry["data_sources"] = data.get("data_sources", {})
+                elif key == "model_build":
+                    entry["blended_target_price"] = data.get("blended_target_price")
+                    entry["upside_pct"] = data.get("upside_pct")
+                elif key == "valuation_review":
+                    entry["verdict"] = data.get("verdict", "")
+                entries.append(entry)
+            except Exception:
+                continue
+        if entries:
+            result[key] = entries
+    return result
+
+
+def _handle_compare_reviews(code: str) -> dict:
+    """
+    对比该股票最近两次 earnings_review，输出变化摘要。
+    若有 ANTHROPIC_API_KEY，使用 LLM 生成自然语言对比；否则输出结构化 diff。
+    """
+    import json as _json
+    storage = _ROOT / "storage"
+    files = sorted(storage.glob(f"{code}_earnings_review_*.json"), reverse=True)
+    if len(files) < 2:
+        return {"error": f"找不到 {code} 的两期 earnings_review，请先运行 review_earnings 至少两次"}
+
+    try:
+        curr = _json.loads(files[0].read_text(encoding="utf-8"))
+        prev = _json.loads(files[1].read_text(encoding="utf-8"))
+    except Exception as e:
+        return {"error": f"读取存档失败: {e}"}
+
+    # 结构化 diff
+    diff = {
+        "current_period":  curr.get("period", ""),
+        "previous_period": prev.get("period", ""),
+        "current_file":    files[0].name,
+        "previous_file":   files[1].name,
+        "verdict_change": {
+            "from": prev.get("overall_verdict", ""),
+            "to":   curr.get("overall_verdict", ""),
+            "changed": curr.get("overall_verdict") != prev.get("overall_verdict"),
+        },
+        "thesis_changes": _diff_thesis(
+            prev.get("thesis_verdicts", []),
+            curr.get("thesis_verdicts", []),
+        ),
+        "new_risk_flags": [
+            f["flag_type"] for f in curr.get("risk_flags", [])
+            if f["flag_type"] not in {r["flag_type"] for r in prev.get("risk_flags", [])}
+        ],
+        "resolved_risk_flags": [
+            f["flag_type"] for f in prev.get("risk_flags", [])
+            if f["flag_type"] not in {r["flag_type"] for r in curr.get("risk_flags", [])}
+        ],
+    }
+
+    # 尝试用 LLM 生成自然语言摘要
+    import os
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        try:
+            import anthropic
+            client = anthropic.Anthropic()
+            resp = client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=500,
+                messages=[{
+                    "role": "user",
+                    "content": (
+                        f"请用 3-4 句中文总结以下 A 股财报对比分析中最重要的变化：\n"
+                        f"{_json.dumps(diff, ensure_ascii=False, default=str)}"
+                    ),
+                }],
+            )
+            diff["llm_summary"] = resp.content[0].text
+        except Exception:
+            pass
+
+    return diff
+
+
+def _diff_thesis(
+    prev_list: list[dict],
+    curr_list: list[dict],
+) -> list[dict]:
+    """对比两期 thesis_verdicts，找出发生变化的关键词。"""
+    prev_map = {t["thesis_keyword"]: t["verdict"] for t in prev_list}
+    curr_map = {t["thesis_keyword"]: t["verdict"] for t in curr_list}
+    changes = []
+    for kw in set(list(prev_map) + list(curr_map)):
+        p, c = prev_map.get(kw), curr_map.get(kw)
+        if p != c:
+            changes.append({"keyword": kw, "from": p or "N/A", "to": c or "N/A"})
+    return changes
+
+
 # ══════════════════════════════════════════════════════════
 # JSON Schema（每个工具的输入模式）
 # ══════════════════════════════════════════════════════════
@@ -412,6 +566,37 @@ _SCHEMAS: dict[str, dict] = {
             "thesis": {**_SARR, "description": "投资论点关键词（可选）"},
         },
     ),
+    "screen_stocks": _schema(
+        [],
+        {
+            "industry":              {**_STR,  "description": "行业关键词，如 '食品饮料'（可选）"},
+            "pe_min":                {**_NUM,  "description": "PE 下限（排除负 PE 时设为 0）"},
+            "pe_max":                {**_NUM,  "description": "PE 上限"},
+            "pb_min":                {**_NUM,  "description": "PB 下限"},
+            "pb_max":                {**_NUM,  "description": "PB 上限"},
+            "mktcap_min_yi":         {**_NUM,  "description": "总市值下限（亿元）"},
+            "mktcap_max_yi":         {**_NUM,  "description": "总市值上限（亿元）"},
+            "roe_min":               {**_NUM,  "description": "ROE 下限（%），触发第二步财务数据拉取"},
+            "gross_margin_min":      {**_NUM,  "description": "毛利率下限（%）"},
+            "net_margin_min":        {**_NUM,  "description": "净利率下限（%）"},
+            "revenue_growth_min":    {**_NUM,  "description": "营收增速下限（%）"},
+            "net_profit_growth_min": {**_NUM,  "description": "净利润增速下限（%）"},
+            "exclude_st":            {"type": "boolean", "description": "是否排除 ST/*ST，默认 true"},
+            "limit":                 {**_INT,  "description": "最多返回条数，默认 20"},
+        },
+    ),
+    "get_analysis_history": _schema(
+        ["code"],
+        {
+            "code": {**_STR, "description": "6位股票代码"},
+        },
+    ),
+    "compare_reviews": _schema(
+        ["code"],
+        {
+            "code": {**_STR, "description": "6位股票代码（自动取最近两期）"},
+        },
+    ),
 }
 
 
@@ -455,6 +640,18 @@ _TOOLS: list[tuple[str, str, Callable]] = [
     ("query_market",
      "临时查询单只股票近 N 天的公告信号，标注与投资论点的 CONFIRM/RISK/NEUTRAL 关系。",
      _handle_query_market),
+
+    ("screen_stocks",
+     "筛选 A 股股票。按 PE/PB/市值/行业快速过滤，可选加 ROE/毛利率/增速等盈利质量条件精筛。",
+     _handle_screen_stocks),
+
+    ("get_analysis_history",
+     "查看某只股票的所有历史分析存档（earnings_review / model_build / valuation_review 等），追踪研究进展。",
+     _handle_get_analysis_history),
+
+    ("compare_reviews",
+     "对比该股票最近两次 earnings_review，输出 verdict 变化、thesis 论点变化、新增/消除的风险旗帜，可选 LLM 摘要。",
+     _handle_compare_reviews),
 ]
 
 

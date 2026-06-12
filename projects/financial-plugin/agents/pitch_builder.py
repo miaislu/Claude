@@ -288,7 +288,7 @@ class PitchBuilder(AgentBase):
             # 保存
             storage = _ROOT / "storage"
             storage.mkdir(exist_ok=True)
-            date_str = datetime.now().strftime("%Y%m%d")
+            date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
             path = storage / f"{code}_pitch_memo_{date_str}.docx"
             doc.save(str(path))
             return str(path)
@@ -329,7 +329,7 @@ class PitchBuilder(AgentBase):
 
         storage = _ROOT / "storage"
         storage.mkdir(exist_ok=True)
-        date_str = datetime.now().strftime("%Y%m%d")
+        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = storage / f"{code}_pitch_1pager_{date_str}.md"
         path.write_text("\n".join(lines), encoding="utf-8")
         return str(path)
@@ -365,7 +365,7 @@ class PitchBuilder(AgentBase):
     def _save_result(result: PitchBuildResult) -> str:
         storage = _ROOT / "storage"
         storage.mkdir(exist_ok=True)
-        date_str = datetime.now().strftime("%Y%m%d")
+        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = storage / f"{result.stock_code}_pitch_build_{date_str}.json"
         path.write_text(
             json.dumps(result.to_dict(), ensure_ascii=False, indent=2, default=str),

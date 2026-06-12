@@ -87,6 +87,8 @@ class EarningsReviewResult:
     # 可追溯字段
     comps_codes: list[str] = field(default_factory=list)   # 可比公司代码
     methodology_check_result: str = ""   # PASS / WARN / BLOCK / SKIPPED
+    data_sources: dict[str, bool] = field(default_factory=dict)
+    # 例：{"income_statement": True, "analyst_forecast": False, "mda_text": False, "llm_analysis": True}
 
     def to_dict(self) -> dict[str, Any]:
         """转为可 JSON 序列化的字典。"""

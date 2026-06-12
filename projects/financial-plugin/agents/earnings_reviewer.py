@@ -186,6 +186,15 @@ class EarningsReviewer(AgentBase):
             timestamp=datetime.now(timezone.utc).isoformat(),
             comps_codes=comps_codes,
             methodology_check_result=methodology_result,
+            data_sources={
+                "income_statement":   income is not None,
+                "balance_sheet":      balance is not None,
+                "cash_flow":          cashflow is not None,
+                "key_metrics":        metrics is not None,
+                "analyst_forecast":   forecast is not None,
+                "mda_text":           mda_text is not None,
+                "llm_analysis":       any(t.source == "LLM" for t in thesis_verdicts),
+            },
         )
 
         self._save_result(result)
@@ -389,10 +398,56 @@ class EarningsReviewer(AgentBase):
         metrics_hist: list[dict] | None,
         mda_text: str | None,
     ) -> list[ThesisVerdict]:
-        verdicts: list[ThesisVerdict] = []
+        """Thesis 分析：LLM 优先，无 API Key 时 fall back 规则引擎。"""
         if not keywords:
-            return verdicts
+            return []
 
+        current = metrics or {}
+        prev = metrics_hist[1] if metrics_hist and len(metrics_hist) > 1 else {}
+
+        # ── LLM 路径 ──────────────────────────────────
+        llm_text = self._call_llm({
+            "task": "thesis_analysis",
+            "instructions": (
+                "分析以下 A 股财务数据，对每个 thesis 关键词判断当期财报是否支撑该论点。"
+                "请严格按照 output_format 输出 JSON 数组，不要添加额外文字。"
+            ),
+            "thesis_keywords": keywords,
+            "key_metrics_current": {
+                _FIELD_DISPLAY.get(k, k): v
+                for k, v in current.items()
+                if v is not None and isinstance(v, (int, float))
+            },
+            "key_metrics_prev": {
+                _FIELD_DISPLAY.get(k, k): v
+                for k, v in prev.items()
+                if v is not None and isinstance(v, (int, float))
+            },
+            "mda_excerpt": (mda_text or "")[:2000],
+            "output_format": (
+                '[{"thesis_keyword":"<原词>","verdict":"CONFIRM|RISK|NEUTRAL",'
+                '"evidence":"<具体数据支撑，≤60字>","confidence":"HIGH|MEDIUM|LOW"}]'
+            ),
+        })
+
+        if llm_text:
+            parsed = _parse_llm_thesis(llm_text, keywords)
+            if parsed:
+                return parsed
+
+        # ── Fall back：规则引擎 ────────────────────────
+        return self._analyze_thesis_rules(keywords, income, metrics, metrics_hist, mda_text)
+
+    def _analyze_thesis_rules(
+        self,
+        keywords: list[str],
+        income: dict | None,
+        metrics: dict | None,
+        metrics_hist: list[dict] | None,
+        mda_text: str | None,
+    ) -> list[ThesisVerdict]:
+        """原始规则引擎（LLM 不可用时使用）。"""
+        verdicts: list[ThesisVerdict] = []
         current = metrics or {}
         prev = metrics_hist[1] if metrics_hist and len(metrics_hist) > 1 else {}
 
@@ -710,11 +765,11 @@ class EarningsReviewer(AgentBase):
 
     @staticmethod
     def _save_result(result: EarningsReviewResult) -> str:
-        """将结果存为 JSON 文件，返回路径。"""
+        """将结果存为 JSON 文件（带时间戳，不覆盖历史版本），返回路径。"""
         storage = _ROOT / "storage"
         storage.mkdir(exist_ok=True)
-        date_str = datetime.now().strftime("%Y%m%d")
-        filename = f"{result.stock_code}_earnings_review_{date_str}.json"
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{result.stock_code}_earnings_review_{ts}.json"
         path = storage / filename
         path.write_text(
             json.dumps(result.to_dict(), ensure_ascii=False, indent=2, default=str),
@@ -772,3 +827,52 @@ def _normalize_overall_verdict(verdict: str) -> str:
         "MISS_STRONG": "STRONG_MISS",
         "NO_CONSENSUS": "IN_LINE",
     }.get(verdict, verdict)
+
+
+def _parse_llm_thesis(llm_text: str, keywords: list[str]) -> list[ThesisVerdict] | None:
+    """
+    解析 LLM 返回的 JSON → list[ThesisVerdict]。
+    解析失败返回 None（调用方 fall back 规则引擎）。
+    """
+    import re as _re
+
+    # 提取 JSON 数组（LLM 可能包裹在 markdown code block 里）
+    text = llm_text.strip()
+    match = _re.search(r"\[.*\]", text, _re.DOTALL)
+    if not match:
+        return None
+
+    try:
+        items = json.loads(match.group())
+    except json.JSONDecodeError:
+        return None
+
+    if not isinstance(items, list):
+        return None
+
+    valid_verdicts = {"CONFIRM", "RISK", "NEUTRAL"}
+    valid_conf = {"HIGH", "MEDIUM", "LOW"}
+    results: list[ThesisVerdict] = []
+
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        kw = str(item.get("thesis_keyword", ""))
+        v  = str(item.get("verdict", "NEUTRAL")).upper()
+        ev = str(item.get("evidence", ""))
+        cf = str(item.get("confidence", "MEDIUM")).upper()
+
+        if v not in valid_verdicts:
+            v = "NEUTRAL"
+        if cf not in valid_conf:
+            cf = "MEDIUM"
+
+        results.append(ThesisVerdict(
+            thesis_keyword=kw or (keywords[len(results)] if len(results) < len(keywords) else ""),
+            verdict=v,
+            evidence=ev[:200],
+            source="LLM",
+            confidence=cf,
+        ))
+
+    return results if results else None

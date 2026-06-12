@@ -553,7 +553,7 @@ class ModelBuilder(AgentBase):
     def _save_result(result: ModelBuildResult, suffix: str = "build") -> str:
         storage = _ROOT / "storage"
         storage.mkdir(exist_ok=True)
-        date_str = datetime.now().strftime("%Y%m%d")
+        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = storage / f"{result.stock_code}_model_{suffix}_{date_str}.json"
         path.write_text(
             json.dumps(result.to_dict(), ensure_ascii=False, indent=2, default=str),
