@@ -1,0 +1,16 @@
+skill-manifest-version: 1
+skill-id: contract-review-v23
+
+files:
+  8fcc7de3e850604688c2c36a27e1cbeb92954a2ac7fa27dd2baecdeced6f274b  SKILL.md
+  4b1a47be24ddf905ffda7cbdde5dcc4f9a94fb19db5b0a1e74466825fa0e2938  references/common/checklist_query_spec.md
+  453c6958f8381225b037b6f8cba07b3a6425655b440c1fb032974795a561491b  references/common/file_upload_spec.md
+  1a838a5c8435189e6867e14cf0a9ac64d3c660a0350a9bc87832616e9f92ff28  references/common/interaction_templates.md
+  20cb1e01a7ee958e28d37c9418ed045a92ddbebf8244919bc26d52adc3e7b0b6  references/common/log_spec.md
+  2c6e28b977d716a80de370d05810daa3606da2b4190e161ad40189b0f4141ade  references/common/output_spec_pre_review.md
+  c225ca20a985e3c229b51a35ee9e8475aadcd2e5834c43dff677bd8214936ca3  references/common/pre_review_submit_spec.md
+  00dd4f4f2be9b82767f4e035612b28a34b730555ad1c27bbe44c90349bd73e5a  references/common/session_spec.md
+  283161ba201a3cac296bd2150362771cb904f6b270cc01f7fa5d78a8544c375a  references/common/sso_spec.md
+  ccf4c0ad603de2965cbccbe45543fcb7540f184ffbab9862853b8cd94609e528  references/common/template_identify_spec.md
+  b49a3c406c616d2915f6970c65057d7863bf83d5f34b027cf5103ee7ace238c3  references/common/template_search_spec.md
+  f6b476ab7e065c1c37e6329b61821c043f2bce302b28b6ce52877ef51df21b7e  tests/trigger-tests.md
